@@ -41,9 +41,9 @@ pub enum YolkPrefixOp {
     Sin,
     Cos,
     Tan,
-    Arcsin,
-    Arccos,
-    Arctan,
+    Asin,
+    Acos,
+    Atan,
 }
 
 #[derive(Debug)]
