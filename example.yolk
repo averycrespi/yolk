@@ -1,1 +1,4 @@
+import A
+define A (B, C) = B + C
 let A = not 0 + 1
+export A

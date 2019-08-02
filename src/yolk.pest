@@ -2,12 +2,15 @@ WHITESPACE = _{ " " | "\t" }
 
 program = _{ SOI ~ (stmt? ~ NEWLINE)* ~ EOI }
 
-stmt = _{ let_stmt }
+stmt = _{ import_stmt | define_stmt | let_stmt | export_stmt }
+import_stmt = { "import" ~ ident }
+define_stmt = { "define" ~ ident ~ params ~ "=" ~ expr }
 let_stmt = { "let" ~ ident ~ "=" ~ expr }
+export_stmt = { "export" ~ ident }
 
 expr = _{ prefix_expr | macro_expr | infix_expr | base_expr }
 prefix_expr = { prefix_op ~ expr }
-macro_expr = { ident ~ "!" ~ "(" ~ expr ~ ("," ~ expr)* ~ ")" }
+macro_expr = { ident ~ "!" ~ args}
 infix_expr = { (prefix_expr | base_expr) ~ infix_op ~ expr }
 base_expr = _{ ident | number | array | "(" ~ expr ~ ")" }
 
@@ -22,6 +25,9 @@ infix_op = {
     "and" | "or" |
     ":"
 }
+
+params = { "(" ~ ident~ ("," ~ ident)* ~ ")" }
+args = { "(" ~ expr ~ ("," ~ expr)* ~ ")" }
 
 ident = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
 number = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT{1,4})? }
