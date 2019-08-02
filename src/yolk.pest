@@ -1,0 +1,18 @@
+WHITESPACE = _{ " " | "\t" }
+
+program = _{ SOI ~ (stmt? ~ NEWLINE)* ~ EOI }
+
+stmt = _{ let_stmt }
+let_stmt = { "let" ~ ident ~ "=" ~ expr }
+
+expr = { unary_expr | binary_expr | base_expr }
+unary_expr = { unary_op ~ expr }
+binary_expr = { (unary_expr | base_expr) ~ binary_op ~ expr }
+base_expr = { ident | number | array | "(" ~ expr ~ ")" }
+
+unary_op = { "not" }
+binary_op = { "+" }
+
+ident = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
+number = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT{1,4})? }
+array = { "[" ~ expr ~ ("," ~ expr)* ~ "]" }
