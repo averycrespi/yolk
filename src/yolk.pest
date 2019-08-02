@@ -13,8 +13,7 @@ base_expr = _{ ident | number | array | "(" ~ expr ~ ")" }
 
 prefix_op = {
     "not" | "abs" | "sqrt" |
-    "sin" | "cos" | "tan" | "arcsin" | "arccos" | "arctan" |
-    "size"
+    "sin" | "cos" | "tan" | "arcsin" | "arccos" | "arctan"
 }
 
 infix_op = {

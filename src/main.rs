@@ -45,7 +45,6 @@ pub enum PrefixOp {
     Arcsin,
     Arccos,
     Arctan,
-    Size,
 }
 
 #[derive(Debug)]
@@ -139,7 +138,6 @@ fn parse_prefix_expr(op: pest::iterators::Pair<Rule>, expr: AstNode) -> AstNode 
             "arcsin" => PrefixOp::Arcsin,
             "arccos" => PrefixOp::Arccos,
             "arctan" => PrefixOp::Arctan,
-            "size" => PrefixOp::Size,
             _ => panic!("unexpected prefix op: {}", op.as_str()),
         },
         expr: Box::new(expr),
