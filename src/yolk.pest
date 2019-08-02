@@ -5,13 +5,24 @@ program = _{ SOI ~ (stmt? ~ NEWLINE)* ~ EOI }
 stmt = _{ let_stmt }
 let_stmt = { "let" ~ ident ~ "=" ~ expr }
 
-expr = { unary_expr | binary_expr | base_expr }
-unary_expr = { unary_op ~ expr }
-binary_expr = { (unary_expr | base_expr) ~ binary_op ~ expr }
-base_expr = { ident | number | array | "(" ~ expr ~ ")" }
+expr = _{ prefix_expr | macro_expr | infix_expr | base_expr }
+prefix_expr = { prefix_op ~ expr }
+macro_expr = { ident ~ "!" ~ "(" ~ expr ~ ("," ~ expr)* ~ ")" }
+infix_expr = { (prefix_expr | base_expr) ~ infix_op ~ expr }
+base_expr = _{ ident | number | array | "(" ~ expr ~ ")" }
 
-unary_op = { "not" }
-binary_op = { "+" }
+prefix_op = {
+    "not" | "abs" | "sqrt" |
+    "sin" | "cos" | "tan" | "arcsin" | "arccos" | "arctan" |
+    "size"
+}
+
+infix_op = {
+    "+" | "-" | "*" | "/" | "%" | "^" |
+    "<" | "<=" | ">" | ">=" | "==" | "!=" |
+    "and" | "or" |
+    ":"
+}
 
 ident = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
 number = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT{1,4})? }

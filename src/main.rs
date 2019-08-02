@@ -16,13 +16,17 @@ pub enum AstNode {
         ident: String,
         expr: Box<AstNode>,
     },
-    UnaryExpr {
-        op: UnaryOp,
+    PrefixExpr {
+        op: PrefixOp,
         expr: Box<AstNode>,
     },
-    BinaryExpr {
+    MacroExpr {
+        ident: String,
+        args: Vec<AstNode>,
+    },
+    InfixExpr {
         lhs: Box<AstNode>,
-        op: BinaryOp,
+        op: InfixOp,
         rhs: Box<AstNode>,
     },
     Ident(String),
@@ -31,13 +35,36 @@ pub enum AstNode {
 }
 
 #[derive(Debug)]
-pub enum UnaryOp {
+pub enum PrefixOp {
     Not,
+    Abs,
+    Sqrt,
+    Sin,
+    Cos,
+    Tan,
+    Arcsin,
+    Arccos,
+    Arctan,
+    Size,
 }
 
 #[derive(Debug)]
-pub enum BinaryOp {
+pub enum InfixOp {
     Add,
+    Sub,
+    Mul,
+    Div,
+    Mod,
+    Exp,
+    LessThan,
+    LessEqual,
+    GreaterThan,
+    GreaterEqual,
+    Equal,
+    NotEqual,
+    And,
+    Or,
+    Join,
 }
 
 pub fn parse(source: &str) -> Result<Vec<AstNode>, Error<Rule>> {
@@ -47,7 +74,7 @@ pub fn parse(source: &str) -> Result<Vec<AstNode>, Error<Rule>> {
         match stmt.as_rule() {
             Rule::let_stmt => ast.push(parse_let_stmt(stmt)),
             Rule::EOI => (),
-            _ => unreachable!(),
+            _ => panic!("unexpected statement: {:?}", stmt),
         }
     }
     Ok(ast)
@@ -64,66 +91,81 @@ fn parse_let_stmt(stmt: pest::iterators::Pair<Rule>) -> AstNode {
 }
 
 fn parse_expr(expr: pest::iterators::Pair<Rule>) -> AstNode {
-    let expr = expr.into_inner().next().unwrap();
     match expr.as_rule() {
-        Rule::unary_expr => {
+        Rule::prefix_expr => {
             let mut pair = expr.into_inner();
             let op = pair.next().unwrap();
             let expr = pair.next().unwrap();
-            parse_unary_expr(op, parse_expr(expr))
+            parse_prefix_expr(op, parse_expr(expr))
         }
-        Rule::binary_expr => {
+        Rule::macro_expr => {
+            let mut pair = expr.into_inner();
+            let ident = pair.next().unwrap();
+            let args: Vec<AstNode> = pair.map(parse_expr).collect();
+            AstNode::MacroExpr {
+                ident: String::from(ident.as_str()),
+                args: args,
+            }
+        }
+        Rule::infix_expr => {
             let mut pair = expr.into_inner();
             let lhs = pair.next().unwrap();
             let op = pair.next().unwrap();
             let rhs = pair.next().unwrap();
-            parse_binary_expr(parse_expr(lhs), op, parse_expr(rhs))
+            parse_infix_expr(parse_expr(lhs), op, parse_expr(rhs))
         }
-        Rule::base_expr => parse_base_expr(expr),
-        _ => unreachable!(),
-    }
-}
-
-fn parse_unary_expr(op: pest::iterators::Pair<Rule>, expr: AstNode) -> AstNode {
-    AstNode::UnaryExpr {
-        op: match op.as_str() {
-            "not" => UnaryOp::Not,
-            _ => unreachable!(),
-        },
-        expr: Box::new(expr),
-    }
-}
-
-fn parse_binary_expr(lhs: AstNode, op: pest::iterators::Pair<Rule>, rhs: AstNode) -> AstNode {
-    AstNode::BinaryExpr {
-        lhs: Box::new(lhs),
-        op: match op.as_str() {
-            "+" => BinaryOp::Add,
-            _ => unreachable!(),
-        },
-        rhs: Box::new(rhs),
-    }
-}
-
-fn parse_base_expr(expr: pest::iterators::Pair<Rule>) -> AstNode {
-    let expr = expr.into_inner().next().unwrap();
-    match expr.as_rule() {
-        Rule::ident => {
-            let mut pair = expr.into_inner();
-            let ident = pair.next().unwrap();
-            AstNode::Ident(String::from(ident.as_str()))
-        }
+        Rule::ident => AstNode::Ident(String::from(expr.as_str())),
         Rule::number => {
-            let mut pair = expr.into_inner();
-            let number = pair.next().unwrap();
-            let float: f64 = number.as_str().parse().unwrap();
+            let float: f64 = expr.as_str().parse().unwrap();
             AstNode::Number(float)
         }
         Rule::array => {
             let exprs: Vec<AstNode> = expr.into_inner().map(parse_expr).collect();
             AstNode::Array(exprs)
         }
-        _ => unreachable!(),
+        _ => panic!("unexpected expression: {:?}", expr),
+    }
+}
+
+fn parse_prefix_expr(op: pest::iterators::Pair<Rule>, expr: AstNode) -> AstNode {
+    AstNode::PrefixExpr {
+        op: match op.as_str() {
+            "not" => PrefixOp::Not,
+            "abs" => PrefixOp::Abs,
+            "sqrt" => PrefixOp::Sqrt,
+            "sin" => PrefixOp::Sin,
+            "cos" => PrefixOp::Cos,
+            "tan" => PrefixOp::Tan,
+            "arcsin" => PrefixOp::Arcsin,
+            "arccos" => PrefixOp::Arccos,
+            "arctan" => PrefixOp::Arctan,
+            "size" => PrefixOp::Size,
+            _ => panic!("unexpected prefix op: {}", op.as_str()),
+        },
+        expr: Box::new(expr),
+    }
+}
+
+fn parse_infix_expr(lhs: AstNode, op: pest::iterators::Pair<Rule>, rhs: AstNode) -> AstNode {
+    AstNode::InfixExpr {
+        lhs: Box::new(lhs),
+        op: match op.as_str() {
+            "+" => InfixOp::Add,
+            "-" => InfixOp::Sub,
+            "*" => InfixOp::Mul,
+            "/" => InfixOp::Div,
+            "%" => InfixOp::Mod,
+            "^" => InfixOp::Exp,
+            "<" => InfixOp::LessThan,
+            "<=" => InfixOp::LessEqual,
+            ">" => InfixOp::GreaterThan,
+            ">=" => InfixOp::GreaterEqual,
+            "==" => InfixOp::Equal,
+            "!=" => InfixOp::NotEqual,
+            ":" => InfixOp::Join,
+            _ => panic!("unexpected infix op: {}", op.as_str()),
+        },
+        rhs: Box::new(rhs),
     }
 }
 
