@@ -1,4 +1,4 @@
 import A
-define A (B, C) = B + C
-let A = not 0 + 1
+define macro (B, C) = B + C
+let A = not 0 + 1 + macro!(2, 3)
 export A

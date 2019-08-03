@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum YolkNode {
     ImportStmt {
         ident: String,
@@ -16,7 +16,7 @@ pub enum YolkNode {
         ident: String,
     },
     PrefixExpr {
-        op: YolkPrefixOp,
+        op: PrefixOp,
         expr: Box<YolkNode>,
     },
     MacroExpr {
@@ -25,7 +25,7 @@ pub enum YolkNode {
     },
     InfixExpr {
         lhs: Box<YolkNode>,
-        op: YolkInfixOp,
+        op: InfixOp,
         rhs: Box<YolkNode>,
     },
     Ident(String),
@@ -33,8 +33,27 @@ pub enum YolkNode {
     Array(Vec<YolkNode>),
 }
 
-#[derive(Debug)]
-pub enum YolkPrefixOp {
+#[derive(Debug, Clone)]
+pub enum YololNode {
+    AssignStmt {
+        ident: String,
+        expr: Box<YololNode>,
+    },
+    PrefixExpr {
+        op: PrefixOp,
+        expr: Box<YololNode>,
+    },
+    InfixExpr {
+        lhs: Box<YololNode>,
+        op: InfixOp,
+        rhs: Box<YololNode>,
+    },
+    Ident(String),
+    Number(f64),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PrefixOp {
     Not,
     Abs,
     Sqrt,
@@ -46,8 +65,8 @@ pub enum YolkPrefixOp {
     Atan,
 }
 
-#[derive(Debug)]
-pub enum YolkInfixOp {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum InfixOp {
     Add,
     Sub,
     Mul,

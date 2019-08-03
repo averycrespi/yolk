@@ -1,10 +1,10 @@
 use pest::error::Error;
 use pest::Parser;
 
-use crate::ast::{YolkInfixOp as InfixOp, YolkNode as Node, YolkPrefixOp as PrefixOp};
+use crate::ast::{InfixOp, PrefixOp, YolkNode as Node};
 
 #[derive(Parser)]
-#[grammar = "yolk.pest"]
+#[grammar = "grammar/yolk.pest"]
 pub struct YolkParser;
 
 pub fn parse(source: &str) -> Result<Vec<Node>, Error<Rule>> {
