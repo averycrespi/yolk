@@ -1,6 +1,5 @@
-use yolk::array;
-use yolk::number;
 use yolk::parser::parse;
+use yolk::transpiler::transpile;
 
 use std::fs;
 

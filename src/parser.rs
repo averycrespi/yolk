@@ -1,13 +1,13 @@
 use pest::error::Error;
 use pest::Parser;
 
-use crate::ast::{InfixOp, PrefixOp, YolkNode as Node};
+use crate::ast::{InfixOp, PrefixOp, YolkNode};
 
 #[derive(Parser)]
 #[grammar = "grammar/yolk.pest"]
 pub struct YolkParser;
 
-pub fn parse(source: &str) -> Result<Vec<Node>, Error<Rule>> {
+pub fn parse(source: &str) -> Result<Vec<YolkNode>, Error<Rule>> {
     let mut ast = vec![];
     let pairs = YolkParser::parse(Rule::program, source)?;
     for pair in pairs {
@@ -23,20 +23,20 @@ pub fn parse(source: &str) -> Result<Vec<Node>, Error<Rule>> {
     Ok(ast)
 }
 
-fn parse_import_stmt(stmt: pest::iterators::Pair<Rule>) -> Node {
+fn parse_import_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
     let mut pair = stmt.into_inner();
     let ident = pair.next().unwrap();
-    Node::ImportStmt {
+    YolkNode::ImportStmt {
         ident: String::from(ident.as_str()),
     }
 }
 
-fn parse_define_stmt(stmt: pest::iterators::Pair<Rule>) -> Node {
+fn parse_define_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
     let mut pair = stmt.into_inner();
     let ident = pair.next().unwrap();
     let params = pair.next().unwrap();
     let body = pair.next().unwrap();
-    Node::DefineStmt {
+    YolkNode::DefineStmt {
         ident: String::from(ident.as_str()),
         params: params
             .into_inner()
@@ -46,25 +46,25 @@ fn parse_define_stmt(stmt: pest::iterators::Pair<Rule>) -> Node {
     }
 }
 
-fn parse_let_stmt(stmt: pest::iterators::Pair<Rule>) -> Node {
+fn parse_let_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
     let mut pair = stmt.into_inner();
     let ident = pair.next().unwrap();
     let expr = pair.next().unwrap();
-    Node::LetStmt {
+    YolkNode::LetStmt {
         ident: String::from(ident.as_str()),
         expr: Box::new(parse_expr(expr)),
     }
 }
 
-fn parse_export_stmt(stmt: pest::iterators::Pair<Rule>) -> Node {
+fn parse_export_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
     let mut pair = stmt.into_inner();
     let ident = pair.next().unwrap();
-    Node::ExportStmt {
+    YolkNode::ExportStmt {
         ident: String::from(ident.as_str()),
     }
 }
 
-fn parse_expr(expr: pest::iterators::Pair<Rule>) -> Node {
+fn parse_expr(expr: pest::iterators::Pair<Rule>) -> YolkNode {
     match expr.as_rule() {
         Rule::prefix_expr => {
             let mut pair = expr.into_inner();
@@ -76,7 +76,7 @@ fn parse_expr(expr: pest::iterators::Pair<Rule>) -> Node {
             let mut pair = expr.into_inner();
             let ident = pair.next().unwrap();
             let args = pair.next().unwrap();
-            Node::MacroExpr {
+            YolkNode::MacroExpr {
                 ident: String::from(ident.as_str()),
                 args: args.into_inner().map(parse_expr).collect(),
             }
@@ -88,21 +88,21 @@ fn parse_expr(expr: pest::iterators::Pair<Rule>) -> Node {
             let rhs = pair.next().unwrap();
             parse_infix_expr(parse_expr(lhs), op, parse_expr(rhs))
         }
-        Rule::ident => Node::Ident(String::from(expr.as_str())),
+        Rule::ident => YolkNode::Ident(String::from(expr.as_str())),
         Rule::number => {
             let float: f64 = expr.as_str().parse().unwrap();
-            Node::Number(float)
+            YolkNode::Number(float)
         }
         Rule::array => {
-            let exprs: Vec<Node> = expr.into_inner().map(parse_expr).collect();
-            Node::Array(exprs)
+            let exprs: Vec<YolkNode> = expr.into_inner().map(parse_expr).collect();
+            YolkNode::Array(exprs)
         }
         _ => panic!("unexpected expression: {:?}", expr),
     }
 }
 
-fn parse_prefix_expr(op: pest::iterators::Pair<Rule>, expr: Node) -> Node {
-    Node::PrefixExpr {
+fn parse_prefix_expr(op: pest::iterators::Pair<Rule>, expr: YolkNode) -> YolkNode {
+    YolkNode::PrefixExpr {
         op: match op.as_str() {
             "not" => PrefixOp::Not,
             "abs" => PrefixOp::Abs,
@@ -119,8 +119,8 @@ fn parse_prefix_expr(op: pest::iterators::Pair<Rule>, expr: Node) -> Node {
     }
 }
 
-fn parse_infix_expr(lhs: Node, op: pest::iterators::Pair<Rule>, rhs: Node) -> Node {
-    Node::InfixExpr {
+fn parse_infix_expr(lhs: YolkNode, op: pest::iterators::Pair<Rule>, rhs: YolkNode) -> YolkNode {
+    YolkNode::InfixExpr {
         lhs: Box::new(lhs),
         op: match op.as_str() {
             "+" => InfixOp::Add,
