@@ -4,6 +4,5 @@ extern crate pest_derive;
 
 pub mod array;
 pub mod ast;
-pub mod environment;
 pub mod number;
 pub mod parser;

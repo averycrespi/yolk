@@ -81,5 +81,4 @@ pub enum InfixOp {
     NotEqual,
     And,
     Or,
-    Join,
 }

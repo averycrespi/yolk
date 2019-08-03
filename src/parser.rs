@@ -137,7 +137,6 @@ fn parse_infix_expr(lhs: Node, op: pest::iterators::Pair<Rule>, rhs: Node) -> No
             "!=" => InfixOp::NotEqual,
             "and" => InfixOp::And,
             "or" => InfixOp::Or,
-            ":" => InfixOp::Join,
             _ => panic!("unexpected infix op: {}", op.as_str()),
         },
         rhs: Box::new(rhs),

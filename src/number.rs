@@ -2,74 +2,42 @@ use crate::ast::{InfixOp, PrefixOp, YolkNode, YololNode};
 
 #[derive(Debug, Clone)]
 pub struct Number {
-    value: Value,
-    queue: Vec<Operation>,
-}
-
-#[derive(Debug, Clone)]
-enum Value {
-    Ident(String),
-    Float(f64),
-}
-
-#[derive(Debug, Clone)]
-enum Operation {
-    Prefix(PrefixOp),
-    Infix { op: InfixOp, other: Number },
+    expr: YololNode,
 }
 
 impl Number {
-    pub fn from_node(node: &YolkNode) -> Number {
-        match node.to_owned() {
+    pub fn from_yolk_node(node: &YolkNode) -> Number {
+        match node {
             YolkNode::Ident(s) => Number {
-                value: Value::Ident(s),
-                queue: Vec::new(),
+                expr: YololNode::Ident(s.to_string()),
             },
             YolkNode::Number(f) => Number {
-                value: Value::Float(f),
-                queue: Vec::new(),
+                expr: YololNode::Number(*f),
             },
             _ => panic!("cannot create number from node: {:?}", node),
         }
     }
 
     pub fn apply_prefix_op(&self, op: &PrefixOp) -> Number {
-        let mut result = self.to_owned();
-        result.queue.push(Operation::Prefix(op.to_owned()));
-        result
+        Number {
+            expr: YololNode::PrefixExpr {
+                op: op.to_owned(),
+                expr: Box::new(self.as_expr()),
+            },
+        }
     }
 
     pub fn apply_infix_op(&self, op: &InfixOp, other: &Number) -> Number {
-        let mut result = self.to_owned();
-        result.queue.push(Operation::Infix {
-            op: op.to_owned(),
-            other: other.to_owned(),
-        });
-        result
+        Number {
+            expr: YololNode::InfixExpr {
+                lhs: Box::new(self.as_expr()),
+                op: op.to_owned(),
+                rhs: Box::new(other.as_expr()),
+            },
+        }
     }
 
-    pub fn to_expr(&self) -> YololNode {
-        let mut expr = match self.value.to_owned() {
-            Value::Ident(s) => YololNode::Ident(s),
-            Value::Float(f) => YololNode::Number(f),
-        };
-        for op in self.queue.iter() {
-            match op.to_owned() {
-                Operation::Prefix(op) => {
-                    expr = YololNode::PrefixExpr {
-                        op: op,
-                        expr: Box::new(expr),
-                    };
-                }
-                Operation::Infix { op, other } => {
-                    expr = YololNode::InfixExpr {
-                        lhs: Box::new(expr),
-                        op: op,
-                        rhs: Box::new(other.to_expr()),
-                    };
-                }
-            }
-        }
-        expr
+    pub fn as_expr(&self) -> YololNode {
+        self.expr.to_owned()
     }
 }
