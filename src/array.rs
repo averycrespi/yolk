@@ -8,7 +8,7 @@ pub struct Array {
 
 impl Array {
     pub fn from_yolk_node(node: &YolkNode) -> Array {
-        match node.to_owned() {
+        match node.clone() {
             YolkNode::Array(nodes) => Array {
                 numbers: nodes.iter().map(Number::from_yolk_node).collect(),
             },

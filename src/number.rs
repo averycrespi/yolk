@@ -21,7 +21,7 @@ impl Number {
     pub fn apply_prefix_op(&self, op: &PrefixOp) -> Number {
         Number {
             expr: YololNode::PrefixExpr {
-                op: op.to_owned(),
+                op: op.clone(),
                 expr: Box::new(self.as_expr()),
             },
         }
@@ -31,13 +31,13 @@ impl Number {
         Number {
             expr: YololNode::InfixExpr {
                 lhs: Box::new(self.as_expr()),
-                op: op.to_owned(),
+                op: op.clone(),
                 rhs: Box::new(other.as_expr()),
             },
         }
     }
 
     pub fn as_expr(&self) -> YololNode {
-        self.expr.to_owned()
+        self.expr.clone()
     }
 }
