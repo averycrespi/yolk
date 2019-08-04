@@ -26,7 +26,7 @@ fn parse_import_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
     let mut pair = stmt.into_inner();
     let ident = pair.next().unwrap();
     YolkNode::ImportStmt {
-        ident: String::from(ident.as_str()),
+        ident: ident.as_str().to_string(),
     }
 }
 
@@ -36,10 +36,10 @@ fn parse_define_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
     let params = pair.next().unwrap();
     let body = pair.next().unwrap();
     YolkNode::DefineStmt {
-        ident: String::from(ident.as_str()),
+        ident: ident.as_str().to_string(),
         params: params
             .into_inner()
-            .map(|x| String::from(x.as_str()))
+            .map(|x| x.as_str().to_string())
             .collect(),
         body: Box::new(parse_expr(body)),
     }
@@ -50,7 +50,7 @@ fn parse_let_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
     let ident = pair.next().unwrap();
     let expr = pair.next().unwrap();
     YolkNode::LetStmt {
-        ident: String::from(ident.as_str()),
+        ident: ident.as_str().to_string(),
         expr: Box::new(parse_expr(expr)),
     }
 }
@@ -59,7 +59,7 @@ fn parse_export_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
     let mut pair = stmt.into_inner();
     let ident = pair.next().unwrap();
     YolkNode::ExportStmt {
-        ident: String::from(ident.as_str()),
+        ident: ident.as_str().to_string(),
     }
 }
 
@@ -76,7 +76,7 @@ fn parse_expr(expr: pest::iterators::Pair<Rule>) -> YolkNode {
             let ident = pair.next().unwrap();
             let args = pair.next().unwrap();
             YolkNode::MacroExpr {
-                ident: String::from(ident.as_str()),
+                ident: ident.as_str().to_string(),
                 args: args.into_inner().map(parse_expr).collect(),
             }
         }
@@ -87,7 +87,7 @@ fn parse_expr(expr: pest::iterators::Pair<Rule>) -> YolkNode {
             let rhs = pair.next().unwrap();
             parse_infix_expr(parse_expr(lhs), op, parse_expr(rhs))
         }
-        Rule::ident => YolkNode::Ident(String::from(expr.as_str())),
+        Rule::ident => YolkNode::Ident(expr.as_str().to_string()),
         Rule::number => YolkNode::Number(expr.as_str().parse::<f64>().unwrap()),
         Rule::array => {
             let exprs: Vec<YolkNode> = expr.into_inner().map(parse_expr).collect();
