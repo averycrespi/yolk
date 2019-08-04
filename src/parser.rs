@@ -1,8 +1,6 @@
-use pest::error::Error;
 use pest::Parser;
 
 use crate::ast::{InfixOp, PrefixOp, YolkNode};
-use crate::error::YolkError;
 
 #[derive(Parser)]
 #[grammar = "grammar/yolk.pest"]

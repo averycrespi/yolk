@@ -8,11 +8,6 @@ pub fn transpile(stmts: Vec<YolkNode>) -> Result<Vec<YololNode>, YolkError> {
     for stmt in stmts {
         match stmt {
             YolkNode::ImportStmt { ident } => transpile_import_stmt(&mut env, &ident)?,
-            YolkNode::DefineStmt {
-                ident,
-                params,
-                body,
-            } => transpile_define_stmt(&mut env, &ident, params, &*body)?,
             _ => panic!("unexpected statement: {:?}", stmt),
         }
     }
@@ -21,14 +16,4 @@ pub fn transpile(stmts: Vec<YolkNode>) -> Result<Vec<YololNode>, YolkError> {
 
 fn transpile_import_stmt(env: &mut Environment, ident: &str) -> Result<(), YolkError> {
     env.import(ident)
-}
-
-fn transpile_define_stmt(
-    env: &mut Environment,
-    ident: &str,
-    params: Vec<String>,
-    body: &YolkNode,
-) -> Result<(), YolkError> {
-    //TODO
-    Ok(())
 }

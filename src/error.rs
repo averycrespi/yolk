@@ -11,7 +11,9 @@ impl error::Error for YolkError {}
 impl fmt::Display for YolkError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            _ => panic!("TODO"),
+            YolkError::ExistingImport { ident } => {
+                write!(f, "cannot import existing variable: {}", ident)
+            }
         }
     }
 }

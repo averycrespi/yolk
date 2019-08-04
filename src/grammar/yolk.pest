@@ -11,7 +11,7 @@ export_stmt = { "export" ~ ident }
 expr = _{ prefix_expr | macro_expr | infix_expr | base_expr }
 prefix_expr = { prefix_op ~ expr }
 macro_expr = { ident ~ "!" ~ args}
-infix_expr = { (prefix_expr | base_expr) ~ infix_op ~ expr }
+infix_expr = { (prefix_expr | macro_expr | base_expr) ~ infix_op ~ expr }
 base_expr = _{ ident | number | array | "(" ~ expr ~ ")" }
 
 prefix_op = {
