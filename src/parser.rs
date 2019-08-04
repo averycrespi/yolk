@@ -2,14 +2,15 @@ use pest::error::Error;
 use pest::Parser;
 
 use crate::ast::{InfixOp, PrefixOp, YolkNode};
+use crate::error::YolkError;
 
 #[derive(Parser)]
 #[grammar = "grammar/yolk.pest"]
 pub struct YolkParser;
 
-pub fn parse(source: &str) -> Result<Vec<YolkNode>, Error<Rule>> {
+pub fn parse(source: &str) -> Vec<YolkNode> {
     let mut ast = vec![];
-    let pairs = YolkParser::parse(Rule::program, source)?;
+    let pairs = YolkParser::parse(Rule::program, source).unwrap_or_else(|e| panic!("{}", e));
     for pair in pairs {
         match pair.as_rule() {
             Rule::import_stmt => ast.push(parse_import_stmt(pair)),
@@ -20,7 +21,7 @@ pub fn parse(source: &str) -> Result<Vec<YolkNode>, Error<Rule>> {
             _ => panic!("unexpected pair: {:?}", pair),
         }
     }
-    Ok(ast)
+    ast
 }
 
 fn parse_import_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
@@ -89,10 +90,7 @@ fn parse_expr(expr: pest::iterators::Pair<Rule>) -> YolkNode {
             parse_infix_expr(parse_expr(lhs), op, parse_expr(rhs))
         }
         Rule::ident => YolkNode::Ident(String::from(expr.as_str())),
-        Rule::number => {
-            let float: f64 = expr.as_str().parse().unwrap();
-            YolkNode::Number(float)
-        }
+        Rule::number => YolkNode::Number(expr.as_str().parse::<f64>().unwrap()),
         Rule::array => {
             let exprs: Vec<YolkNode> = expr.into_inner().map(parse_expr).collect();
             YolkNode::Array(exprs)

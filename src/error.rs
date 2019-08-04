@@ -3,7 +3,7 @@ use std::fmt;
 
 #[derive(Debug, Clone)]
 pub enum YolkError {
-    ImportConflict { ident: String },
+    ExistingImport { ident: String },
 }
 
 impl error::Error for YolkError {}
