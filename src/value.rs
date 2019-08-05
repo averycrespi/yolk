@@ -1,4 +1,4 @@
-use crate::ast::{InfixOp, PrefixOp, YolkNode, YololNode};
+use crate::ast::{InfixOp, PrefixOp, YololNode};
 use crate::error::YolkError;
 
 const PREFIX: &str = "_yolk";
@@ -59,27 +59,17 @@ pub struct Number {
 }
 
 impl Number {
-    /// Creates a Yolk number from a Yolk AST node.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the node is not a YolkNode::Ident or YolkNode::Literal.
-    pub fn from_yolk_node(node: &YolkNode) -> Number {
-        match node {
-            YolkNode::Ident(s) => Number {
-                expr: YololNode::Ident(s.to_string()),
-            },
-            YolkNode::Literal(f) => Number {
-                expr: YololNode::Literal(*f),
-            },
-            _ => panic!("cannot create Yolk number from Yolk node: {:?}", node),
-        }
-    }
-
     /// Creates a Yolk number from an identifier.
     pub fn from_ident(ident: &str) -> Number {
         Number {
             expr: YololNode::Ident(ident.to_string()),
+        }
+    }
+
+    // Creates a Yolk number from a float.
+    pub fn from_float(float: f64) -> Number {
+        Number {
+            expr: YololNode::Literal(float),
         }
     }
 
@@ -136,20 +126,6 @@ pub struct Array {
 }
 
 impl Array {
-    /// Creates a Yolk array from a Yolk AST node.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the node is not a YolkNode::Array.
-    pub fn from_yolk_node(node: &YolkNode) -> Array {
-        match node.clone() {
-            YolkNode::Array(nodes) => Array {
-                numbers: nodes.iter().map(Number::from_yolk_node).collect(),
-            },
-            _ => panic!("cannot create array from node: {:?}", node),
-        }
-    }
-
     // Creates a Yolk array from Yolk numbers.
     pub fn from_numbers(numbers: Vec<Number>) -> Array {
         Array { numbers: numbers }

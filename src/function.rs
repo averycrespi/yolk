@@ -6,12 +6,13 @@ use crate::error::YolkError;
 pub struct Function {}
 
 impl Function {
+    /// Creates a new Yolk function.
     pub fn new(ident: &str, params: Vec<String>, body: &YolkNode) -> Result<Function, YolkError> {
         //TODO: implement
         Err(YolkError::NotImplemented)
     }
 
-    // Calls a function with arguments.
+    /// Calls a function with arguments.
     pub fn call(&self, args: Vec<YolkNode>) -> Result<YolkNode, YolkError> {
         //TODO: implement
         Err(YolkError::NotImplemented)

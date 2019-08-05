@@ -8,7 +8,7 @@ use crate::value::{Array, Number, Value};
 ///
 /// # Panics
 ///
-/// Panics if any statements are malformed.
+/// Panics if any Yolk statements are malformed.
 pub fn transpile(stmts: Vec<YolkNode>) -> Result<Vec<YololNode>, YolkError> {
     let mut env = Environment::new();
     let mut assigns = Vec::new();
@@ -51,7 +51,7 @@ fn expr_to_value(env: &Environment, expr: &YolkNode) -> Result<Value, YolkError>
             lhs.apply_infix_op(&op, &rhs)
         }
         YolkNode::Ident(s) => env.variable(s),
-        YolkNode::Literal(_) => Ok(Value::Number(Number::from_yolk_node(expr))),
+        YolkNode::Literal(f) => Ok(Value::Number(Number::from_float(*f))),
         YolkNode::Array(exprs) => {
             let mut numbers = Vec::new();
             for expr in exprs.iter() {

@@ -13,6 +13,7 @@ pub struct YolkParser;
 /// Panics if the source text is invalid or any statements are malformed.
 pub fn parse(source: &str) -> Vec<YolkNode> {
     let mut ast = vec![];
+    //TODO: return error instead of panicking
     let pairs = YolkParser::parse(Rule::program, source).unwrap_or_else(|e| panic!("{}", e));
     for pair in pairs {
         match pair.as_rule() {

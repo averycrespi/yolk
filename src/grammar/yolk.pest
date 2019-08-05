@@ -1,6 +1,6 @@
-WHITESPACE = _{ " " | "\t" }
+WHITESPACE = _{ " " | "\t" | NEWLINE }
 
-program = _{ SOI ~ (stmt? ~ NEWLINE)* ~ EOI }
+program = _{ SOI ~ (stmt ~ ";")* ~ EOI }
 
 stmt = _{ import_stmt | define_stmt | let_stmt | export_stmt }
 import_stmt = { "import" ~ ident }

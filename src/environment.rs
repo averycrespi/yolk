@@ -11,6 +11,9 @@ pub struct Environment {
     // Stores the identifiers of imported variables
     imports: Vec<String>,
     // Maps variable identifiers to values
+    // e.g. "my_number" => Value(Number("_yolk_0"))
+    // e.g. "my_import" => Value(Number("original_ident"))
+    // e.g. "my_array" => Value(Array(["_yolk_0_0", "_yolk_0_1"]))
     variables: HashMap<String, Value>,
     // Maps function identifiers to functions
     functions: HashMap<String, Function>,
