@@ -8,10 +8,10 @@ define_stmt = { "define" ~ ident ~ params ~ "=" ~ expr }
 let_stmt = { "let" ~ ident ~ "=" ~ expr }
 export_stmt = { "export" ~ ident }
 
-expr = _{ prefix_expr | macro_expr | infix_expr | base_expr }
+expr = _{ prefix_expr | call_expr | infix_expr | base_expr }
 prefix_expr = { prefix_op ~ expr }
-macro_expr = { ident ~ "!" ~ args}
-infix_expr = { (prefix_expr | macro_expr | base_expr) ~ infix_op ~ expr }
+call_expr = { ident ~ args}
+infix_expr = { (prefix_expr | call_expr | base_expr) ~ infix_op ~ expr }
 base_expr = _{ ident | number | array | "(" ~ expr ~ ")" }
 
 prefix_op = {

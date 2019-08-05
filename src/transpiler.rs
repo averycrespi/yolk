@@ -1,19 +1,35 @@
 use crate::ast::{YolkNode, YololNode};
 use crate::environment::Environment;
 use crate::error::YolkError;
+use crate::function::Function;
+use crate::value::Value;
 
+/// Transpiles Yolk statements to Yolol assign statements.
 pub fn transpile(stmts: Vec<YolkNode>) -> Result<Vec<YololNode>, YolkError> {
     let mut env = Environment::new();
-    let mut nodes = Vec::new();
+    let assigns = Vec::new();
     for stmt in stmts {
         match stmt {
-            YolkNode::ImportStmt { ident } => transpile_import_stmt(&mut env, &ident)?,
+            YolkNode::ImportStmt { ident } => env.import(&ident)?,
+            YolkNode::DefineStmt {
+                ident,
+                params,
+                body,
+            } => {
+                let function = Function::new(params, &*body)?;
+                env.define(&ident, &function)?;
+            }
+            YolkNode::LetStmt { ident, expr } => {
+                let value = expr_to_value(&env, &*expr)?;
+                assigns.extend(env.let_value(&ident, &value)?);
+            }
+            YolkNode::ExportStmt { ident } => env.export(&ident)?,
             _ => panic!("unexpected statement: {:?}", stmt),
         }
     }
-    Ok(nodes)
+    Ok(assigns)
 }
 
-fn transpile_import_stmt(env: &mut Environment, ident: &str) -> Result<(), YolkError> {
-    env.import(ident)
+fn expr_to_value(env: &Environment, expr: &YolkNode) -> Result<Value, YolkError> {
+    //TODO: implement
 }

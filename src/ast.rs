@@ -19,7 +19,7 @@ pub enum YolkNode {
         op: PrefixOp,
         expr: Box<YolkNode>,
     },
-    MacroExpr {
+    CallExpr {
         ident: String,
         args: Vec<YolkNode>,
     },

@@ -71,11 +71,11 @@ fn parse_expr(expr: pest::iterators::Pair<Rule>) -> YolkNode {
             let expr = pair.next().unwrap();
             parse_prefix_expr(op, parse_expr(expr))
         }
-        Rule::macro_expr => {
+        Rule::call_expr => {
             let mut pair = expr.into_inner();
             let ident = pair.next().unwrap();
             let args = pair.next().unwrap();
-            YolkNode::MacroExpr {
+            YolkNode::CallExpr {
                 ident: ident.as_str().to_string(),
                 args: args.into_inner().map(parse_expr).collect(),
             }
