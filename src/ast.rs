@@ -1,3 +1,4 @@
+/// Represents a Yolk AST node.
 #[derive(Debug, Clone)]
 pub enum YolkNode {
     ImportStmt {
@@ -33,6 +34,7 @@ pub enum YolkNode {
     Array(Vec<YolkNode>),
 }
 
+/// Represents a Yolol AST node.
 #[derive(Debug, Clone)]
 pub enum YololNode {
     AssignStmt {
@@ -52,6 +54,7 @@ pub enum YololNode {
     Number(f64),
 }
 
+/// Represents a prefix operation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PrefixOp {
     Not,
@@ -65,6 +68,7 @@ pub enum PrefixOp {
     Atan,
 }
 
+/// Represents an infix operation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum InfixOp {
     Add,

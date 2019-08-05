@@ -5,6 +5,7 @@ use crate::value::Value;
 
 use std::collections::HashMap;
 
+/// Represents a Yolk program environment.
 #[derive(Debug, Clone)]
 pub struct Environment {
     imports: Vec<String>,
@@ -16,6 +17,7 @@ pub struct Environment {
 }
 
 impl Environment {
+    /// Creates an empty environment.
     pub fn new() -> Environment {
         Environment {
             imports: Vec::new(),
@@ -27,6 +29,7 @@ impl Environment {
         }
     }
 
+    /// Imports a variable into an environment.
     pub fn import(&mut self, ident: &str) -> Result<(), YolkError> {
         let ident = ident.to_string();
         if self.imports.contains(&ident) {
@@ -38,6 +41,7 @@ impl Environment {
         Ok(())
     }
 
+    /// Defines a function in an environmnent.
     pub fn define(&mut self, ident: &str, function: &Function) -> Result<(), YolkError> {
         let ident = ident.to_string();
         if self.functions.contains_key(&ident) {
@@ -47,6 +51,9 @@ impl Environment {
         Ok(())
     }
 
+    /// Assigns a value to a variable in an environment.
+    ///
+    /// Returns the associated Yolol assign statements.
     pub fn let_value(&mut self, ident: &str, value: &Value) -> Result<Vec<YololNode>, YolkError> {
         let ident = ident.to_string();
         if self.imports.contains(&ident) || self.variables.contains_key(&ident) {
@@ -68,6 +75,7 @@ impl Environment {
         }
     }
 
+    /// Exports a variable from an environment.
     pub fn export(&mut self, ident: &str) -> Result<(), YolkError> {
         let ident = ident.to_string();
         if self.exports.contains(&ident) {

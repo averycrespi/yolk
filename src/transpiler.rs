@@ -5,6 +5,10 @@ use crate::function::Function;
 use crate::value::Value;
 
 /// Transpiles Yolk statements to Yolol assign statements.
+///
+/// # Panics
+///
+/// Panics if any statements are malformed.
 pub fn transpile(stmts: Vec<YolkNode>) -> Result<Vec<YololNode>, YolkError> {
     let mut env = Environment::new();
     let mut assigns = Vec::new();

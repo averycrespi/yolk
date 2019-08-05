@@ -1,6 +1,7 @@
 use std::error;
 use std::fmt;
 
+/// Represents a general Yolk error.
 #[derive(Debug, Clone)]
 pub enum YolkError {
     NotImplemented,

@@ -6,6 +6,11 @@ use crate::ast::{InfixOp, PrefixOp, YolkNode};
 #[grammar = "grammar/yolk.pest"]
 pub struct YolkParser;
 
+/// Parses Yolk statements from source text.
+///
+/// # Panics
+///
+/// Panics if the source text is invalid or any statements are malformed.
 pub fn parse(source: &str) -> Vec<YolkNode> {
     let mut ast = vec![];
     let pairs = YolkParser::parse(Rule::program, source).unwrap_or_else(|e| panic!("{}", e));
