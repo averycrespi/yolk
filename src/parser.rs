@@ -93,7 +93,7 @@ fn parse_expr(expr: pest::iterators::Pair<Rule>) -> YolkNode {
             parse_infix_expr(parse_expr(lhs), op, parse_expr(rhs))
         }
         Rule::ident => YolkNode::Ident(expr.as_str().to_string()),
-        Rule::number => YolkNode::Number(expr.as_str().parse::<f64>().unwrap()),
+        Rule::literal => YolkNode::Literal(expr.as_str().parse::<f64>().unwrap()),
         Rule::array => {
             let exprs: Vec<YolkNode> = expr.into_inner().map(parse_expr).collect();
             YolkNode::Array(exprs)

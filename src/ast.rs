@@ -30,7 +30,7 @@ pub enum YolkNode {
         rhs: Box<YolkNode>,
     },
     Ident(String),
-    Number(f64),
+    Literal(f64),
     Array(Vec<YolkNode>),
 }
 
@@ -51,7 +51,7 @@ pub enum YololNode {
         rhs: Box<YololNode>,
     },
     Ident(String),
-    Number(f64),
+    Literal(f64),
 }
 
 /// Represents a prefix operation.

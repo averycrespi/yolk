@@ -20,14 +20,14 @@ impl Number {
     ///
     /// # Panics
     ///
-    /// Panics if the node is not a YolkNode::Ident or YolkNode::Number.
+    /// Panics if the node is not a YolkNode::Ident or YolkNode::Literal.
     pub fn from_yolk_node(node: &YolkNode) -> Number {
         match node {
             YolkNode::Ident(s) => Number {
                 expr: YololNode::Ident(s.to_string()),
             },
-            YolkNode::Number(f) => Number {
-                expr: YololNode::Number(*f),
+            YolkNode::Literal(f) => Number {
+                expr: YololNode::Literal(*f),
             },
             _ => panic!("cannot create Yolk number from Yolk node: {:?}", node),
         }
