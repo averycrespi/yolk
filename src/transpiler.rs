@@ -7,7 +7,7 @@ use crate::value::Value;
 /// Transpiles Yolk statements to Yolol assign statements.
 pub fn transpile(stmts: Vec<YolkNode>) -> Result<Vec<YololNode>, YolkError> {
     let mut env = Environment::new();
-    let assigns = Vec::new();
+    let mut assigns = Vec::new();
     for stmt in stmts {
         match stmt {
             YolkNode::ImportStmt { ident } => env.import(&ident)?,
@@ -32,4 +32,5 @@ pub fn transpile(stmts: Vec<YolkNode>) -> Result<Vec<YololNode>, YolkError> {
 
 fn expr_to_value(env: &Environment, expr: &YolkNode) -> Result<Value, YolkError> {
     //TODO: implement
+    Err(YolkError::NotImplemented)
 }

@@ -52,10 +52,10 @@ impl Number {
     pub fn resolve(&self, index: u32) -> (Number, YololNode) {
         let ident = format!("{}_{}", PREFIX, index);
         let number = Number {
-            expr: YololNode::Ident(ident),
+            expr: YololNode::Ident(ident.to_string()),
         };
         let assign = YololNode::AssignStmt {
-            ident: ident,
+            ident: ident.to_string(),
             expr: Box::new(self.as_expr()),
         };
         (number, assign)
@@ -100,10 +100,10 @@ impl Array {
         for (elem_index, number) in self.numbers.iter().enumerate() {
             let ident = format!("{}_{}_{}", PREFIX, index, elem_index);
             numbers.push(Number {
-                expr: YololNode::Ident(ident),
+                expr: YololNode::Ident(ident.to_string()),
             });
             assigns.push(YololNode::AssignStmt {
-                ident: ident,
+                ident: ident.to_string(),
                 expr: Box::new(number.as_expr()),
             })
         }

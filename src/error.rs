@@ -3,6 +3,7 @@ use std::fmt;
 
 #[derive(Debug, Clone)]
 pub enum YolkError {
+    NotImplemented,
     DuplicateImport { ident: String },
     ExistingImport { ident: String },
     ExistingFunction { ident: String },
@@ -16,6 +17,7 @@ impl error::Error for YolkError {}
 impl fmt::Display for YolkError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            YolkError::NotImplemented => write!(f, "not implemented"),
             YolkError::DuplicateImport { ident } => {
                 write!(f, "cannot import variable twice: {}", ident)
             }
