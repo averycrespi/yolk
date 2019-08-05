@@ -2,7 +2,7 @@ use crate::ast::{YolkNode, YololNode};
 use crate::environment::Environment;
 use crate::error::YolkError;
 use crate::function::Function;
-use crate::value::Value;
+use crate::value::{Number, Value};
 
 /// Transpiles Yolk statements to Yolol assign statements.
 ///
@@ -35,6 +35,19 @@ pub fn transpile(stmts: Vec<YolkNode>) -> Result<Vec<YololNode>, YolkError> {
 }
 
 fn expr_to_value(env: &Environment, expr: &YolkNode) -> Result<Value, YolkError> {
-    //TODO: implement
-    Err(YolkError::NotImplemented)
+    match expr {
+        YolkNode::PrefixExpr { op, expr } => match expr_to_value(env, expr)? {
+            Value::Number(number) => Ok(Value::Number(number.apply_prefix_op(&op))),
+            Value::Array(array) => Ok(Value::Array(array.apply_prefix_op(&op))),
+        },
+        //TODO: implement
+        YolkNode::CallExpr { ident, args } => Err(YolkError::NotImplemented),
+        //TODO: implement
+        YolkNode::InfixExpr { lhs, op, rhs } => Err(YolkError::NotImplemented),
+        YolkNode::Ident(s) => env.variable(s),
+        YolkNode::Literal(f) => Ok(Value::Number(Number::from_yolk_node(expr))),
+        //TODO: implement
+        YolkNode::Array(nodes) => Err(YolkError::NotImplemented),
+        _ => panic!("unexpected expression: {:?}", expr),
+    }
 }

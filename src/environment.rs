@@ -29,26 +29,37 @@ impl Environment {
         }
     }
 
+    /// Gets the value of a  variable from an environment.
+    pub fn variable(&self, ident: &str) -> Result<Value, YolkError> {
+        let ident = ident.to_string();
+        match self.variables.get(&ident) {
+            Some(value) => Ok(value.clone()),
+            None => Err(YolkError::UndefinedVariable(ident)),
+        }
+    }
+
     /// Imports a variable into an environment.
     pub fn import(&mut self, ident: &str) -> Result<(), YolkError> {
         let ident = ident.to_string();
         if self.imports.contains(&ident) {
-            return Err(YolkError::DuplicateImport { ident: ident });
+            Err(YolkError::DuplicateImport(ident))
         } else if self.variables.contains_key(&ident) {
-            return Err(YolkError::ExistingImport { ident: ident });
+            Err(YolkError::ExistingImport(ident))
+        } else {
+            self.imports.push(ident);
+            Ok(())
         }
-        self.imports.push(ident);
-        Ok(())
     }
 
     /// Defines a function in an environmnent.
     pub fn define(&mut self, ident: &str, function: &Function) -> Result<(), YolkError> {
         let ident = ident.to_string();
         if self.functions.contains_key(&ident) {
-            return Err(YolkError::ExistingFunction { ident: ident });
+            Err(YolkError::ExistingFunction(ident))
+        } else {
+            self.functions.insert(ident, function.to_owned());
+            Ok(())
         }
-        self.functions.insert(ident, function.to_owned());
-        Ok(())
     }
 
     /// Assigns a value to a variable in an environment.
@@ -57,20 +68,21 @@ impl Environment {
     pub fn let_value(&mut self, ident: &str, value: &Value) -> Result<Vec<YololNode>, YolkError> {
         let ident = ident.to_string();
         if self.imports.contains(&ident) || self.variables.contains_key(&ident) {
-            return Err(YolkError::ExistingVariable { ident: ident });
-        }
-        match value {
-            Value::Number(number) => {
-                let (number, assign) = number.resolve(self.number_index);
-                self.number_index += 1;
-                self.variables.insert(ident, Value::Number(number));
-                Ok(vec![assign])
-            }
-            Value::Array(array) => {
-                let (array, assigns) = array.resolve(self.array_index);
-                self.array_index += 1;
-                self.variables.insert(ident, Value::Array(array));
-                Ok(assigns)
+            Err(YolkError::ExistingVariable(ident))
+        } else {
+            match value {
+                Value::Number(number) => {
+                    let (number, assign) = number.resolve(self.number_index);
+                    self.number_index += 1;
+                    self.variables.insert(ident, Value::Number(number));
+                    Ok(vec![assign])
+                }
+                Value::Array(array) => {
+                    let (array, assigns) = array.resolve(self.array_index);
+                    self.array_index += 1;
+                    self.variables.insert(ident, Value::Array(array));
+                    Ok(assigns)
+                }
             }
         }
     }
@@ -79,11 +91,12 @@ impl Environment {
     pub fn export(&mut self, ident: &str) -> Result<(), YolkError> {
         let ident = ident.to_string();
         if self.exports.contains(&ident) {
-            return Err(YolkError::DuplicateExport { ident: ident });
+            Err(YolkError::DuplicateExport(ident))
         } else if !self.variables.contains_key(&ident) {
-            return Err(YolkError::UndefinedExport { ident: ident });
+            Err(YolkError::UndefinedVariable(ident))
+        } else {
+            self.exports.push(ident);
+            Ok(())
         }
-        self.exports.push(ident);
-        Ok(())
     }
 }
