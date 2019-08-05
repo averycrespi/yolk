@@ -1,12 +1,55 @@
 use crate::ast::{InfixOp, PrefixOp, YolkNode, YololNode};
+use crate::error::YolkError;
 
-const PREFIX: &str = "_yovec";
+const PREFIX: &str = "_yolk";
 
 /// Represents a Yolk value.
 #[derive(Debug, Clone)]
 pub enum Value {
     Number(Number),
     Array(Array),
+}
+
+impl Value {
+    /// Apply a prefix operation to a Yolk value.
+    pub fn apply_prefix_op(&self, op: &PrefixOp) -> Value {
+        match self {
+            Value::Number(n) => Value::Number(n.apply_prefix_op(op)),
+            Value::Array(a) => Value::Array(Array {
+                numbers: a.numbers.iter().map(|n| n.apply_prefix_op(op)).collect(),
+            }),
+        }
+    }
+
+    /// Apply an infix operation to two Yolk values.
+    pub fn apply_infix_op(&self, op: &InfixOp, other: &Value) -> Result<Value, YolkError> {
+        match (self, other) {
+            (Value::Number(lhs), Value::Number(rhs)) => {
+                Ok(Value::Number(lhs.apply_infix_op(op, &rhs)))
+            }
+            (Value::Array(lhs), Value::Number(rhs)) => {
+                // Expand the right-hand side into an array of identical numbers
+                let rhs = Array {
+                    numbers: vec![rhs.clone(); lhs.numbers.len()],
+                };
+                Ok(Value::Array(lhs.apply_infix_op(op, &rhs)))
+            }
+            (Value::Number(lhs), Value::Array(rhs)) => {
+                // Expand the left-hand side into an array of identical numbers
+                let lhs = Array {
+                    numbers: vec![lhs.clone(); rhs.numbers.len()],
+                };
+                Ok(Value::Array(lhs.apply_infix_op(op, rhs)))
+            }
+            (Value::Array(lhs), Value::Array(rhs)) => {
+                if lhs.numbers.len() != rhs.numbers.len() {
+                    Err(YolkError::MismatchingArrays(op.clone()))
+                } else {
+                    Ok(Value::Array(lhs.apply_infix_op(op, &rhs)))
+                }
+            }
+        }
+    }
 }
 
 /// Represents a Yolk number.
@@ -33,24 +76,19 @@ impl Number {
         }
     }
 
-    /// Applies a prefix operation to a Yolk number.
-    pub fn apply_prefix_op(&self, op: &PrefixOp) -> Number {
+    /// Creates a Yolk number from an identifier.
+    pub fn from_ident(ident: &str) -> Number {
         Number {
-            expr: YololNode::PrefixExpr {
-                op: op.clone(),
-                expr: Box::new(self.as_expr()),
-            },
+            expr: YololNode::Ident(ident.to_string()),
         }
     }
 
-    /// Applies an infix operation to two Yolk numbers.
-    pub fn apply_infix_op(&self, op: &InfixOp, other: &Number) -> Number {
+    /// Creates a Yolk number from an index.
+    ///
+    /// The number will contain an identifier based on the index.
+    pub fn from_index(index: u32) -> Number {
         Number {
-            expr: YololNode::InfixExpr {
-                lhs: Box::new(self.as_expr()),
-                op: op.clone(),
-                rhs: Box::new(other.as_expr()),
-            },
+            expr: YololNode::Ident(Number::format_ident(index)),
         }
     }
 
@@ -59,19 +97,35 @@ impl Number {
         self.expr.clone()
     }
 
-    /// Resolves a Yolk number.
-    ///
-    /// Returns a simplified Yolk number and its corresponding Yolol assign statement.
-    pub fn resolve(&self, index: u32) -> (Number, YololNode) {
-        let ident = format!("{}_{}", PREFIX, index);
-        let number = Number {
-            expr: YololNode::Ident(ident.to_string()),
-        };
-        let assign = YololNode::AssignStmt {
-            ident: ident.to_string(),
+    // Converts a Yolk number to a YOLOL assign statement.
+    pub fn to_assign_stmt(&self, index: u32) -> YololNode {
+        YololNode::AssignStmt {
+            ident: Number::format_ident(index),
             expr: Box::new(self.as_expr()),
-        };
-        (number, assign)
+        }
+    }
+
+    fn format_ident(index: u32) -> String {
+        format!("{}_{}", PREFIX, index)
+    }
+
+    fn apply_prefix_op(&self, op: &PrefixOp) -> Number {
+        Number {
+            expr: YololNode::PrefixExpr {
+                op: op.clone(),
+                expr: Box::new(self.as_expr()),
+            },
+        }
+    }
+
+    fn apply_infix_op(&self, op: &InfixOp, other: &Number) -> Number {
+        Number {
+            expr: YololNode::InfixExpr {
+                lhs: Box::new(self.as_expr()),
+                op: op.clone(),
+                rhs: Box::new(other.as_expr()),
+            },
+        }
     }
 }
 
@@ -82,7 +136,7 @@ pub struct Array {
 }
 
 impl Array {
-    /// Creates an Yolk array from a Yolk AST node.
+    /// Creates a Yolk array from a Yolk AST node.
     ///
     /// # Panics
     ///
@@ -96,48 +150,50 @@ impl Array {
         }
     }
 
-    /// Applies a prefix operation element-wise to a Yolk array.
-    pub fn apply_prefix_op(&self, op: &PrefixOp) -> Array {
-        Array {
-            numbers: self.numbers.iter().map(|n| n.apply_prefix_op(op)).collect(),
-        }
+    // Creates a Yolk array from Yolk numbers.
+    pub fn from_numbers(numbers: Vec<Number>) -> Array {
+        Array { numbers: numbers }
     }
 
-    /// Applies an infix operation element-wise to two Yolk arrays.
+    /// Creates an indirect Yolk array from an index.
     ///
-    /// # Panics
-    ///
-    /// Panics if the arrays have different lengths.
-    pub fn apply_infix_op(&self, op: &InfixOp, other: &Array) -> Array {
-        if self.numbers.len() != other.numbers.len() {
-            panic!("cannot apply operation to mismatched Yolk arrays: {:?}", op);
+    /// The array will contain identifiers based on the index.
+    pub fn from_index(index: u32, size: usize) -> Array {
+        let mut numbers = Vec::new();
+        for elem_index in 0..size {
+            numbers.push(Number {
+                expr: YololNode::Ident(Array::format_ident(index, elem_index)),
+            })
         }
+        Array { numbers: numbers }
+    }
+
+    // Converts a Yolk array to Yolol assign statements.
+    //
+    // The number of statements will be equal to the length of the array.
+    pub fn to_assign_stmts(&self, index: u32) -> Vec<YololNode> {
+        let mut assign_stmts = Vec::new();
+        for (elem_index, number) in self.numbers.iter().enumerate() {
+            assign_stmts.push(YololNode::AssignStmt {
+                ident: Array::format_ident(index, elem_index),
+                expr: Box::new(number.as_expr()),
+            });
+        }
+        assign_stmts
+    }
+
+    fn apply_infix_op(&self, op: &InfixOp, other: &Array) -> Array {
         Array {
             numbers: self
                 .numbers
                 .iter()
                 .zip(other.numbers.iter())
-                .map(|(m, n)| m.apply_infix_op(op, &n))
+                .map(|(m, n)| m.apply_infix_op(op, n))
                 .collect(),
         }
     }
 
-    /// Resolves an Yolk array.
-    ///
-    /// Returns a simplified Yolk array and its corresponding Yolol assign statements.
-    pub fn resolve(&self, index: u32) -> (Array, Vec<YololNode>) {
-        let mut numbers = Vec::new();
-        let mut assigns = Vec::new();
-        for (elem_index, number) in self.numbers.iter().enumerate() {
-            let ident = format!("{}_{}_{}", PREFIX, index, elem_index);
-            numbers.push(Number {
-                expr: YololNode::Ident(ident.to_string()),
-            });
-            assigns.push(YololNode::AssignStmt {
-                ident: ident.to_string(),
-                expr: Box::new(number.as_expr()),
-            })
-        }
-        (Array { numbers: numbers }, assigns)
+    fn format_ident(index: u32, elem_index: usize) -> String {
+        format!("{}_{}_{}", PREFIX, index, elem_index)
     }
 }

@@ -1,18 +1,24 @@
 use crate::ast::YololNode;
 use crate::error::YolkError;
 use crate::function::Function;
-use crate::value::Value;
+use crate::value::{Array, Number, Value};
 
 use std::collections::HashMap;
 
 /// Represents a Yolk program environment.
 #[derive(Debug, Clone)]
 pub struct Environment {
+    // Stores the identifiers of imported variables
     imports: Vec<String>,
+    // Maps variable identifiers to values
     variables: HashMap<String, Value>,
+    // Maps function identifiers to functions
     functions: HashMap<String, Function>,
+    // Stores the identifiers of exported variables
     exports: Vec<String>,
+    // Stores the index of the next number
     number_index: u32,
+    // Stores the index of the next array
     array_index: u32,
 }
 
@@ -29,12 +35,21 @@ impl Environment {
         }
     }
 
-    /// Gets the value of a  variable from an environment.
+    /// Gets the value of a variable from an environment.
     pub fn variable(&self, ident: &str) -> Result<Value, YolkError> {
         let ident = ident.to_string();
         match self.variables.get(&ident) {
             Some(value) => Ok(value.clone()),
             None => Err(YolkError::UndefinedVariable(ident)),
+        }
+    }
+
+    /// Gets a function from an environment.
+    pub fn function(&self, ident: &str) -> Result<Function, YolkError> {
+        let ident = ident.to_string();
+        match self.functions.get(&ident) {
+            Some(function) => Ok(function.clone()),
+            None => Err(YolkError::UndefinedFunction(ident)),
         }
     }
 
@@ -46,7 +61,9 @@ impl Environment {
         } else if self.variables.contains_key(&ident) {
             Err(YolkError::ExistingImport(ident))
         } else {
-            self.imports.push(ident);
+            self.imports.push(ident.clone());
+            self.variables
+                .insert(ident.clone(), Value::Number(Number::from_ident(&ident)));
             Ok(())
         }
     }
@@ -72,16 +89,18 @@ impl Environment {
         } else {
             match value {
                 Value::Number(number) => {
-                    let (number, assign) = number.resolve(self.number_index);
-                    self.number_index += 1;
+                    let assign_stmt = number.to_assign_stmt(self.number_index);
+                    let number = Number::from_index(self.number_index);
                     self.variables.insert(ident, Value::Number(number));
-                    Ok(vec![assign])
+                    self.number_index += 1;
+                    Ok(vec![assign_stmt])
                 }
                 Value::Array(array) => {
-                    let (array, assigns) = array.resolve(self.array_index);
-                    self.array_index += 1;
+                    let assign_stmts = array.to_assign_stmts(self.array_index);
+                    let array = Array::from_index(self.array_index, assign_stmts.len());
                     self.variables.insert(ident, Value::Array(array));
-                    Ok(assigns)
+                    self.array_index += 1;
+                    Ok(assign_stmts)
                 }
             }
         }

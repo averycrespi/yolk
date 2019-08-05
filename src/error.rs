@@ -1,3 +1,5 @@
+use crate::ast::InfixOp;
+
 use std::error;
 use std::fmt;
 
@@ -6,11 +8,14 @@ use std::fmt;
 pub enum YolkError {
     NotImplemented,
     DuplicateImport(String),
+    DuplicateExport(String),
     ExistingImport(String),
     ExistingFunction(String),
     ExistingVariable(String),
     UndefinedVariable(String),
-    DuplicateExport(String),
+    UndefinedFunction(String),
+    MismatchingArrays(InfixOp),
+    NestedArrays,
 }
 
 impl error::Error for YolkError {}
@@ -20,6 +25,7 @@ impl fmt::Display for YolkError {
         match self {
             YolkError::NotImplemented => write!(f, "not implemented"),
             YolkError::DuplicateImport(ident) => write!(f, "duplicate import: {}", ident),
+            YolkError::DuplicateExport(ident) => write!(f, "duplicate export: {}", ident),
             YolkError::ExistingImport(ident) => {
                 write!(f, "cannot import existing variable: {}", ident)
             }
@@ -30,7 +36,11 @@ impl fmt::Display for YolkError {
                 write!(f, "cannot reassign existing variable: {}", ident)
             }
             YolkError::UndefinedVariable(ident) => write!(f, "undefined variable: {}", ident),
-            YolkError::DuplicateExport(ident) => write!(f, "duplicate export: {}", ident),
+            YolkError::UndefinedFunction(ident) => write!(f, "undefined function: {}", ident),
+            YolkError::MismatchingArrays(op) => {
+                write!(f, "cannot apply operation to mismatching arrays: {:?}", op)
+            }
+            YolkError::NestedArrays => write!(f, "cannot nest arrays"),
         }
     }
 }
