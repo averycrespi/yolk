@@ -1,1 +1,4 @@
-let A = 0 + 1 + 2
+import A
+define add(B, C) = B + C
+let A = not 0 + 1 + add(2, 3)
+export A
