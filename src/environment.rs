@@ -11,18 +11,11 @@ pub struct Environment {
     // Stores the identifiers of imported variables
     imports: Vec<String>,
     // Maps variable identifiers to values
-    // e.g. "my_number" => Value(Number("_yolk_0"))
-    // e.g. "my_import" => Value(Number("original_ident"))
-    // e.g. "my_array" => Value(Array(["_yolk_0_0", "_yolk_0_1"]))
     variables: HashMap<String, Value>,
     // Maps function identifiers to functions
     functions: HashMap<String, Function>,
     // Stores the identifiers of exported variables
     exports: Vec<String>,
-    // Stores the index of the next number
-    number_index: u32,
-    // Stores the index of the next array
-    array_index: u32,
 }
 
 impl Environment {
@@ -33,8 +26,6 @@ impl Environment {
             variables: HashMap::new(),
             functions: HashMap::new(),
             exports: Vec::new(),
-            number_index: 0,
-            array_index: 0,
         }
     }
 
@@ -92,17 +83,17 @@ impl Environment {
         } else {
             match value {
                 Value::Number(number) => {
-                    let assign_stmt = number.to_assign_stmt(self.number_index);
-                    let number = Number::from_index(self.number_index);
-                    self.variables.insert(ident, Value::Number(number));
-                    self.number_index += 1;
+                    let assign_stmt = number.to_assign_stmt(&ident);
+                    self.variables
+                        .insert(ident.to_string(), Value::Number(Number::from_ident(&ident)));
                     Ok(vec![assign_stmt])
                 }
                 Value::Array(array) => {
-                    let assign_stmts = array.to_assign_stmts(self.array_index);
-                    let array = Array::from_index(self.array_index, assign_stmts.len());
-                    self.variables.insert(ident, Value::Array(array));
-                    self.array_index += 1;
+                    let assign_stmts = array.to_assign_stmts(&ident);
+                    self.variables.insert(
+                        ident.to_string(),
+                        Value::Array(Array::from_ident(&ident, assign_stmts.len())),
+                    );
                     Ok(assign_stmts)
                 }
             }

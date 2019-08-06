@@ -1,8 +1,6 @@
 use crate::ast::{InfixOp, PrefixOp, YololNode};
 use crate::error::YolkError;
 
-const PREFIX: &str = "_yolk";
-
 /// Represents a Yolk value.
 #[derive(Debug, Clone)]
 pub enum Value {
@@ -73,30 +71,17 @@ impl Number {
         }
     }
 
-    /// Creates a Yolk number from an index.
-    ///
-    /// The number will contain an identifier based on the index.
-    pub fn from_index(index: u32) -> Number {
-        Number {
-            expr: YololNode::Ident(Number::format_ident(index)),
-        }
-    }
-
     /// Returns a Yolk number as a Yolol expression.
     pub fn as_expr(&self) -> YololNode {
         self.expr.clone()
     }
 
     // Converts a Yolk number to a YOLOL assign statement.
-    pub fn to_assign_stmt(&self, index: u32) -> YololNode {
+    pub fn to_assign_stmt(&self, ident: &str) -> YololNode {
         YololNode::AssignStmt {
-            ident: Number::format_ident(index),
+            ident: ident.to_string(),
             expr: Box::new(self.as_expr()),
         }
-    }
-
-    fn format_ident(index: u32) -> String {
-        format!("{}_{}", PREFIX, index)
     }
 
     fn apply_prefix_op(&self, op: &PrefixOp) -> Number {
@@ -126,6 +111,15 @@ pub struct Array {
 }
 
 impl Array {
+    // Creates a Yolk array from an identifier.
+    pub fn from_ident(ident: &str, size: usize) -> Array {
+        let mut numbers = Vec::new();
+        for i in 0..size {
+            numbers.push(Number::from_ident(&format!("{}_{}", ident, i)));
+        }
+        Array { numbers: numbers }
+    }
+
     // Creates a Yolk array from Yolk numbers.
     pub fn from_numbers(numbers: &[Number]) -> Array {
         Array {
@@ -133,27 +127,14 @@ impl Array {
         }
     }
 
-    /// Creates an indirect Yolk array from an index.
-    ///
-    /// The array will contain identifiers based on the index.
-    pub fn from_index(index: u32, size: usize) -> Array {
-        let mut numbers = Vec::new();
-        for elem_index in 0..size {
-            numbers.push(Number {
-                expr: YololNode::Ident(Array::format_ident(index, elem_index)),
-            })
-        }
-        Array { numbers: numbers }
-    }
-
     // Converts a Yolk array to Yolol assign statements.
     //
     // The number of statements will be equal to the length of the array.
-    pub fn to_assign_stmts(&self, index: u32) -> Vec<YololNode> {
+    pub fn to_assign_stmts(&self, ident: &str) -> Vec<YololNode> {
         let mut assign_stmts = Vec::new();
         for (elem_index, number) in self.numbers.iter().enumerate() {
             assign_stmts.push(YololNode::AssignStmt {
-                ident: Array::format_ident(index, elem_index),
+                ident: format!("{}_{}", ident, elem_index),
                 expr: Box::new(number.as_expr()),
             });
         }
@@ -169,9 +150,5 @@ impl Array {
                 .map(|(m, n)| m.apply_infix_op(op, n))
                 .collect(),
         }
-    }
-
-    fn format_ident(index: u32, elem_index: usize) -> String {
-        format!("{}_{}_{}", PREFIX, index, elem_index)
     }
 }
