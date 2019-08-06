@@ -44,7 +44,7 @@ v_0=1 v_1=2 v_2=4 v_3=8
 let v = [1, 2, 4, 8];
 ```
 
-### Efficiency
+#### Efficiency
 
 WIP
 
