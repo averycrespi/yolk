@@ -1,6 +1,6 @@
 <h1 align="center">
     <br>
-    <img src="https://raw.githubusercontent.com/averycrespi/yolk/master/resources/yolk.png" width="200"</img>
+    <img src="https://raw.githubusercontent.com/averycrespi/yolk/master/resources/yolk.png" width="150"</img>
     <br>
     Yolk
     <br>
