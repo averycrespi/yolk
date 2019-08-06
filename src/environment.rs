@@ -114,6 +114,8 @@ impl Environment {
         let ident = ident.to_string();
         if self.exports.contains(&ident) {
             Err(YolkError::DuplicateExport(ident))
+        } else if self.imports.contains(&ident) {
+            Err(YolkError::ImportedExport(ident))
         } else if !self.variables.contains_key(&ident) {
             Err(YolkError::UndefinedVariable(ident))
         } else {
