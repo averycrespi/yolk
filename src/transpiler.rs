@@ -14,20 +14,45 @@ pub fn transpile(stmts: &[YolkNode]) -> Result<Vec<YololNode>, YolkError> {
     let mut assigns = Vec::new();
     for stmt in stmts {
         match stmt {
-            YolkNode::ImportStmt { ident } => env.import(&ident)?,
+            YolkNode::ImportStmt { source, ident } => {
+                env.import(&ident).map_err(|e| YolkError::WithStmt {
+                    stmt: source.to_string(),
+                    error: Box::new(e),
+                })?
+            }
             YolkNode::DefineStmt {
+                source,
                 ident,
                 params,
                 body,
             } => {
                 let function = Function::new(&ident, params, &*body)?;
-                env.define(&ident, &function)?;
+                env.define(&ident, &function)
+                    .map_err(|e| YolkError::WithStmt {
+                        stmt: source.to_string(),
+                        error: Box::new(e),
+                    })?;
             }
-            YolkNode::LetStmt { ident, expr } => {
+            YolkNode::LetStmt {
+                source,
+                ident,
+                expr,
+            } => {
                 let value = expr_to_value(&env, &*expr)?;
-                assigns.extend(env.let_value(&ident, &value)?);
+                assigns.extend(
+                    env.let_value(&ident, &value)
+                        .map_err(|e| YolkError::WithStmt {
+                            stmt: source.to_string(),
+                            error: Box::new(e),
+                        })?,
+                );
             }
-            YolkNode::ExportStmt { ident } => env.export(&ident)?,
+            YolkNode::ExportStmt { source, ident } => {
+                env.export(&ident).map_err(|e| YolkError::WithStmt {
+                    stmt: source.to_string(),
+                    error: Box::new(e),
+                })?
+            }
             _ => panic!("unexpected statement: {:?}", stmt),
         }
     }

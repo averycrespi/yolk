@@ -4,6 +4,9 @@ use std::fmt;
 /// Represents a general Yolk error.
 #[derive(Debug, Clone)]
 pub enum YolkError {
+    // Wrapped errors
+    WithStmt { stmt: String, error: Box<YolkError> },
+
     // Import errors
     ImportExisting(String),
     ImportKeyword(String),
@@ -42,6 +45,7 @@ impl error::Error for YolkError {}
 impl fmt::Display for YolkError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            YolkError::WithStmt { stmt, error } => write!(f, "{}\nwith statement: {}", error, stmt),
             YolkError::ImportExisting(variable) => {
                 write!(f, "cannot import existing variable: {}", variable)
             }

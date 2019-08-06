@@ -4,18 +4,22 @@ use std::fmt;
 #[derive(Debug, Clone)]
 pub enum YolkNode {
     ImportStmt {
+        source: String,
         ident: String,
     },
     DefineStmt {
+        source: String,
         ident: String,
         params: Vec<String>,
         body: Box<YolkNode>,
     },
     LetStmt {
+        source: String,
         ident: String,
         expr: Box<YolkNode>,
     },
     ExportStmt {
+        source: String,
         ident: String,
     },
     PrefixExpr {
