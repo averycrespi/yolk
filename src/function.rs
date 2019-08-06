@@ -13,10 +13,10 @@ pub struct Function {
 
 impl Function {
     /// Creates a new Yolk function.
-    pub fn new(ident: &str, params: Vec<String>, body: &YolkNode) -> Result<Function, YolkError> {
+    pub fn new(ident: &str, params: &[String], body: &YolkNode) -> Result<Function, YolkError> {
         let function = Function {
             ident: ident.to_string(),
-            params: params.clone(),
+            params: params.to_vec(),
             body: body.clone(),
         };
         function.check_params()?;
@@ -67,7 +67,9 @@ impl Function {
     }
 
     /// Calls a function with arguments.
-    pub fn call(&self, args: Vec<YolkNode>) -> Result<YolkNode, YolkError> {
+    ///
+    /// Returns a YolkNode where the function parameters have been replaced with arguments.
+    pub fn call(&self, args: &[YolkNode]) -> Result<YolkNode, YolkError> {
         //TODO: implement
         Err(YolkError::NotImplemented)
     }

@@ -9,7 +9,7 @@ use crate::value::{Array, Number, Value};
 /// # Panics
 ///
 /// Panics if any Yolk statements are malformed.
-pub fn transpile(stmts: Vec<YolkNode>) -> Result<Vec<YololNode>, YolkError> {
+pub fn transpile(stmts: &[YolkNode]) -> Result<Vec<YololNode>, YolkError> {
     let mut env = Environment::new();
     let mut assigns = Vec::new();
     for stmt in stmts {
@@ -42,7 +42,7 @@ fn expr_to_value(env: &Environment, expr: &YolkNode) -> Result<Value, YolkError>
         }
         YolkNode::CallExpr { ident, args } => {
             let function = env.function(ident)?;
-            let expr = function.call(args.to_vec())?;
+            let expr = function.call(args)?;
             expr_to_value(env, &expr)
         }
         YolkNode::InfixExpr { lhs, op, rhs } => {
@@ -61,7 +61,7 @@ fn expr_to_value(env: &Environment, expr: &YolkNode) -> Result<Value, YolkError>
                     Value::Array(_) => return Err(YolkError::NestedArrays),
                 }
             }
-            Ok(Value::Array(Array::from_numbers(numbers)))
+            Ok(Value::Array(Array::from_numbers(&numbers)))
         }
         _ => panic!("unexpected expression: {:?}", expr),
     }

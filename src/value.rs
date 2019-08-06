@@ -127,8 +127,10 @@ pub struct Array {
 
 impl Array {
     // Creates a Yolk array from Yolk numbers.
-    pub fn from_numbers(numbers: Vec<Number>) -> Array {
-        Array { numbers: numbers }
+    pub fn from_numbers(numbers: &[Number]) -> Array {
+        Array {
+            numbers: numbers.to_vec(),
+        }
     }
 
     /// Creates an indirect Yolk array from an index.
