@@ -34,34 +34,6 @@ pub enum YolkNode {
     Array(Vec<YolkNode>),
 }
 
-impl YolkNode {
-    // Recursively finds Yolk AST nodes that satisfy a predicate function.
-    pub fn find(&self, nodes: &mut Vec<YolkNode>, p: &Fn(YolkNode) -> bool) {
-        if p(self.clone()) {
-            nodes.push(self.clone());
-        }
-        match self {
-            YolkNode::LetStmt { ident: _, expr } => expr.find(nodes, p),
-            YolkNode::PrefixExpr { op: _, expr } => expr.find(nodes, p),
-            YolkNode::CallExpr { ident: _, args } => {
-                for arg in args.iter() {
-                    arg.find(nodes, p);
-                }
-            }
-            YolkNode::InfixExpr { lhs, op: _, rhs } => {
-                lhs.find(nodes, p);
-                rhs.find(nodes, p);
-            }
-            YolkNode::Array(exprs) => {
-                for expr in exprs.iter() {
-                    expr.find(nodes, p);
-                }
-            }
-            _ => (),
-        }
-    }
-}
-
 /// Represents a Yolol AST node.
 #[derive(Debug, Clone)]
 pub enum YololNode {

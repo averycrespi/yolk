@@ -6,6 +6,7 @@ use std::collections::HashSet;
 /// Represents a Yolk function.
 #[derive(Debug, Clone)]
 pub struct Function {
+    ident: String,
     params: Vec<String>,
     body: YolkNode,
 }
@@ -13,60 +14,54 @@ pub struct Function {
 impl Function {
     /// Creates a new Yolk function.
     pub fn new(ident: &str, params: Vec<String>, body: &YolkNode) -> Result<Function, YolkError> {
-        Function::check_params(ident, params.clone())?;
-        Function::check_calls(ident, body)?;
-        Function::check_locals(&ident, params.clone(), body)?;
-        Ok(Function {
+        let function = Function {
+            ident: ident.to_string(),
             params: params.clone(),
             body: body.clone(),
-        })
+        };
+        function.check_params()?;
+        function.check_node(&function.body)?;
+        Ok(function)
     }
 
-    fn check_params(ident: &str, params: Vec<String>) -> Result<(), YolkError> {
-        let mut set = HashSet::new();
-        let is_unique = params.iter().all(move |x| set.insert(x));
-        if is_unique {
+    fn check_params(&self) -> Result<(), YolkError> {
+        let mut uniq = HashSet::new();
+        if self.params.iter().all(move |x| uniq.insert(x)) {
             Ok(())
         } else {
-            Err(YolkError::DuplicateParams(ident.to_string()))
+            Err(YolkError::DuplicateParams(self.ident.to_string()))
         }
     }
 
-    fn check_calls(ident: &str, body: &YolkNode) -> Result<(), YolkError> {
-        let mut calls = Vec::new();
-        body.find(&mut calls, &|n| match n {
-            YolkNode::CallExpr { ident: _, args: _ } => true,
-            _ => false,
-        });
-        for call in calls.iter() {
-            if let YolkNode::CallExpr {
-                ident: call_ident,
-                args: _,
-            } = call
-            {
-                if ident == call_ident {
-                    return Err(YolkError::RecursiveCall(ident.to_string()));
+    fn check_node(&self, node: &YolkNode) -> Result<(), YolkError> {
+        match node {
+            YolkNode::PrefixExpr { op: _, expr } => self.check_node(expr)?,
+            YolkNode::CallExpr { ident: id, args } => {
+                for arg in args.iter() {
+                    self.check_node(arg)?;
+                }
+                if self.ident == id.to_string() {
+                    return Err(YolkError::RecursiveCall(self.ident.to_string()));
                 }
             }
-        }
-        Ok(())
-    }
-
-    fn check_locals(ident: &str, params: Vec<String>, body: &YolkNode) -> Result<(), YolkError> {
-        let mut locals = Vec::new();
-        body.find(&mut locals, &|n| match n {
-            YolkNode::Ident(_) => true,
-            _ => false,
-        });
-        for local in locals.iter() {
-            if let YolkNode::Ident(local_ident) = local {
-                if !params.contains(local_ident) {
+            YolkNode::InfixExpr { lhs, op: _, rhs } => {
+                self.check_node(lhs)?;
+                self.check_node(rhs)?;
+            }
+            YolkNode::Ident(s) => {
+                if !self.params.contains(s) {
                     return Err(YolkError::UndefinedLocalVariable {
-                        function: ident.to_string(),
-                        variable: local_ident.to_string(),
+                        function: self.ident.to_string(),
+                        variable: s.to_string(),
                     });
                 }
             }
+            YolkNode::Array(exprs) => {
+                for expr in exprs.iter() {
+                    self.check_node(expr)?;
+                }
+            }
+            _ => (),
         }
         Ok(())
     }
