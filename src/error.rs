@@ -6,6 +6,7 @@ use std::fmt;
 /// Represents a general Yolk error.
 #[derive(Debug, Clone)]
 pub enum YolkError {
+    ConflictingExport(String),
     DuplicateExport(String),
     DuplicateImport(String),
     DuplicateParams(String),
@@ -27,6 +28,7 @@ impl error::Error for YolkError {}
 impl fmt::Display for YolkError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            YolkError::ConflictingExport(ident) => write!(f, "conflicting export: {}", ident),
             YolkError::DuplicateExport(ident) => write!(f, "duplicate export: {}", ident),
             YolkError::DuplicateImport(ident) => write!(f, "duplicate import: {}", ident),
             YolkError::DuplicateParams(ident) => {

@@ -109,6 +109,14 @@ impl Environment {
             Err(YolkError::ImportedExport(ident))
         } else if !self.variables.contains_key(&ident) {
             Err(YolkError::UndefinedVariable(ident))
+        } else if self
+            .exports
+            .iter()
+            .map(|s| s.to_lowercase())
+            .collect::<Vec<String>>()
+            .contains(&ident.to_lowercase())
+        {
+            Err(YolkError::ConflictingExport(ident))
         } else {
             self.exports.push(ident);
             Ok(())
