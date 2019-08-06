@@ -9,10 +9,50 @@
 <h4 align="center">Numerical computing for <a href="https://wiki.starbasegame.com/index.php/YOLOL">YOLOL</a>.</h4>
 
 <p align="center">
+    <a href="#what-is-yolk">What</a> •
+    <a href="#why-should-i-use-yolk">Why</a> •
+    <a href="#how-do-i-get-started">How</a> •
+    <a href="#license">License</a> •
     <a href="#attribution">Attribution</a> •
 </p>
 
-WIP
+**Note: Yolk is currently in development.**
+
+## What is Yolk?
+
+Yolk is a domain-specific language that transpiles to YOLOL.
+
+Yolk specializes in working with **numbers** and **arrays**.
+
+## Why should I use Yolk?
+
+#### Simplicity
+
+#### Convenience
+
+Yolol doesn't support arrays, so each element must be a separate variable.
+
+Yolk handles array expansion so that you don't have to.
+
+```
+// YOLOL
+v_0=1 v_1=2 v_2=4 v_3=8
+
+// Yolk
+let v = [1, 2, 4, 8];
+```
+
+### Efficiency
+
+**WIP**
+
+## How do I get started?
+
+**WIP**
+
+## License
+
+MIT
 
 ## Attribution
 
