@@ -17,6 +17,8 @@ pub enum YolkError {
     MismatchingArrays(InfixOp),
     NestedArrays,
     RecursiveCall(String),
+    ReservedKeyword(String),
+    ReservedBuiltin(String),
     UndefinedFunction(String),
     UndefinedLocalVariable { function: String, variable: String },
     UndefinedVariable(String),
@@ -54,6 +56,12 @@ impl fmt::Display for YolkError {
             YolkError::NestedArrays => write!(f, "cannot nest arrays"),
             YolkError::RecursiveCall(ident) => {
                 write!(f, "cannot recursively call function: {}", ident)
+            }
+            YolkError::ReservedKeyword(keyword) => {
+                write!(f, "cannot assign to reserved keyword: {}", keyword)
+            }
+            YolkError::ReservedBuiltin(builtin) => {
+                write!(f, "cannot define reserved builtin: {}", builtin)
             }
             YolkError::UndefinedFunction(ident) => write!(f, "undefined function: {}", ident),
             YolkError::UndefinedLocalVariable { function, variable } => write!(

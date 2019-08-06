@@ -16,6 +16,10 @@ pub struct Environment {
     functions: HashMap<String, Function>,
     // Stores the identifiers of exported variables
     exports: Vec<String>,
+    // Stores the identifiers of reserved keywords
+    keywords: Vec<String>,
+    // Stores the identifiers of reserved builtins
+    builtins: Vec<String>,
 }
 
 impl Environment {
@@ -26,6 +30,13 @@ impl Environment {
             variables: HashMap::new(),
             functions: HashMap::new(),
             exports: Vec::new(),
+            keywords: vec![
+                "import".to_string(),
+                "define".to_string(),
+                "let".to_string(),
+                "export".to_string(),
+            ],
+            builtins: vec!["sum".to_string(), "product".to_string()],
         }
     }
 
@@ -54,6 +65,8 @@ impl Environment {
             Err(YolkError::DuplicateImport(ident))
         } else if self.variables.contains_key(&ident) {
             Err(YolkError::ExistingImport(ident))
+        } else if self.keywords.contains(&ident) {
+            Err(YolkError::ReservedKeyword(ident))
         } else {
             self.imports.push(ident.clone());
             self.variables
@@ -67,6 +80,8 @@ impl Environment {
         let ident = ident.to_string();
         if self.functions.contains_key(&ident) {
             Err(YolkError::ExistingFunction(ident))
+        } else if self.builtins.contains(&ident) {
+            Err(YolkError::ReservedBuiltin(ident))
         } else {
             self.functions.insert(ident, function.to_owned());
             Ok(())
@@ -80,6 +95,8 @@ impl Environment {
         let ident = ident.to_string();
         if self.imports.contains(&ident) || self.variables.contains_key(&ident) {
             Err(YolkError::ExistingVariable(ident))
+        } else if self.keywords.contains(&ident) {
+            Err(YolkError::ReservedKeyword(ident))
         } else if self
             .variables
             .iter()
