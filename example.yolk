@@ -1,1 +1,7 @@
-let A = [0, 1, 2];
+import bar;
+
+define square_half(A) = (A / 2) ^ 2;
+
+let foo = square_half(1 + 2 + 3);
+
+export foo;
