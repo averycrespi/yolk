@@ -52,9 +52,9 @@ impl Function {
             // Check for undefined local variables
             YolkNode::Ident(s) => {
                 if !self.params.contains(s) {
-                    return Err(YolkError::UndefinedLocalVariable {
+                    return Err(YolkError::GetUndefinedLocal {
                         function: self.ident.to_string(),
-                        variable: s.to_string(),
+                        local: s.to_string(),
                     });
                 }
             }

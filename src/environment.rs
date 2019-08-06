@@ -45,7 +45,7 @@ impl Environment {
         let ident = ident.to_string();
         match self.variables.get(&ident) {
             Some(value) => Ok(value.clone()),
-            None => Err(YolkError::UndefinedVariable(ident)),
+            None => Err(YolkError::GetUndefinedVariable(ident)),
         }
     }
 
@@ -54,7 +54,7 @@ impl Environment {
         let ident = ident.to_string();
         match self.functions.get(&ident) {
             Some(function) => Ok(function.clone()),
-            None => Err(YolkError::UndefinedFunction(ident)),
+            None => Err(YolkError::GetUndefinedFunction(ident)),
         }
     }
 
@@ -62,11 +62,11 @@ impl Environment {
     pub fn import(&mut self, ident: &str) -> Result<(), YolkError> {
         let ident = ident.to_string();
         if self.imports.contains(&ident) {
-            Err(YolkError::DuplicateImport(ident))
+            Err(YolkError::ImportTwice(ident))
         } else if self.variables.contains_key(&ident) {
-            Err(YolkError::ExistingImport(ident))
+            Err(YolkError::ImportExisting(ident))
         } else if self.keywords.contains(&ident) {
-            Err(YolkError::ReservedKeyword(ident))
+            Err(YolkError::ImportKeyword(ident))
         } else {
             self.imports.push(ident.clone());
             self.variables
@@ -79,9 +79,9 @@ impl Environment {
     pub fn define(&mut self, ident: &str, function: &Function) -> Result<(), YolkError> {
         let ident = ident.to_string();
         if self.functions.contains_key(&ident) {
-            Err(YolkError::ExistingFunction(ident))
+            Err(YolkError::RedefineFunction(ident))
         } else if self.builtins.contains(&ident) {
-            Err(YolkError::ReservedBuiltin(ident))
+            Err(YolkError::DefineBuiltin(ident))
         } else {
             self.functions.insert(ident, function.to_owned());
             Ok(())
@@ -94,9 +94,9 @@ impl Environment {
     pub fn let_value(&mut self, ident: &str, value: &Value) -> Result<Vec<YololNode>, YolkError> {
         let ident = ident.to_string();
         if self.imports.contains(&ident) || self.variables.contains_key(&ident) {
-            Err(YolkError::ExistingVariable(ident))
+            Err(YolkError::ReassignVariable(ident))
         } else if self.keywords.contains(&ident) {
-            Err(YolkError::ReservedKeyword(ident))
+            Err(YolkError::AssignToKeyword(ident))
         } else if self
             .variables
             .iter()
@@ -104,7 +104,8 @@ impl Environment {
             .collect::<Vec<String>>()
             .contains(&ident.to_lowercase())
         {
-            Err(YolkError::ConflictingVariable(ident))
+            //TODO: better error information here
+            Err(YolkError::AssignConflict(ident))
         } else {
             match value {
                 Value::Number(number) => {
@@ -129,11 +130,9 @@ impl Environment {
     pub fn export(&mut self, ident: &str) -> Result<(), YolkError> {
         let ident = ident.to_string();
         if self.exports.contains(&ident) {
-            Err(YolkError::DuplicateExport(ident))
-        } else if self.imports.contains(&ident) {
-            Err(YolkError::ImportedExport(ident))
+            Err(YolkError::ExportTwice(ident))
         } else if !self.variables.contains_key(&ident) {
-            Err(YolkError::UndefinedVariable(ident))
+            Err(YolkError::GetUndefinedVariable(ident))
         } else {
             self.exports.push(ident);
             Ok(())

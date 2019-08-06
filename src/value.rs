@@ -41,7 +41,7 @@ impl Value {
             }
             (Value::Array(lhs), Value::Array(rhs)) => {
                 if lhs.numbers.len() != rhs.numbers.len() {
-                    Err(YolkError::MismatchingArrays(op.clone()))
+                    Err(YolkError::MismatchedArrays)
                 } else {
                     Ok(Value::Array(lhs.apply_infix_op(op, &rhs)))
                 }

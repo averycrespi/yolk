@@ -1,28 +1,40 @@
-use crate::ast::InfixOp;
-
 use std::error;
 use std::fmt;
 
 /// Represents a general Yolk error.
 #[derive(Debug, Clone)]
 pub enum YolkError {
-    ConflictingVariable(String),
-    DuplicateExport(String),
-    DuplicateImport(String),
+    // Import errors
+    ImportExisting(String),
+    ImportKeyword(String),
+    ImportTwice(String),
+
+    // Define errors
+    DefineBuiltin(String),
+    RedefineFunction(String),
+
+    // Assign errors
+    AssignConflict(String),
+    AssignToKeyword(String),
+    ReassignVariable(String),
+
+    // Export errors
+    ExportTwice(String),
+    ExportUndefined(String),
+
+    // Access errors
+    GetUndefinedFunction(String),
+    GetUndefinedLocal { function: String, local: String },
+    GetUndefinedVariable(String),
+
+    // Function errors
     DuplicateParams(String),
-    ExistingFunction(String),
-    ExistingImport(String),
-    ExistingVariable(String),
-    ImportedExport(String),
-    MismatchingArrays(InfixOp),
-    NestedArrays,
     RecursiveCall(String),
-    ReservedKeyword(String),
-    ReservedBuiltin(String),
-    UndefinedFunction(String),
-    UndefinedLocalVariable { function: String, variable: String },
-    UndefinedVariable(String),
     WrongNumberOfArgs(String),
+
+    // Value errors
+    MismatchedArrays,
+    NestedArrays,
 }
 
 impl error::Error for YolkError {}
@@ -30,49 +42,59 @@ impl error::Error for YolkError {}
 impl fmt::Display for YolkError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            YolkError::ConflictingVariable(ident) => write!(f, "conflicting variable: {}", ident),
-            YolkError::DuplicateExport(ident) => write!(f, "duplicate export: {}", ident),
-            YolkError::DuplicateImport(ident) => write!(f, "duplicate import: {}", ident),
-            YolkError::DuplicateParams(ident) => {
-                write!(f, "function: {} has duplicate parameters", ident)
+            YolkError::ImportExisting(variable) => {
+                write!(f, "cannot import existing variable: {}", variable)
             }
-            YolkError::ExistingFunction(ident) => {
-                write!(f, "cannot redefine existing function: {}", ident)
+            YolkError::ImportKeyword(keyword) => {
+                write!(f, "cannot import reserved keyword: {}", keyword)
             }
-            YolkError::ExistingImport(ident) => {
-                write!(f, "cannot import existing variable: {}", ident)
+            YolkError::ImportTwice(variable) => {
+                write!(f, "cannot import variable twice: {}", variable)
             }
-            YolkError::ExistingVariable(ident) => {
-                write!(f, "cannot reassign existing variable: {}", ident)
+            YolkError::DefineBuiltin(builtin) => {
+                write!(f, "cannot define builtin function: {}", builtin)
             }
-            YolkError::ImportedExport(ident) => {
-                write!(f, "cannot export imported variable: {}", ident)
+            YolkError::RedefineFunction(function) => {
+                write!(f, "cannot redefine existing function: {}", function)
             }
-            YolkError::MismatchingArrays(op) => write!(
-                f,
-                "cannot apply operation: {:?} to arrays of different lengths",
-                op
-            ),
-            YolkError::NestedArrays => write!(f, "cannot nest arrays"),
-            YolkError::RecursiveCall(ident) => {
-                write!(f, "cannot recursively call function: {}", ident)
+            YolkError::AssignConflict(variable) => {
+                write!(f, "cannot assign to conflicting variable: {}", variable)
             }
-            YolkError::ReservedKeyword(keyword) => {
+            YolkError::AssignToKeyword(keyword) => {
                 write!(f, "cannot assign to reserved keyword: {}", keyword)
             }
-            YolkError::ReservedBuiltin(builtin) => {
-                write!(f, "cannot define reserved builtin: {}", builtin)
+            YolkError::ReassignVariable(variable) => {
+                write!(f, "cannot reassign existing variable: {}", variable)
             }
-            YolkError::UndefinedFunction(ident) => write!(f, "undefined function: {}", ident),
-            YolkError::UndefinedLocalVariable { function, variable } => write!(
+            YolkError::ExportTwice(variable) => {
+                write!(f, "cannot export variable twice: {}", variable)
+            }
+            YolkError::ExportUndefined(variable) => {
+                write!(f, "cannot export undefined variable: {}", variable)
+            }
+            YolkError::GetUndefinedFunction(function) => {
+                write!(f, "undefined function: {}", function)
+            }
+            YolkError::GetUndefinedLocal { function, local } => {
+                write!(f, "undefined local: {} in function: {}", local, function)
+            }
+            YolkError::GetUndefinedVariable(variable) => {
+                write!(f, "undefined variable: {}", variable)
+            }
+            YolkError::DuplicateParams(function) => {
+                write!(f, "duplicate parameters in function: {}", function)
+            }
+            YolkError::RecursiveCall(function) => {
+                write!(f, "recursive call in function: {}", function)
+            }
+            YolkError::WrongNumberOfArgs(function) => {
+                write!(f, "wrong number of args for function: {}", function)
+            }
+            YolkError::MismatchedArrays => write!(
                 f,
-                "variable: {} is undefined in scope of function: {}",
-                variable, function
+                "cannot perform operation on arrays with different lengths"
             ),
-            YolkError::UndefinedVariable(ident) => write!(f, "undefined variable: {}", ident),
-            YolkError::WrongNumberOfArgs(ident) => {
-                write!(f, "wrong number of arguments for function: {}", ident)
-            }
+            YolkError::NestedArrays => write!(f, "cannot create nested arrays"),
         }
     }
 }
