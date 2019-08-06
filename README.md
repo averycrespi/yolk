@@ -13,7 +13,7 @@
     <a href="#why-should-i-use-yolk">Why</a> •
     <a href="#how-do-i-get-started">How</a> •
     <a href="#license">License</a> •
-    <a href="#attribution">Attribution</a> •
+    <a href="#attribution">Attribution</a>
 </p>
 
 **Warning: Yolk is currently in development. Things may break at any time!**
