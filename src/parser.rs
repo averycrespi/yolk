@@ -1,3 +1,4 @@
+use pest::error::Error;
 use pest::Parser;
 
 use crate::ast::{InfixOp, PrefixOp, YolkNode};
@@ -11,10 +12,9 @@ pub struct YolkParser;
 /// # Panics
 ///
 /// Panics if the source text is invalid or any statements are malformed.
-pub fn parse(source: &str) -> Vec<YolkNode> {
+pub fn parse(source: &str) -> Result<Vec<YolkNode>, Error<Rule>> {
     let mut ast = vec![];
-    //TODO: return error instead of panicking
-    let pairs = YolkParser::parse(Rule::program, source).unwrap_or_else(|e| panic!("{}", e));
+    let pairs = YolkParser::parse(Rule::program, source)?;
     for pair in pairs {
         match pair.as_rule() {
             Rule::import_stmt => ast.push(parse_import_stmt(pair)),
@@ -25,7 +25,7 @@ pub fn parse(source: &str) -> Vec<YolkNode> {
             _ => panic!("unexpected pair: {:?}", pair),
         }
     }
-    ast
+    Ok(ast)
 }
 
 fn parse_import_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
