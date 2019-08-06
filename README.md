@@ -16,7 +16,7 @@
     <a href="#attribution">Attribution</a> •
 </p>
 
-# Yolk is currently in development
+**Warning: Yolk is currently in development. Things may break at any time!**
 
 ## What is Yolk?
 
