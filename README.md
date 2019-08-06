@@ -16,4 +16,4 @@ WIP
 
 ## Attribution
 
-Logo derived from: yolk by David from the Noun Project
+Logo derived from: Egg by David from the Noun Project
