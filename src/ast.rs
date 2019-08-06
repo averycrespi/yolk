@@ -1,3 +1,5 @@
+use std::fmt;
+
 /// Represents a Yolk AST node.
 #[derive(Debug, Clone)]
 pub enum YolkNode {
@@ -54,6 +56,18 @@ pub enum YololNode {
     Literal(f64),
 }
 
+impl fmt::Display for YololNode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            YololNode::AssignStmt { ident, expr } => write!(f, "{}={}", ident, expr),
+            YololNode::PrefixExpr { op, expr } => write!(f, "{}({})", op, expr),
+            YololNode::InfixExpr { lhs, op, rhs } => write!(f, "({}){}({})", lhs, op, rhs),
+            YololNode::Ident(s) => write!(f, "{}", s),
+            YololNode::Literal(n) => write!(f, "{}", n),
+        }
+    }
+}
+
 /// Represents a prefix operation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PrefixOp {
@@ -66,6 +80,22 @@ pub enum PrefixOp {
     Asin,
     Acos,
     Atan,
+}
+
+impl fmt::Display for PrefixOp {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            PrefixOp::Not => write!(f, "not"),
+            PrefixOp::Abs => write!(f, "abs"),
+            PrefixOp::Sqrt => write!(f, "sqrt"),
+            PrefixOp::Sin => write!(f, "sin"),
+            PrefixOp::Cos => write!(f, "cos"),
+            PrefixOp::Tan => write!(f, "tan"),
+            PrefixOp::Asin => write!(f, "asin"),
+            PrefixOp::Acos => write!(f, "acos"),
+            PrefixOp::Atan => write!(f, "atan"),
+        }
+    }
 }
 
 /// Represents an infix operation.
@@ -85,4 +115,25 @@ pub enum InfixOp {
     NotEqual,
     And,
     Or,
+}
+
+impl fmt::Display for InfixOp {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            InfixOp::Add => write!(f, "+"),
+            InfixOp::Sub => write!(f, "-"),
+            InfixOp::Mul => write!(f, "*"),
+            InfixOp::Div => write!(f, "/"),
+            InfixOp::Mod => write!(f, "%"),
+            InfixOp::Exp => write!(f, "^"),
+            InfixOp::LessThan => write!(f, "<"),
+            InfixOp::LessEqual => write!(f, "<="),
+            InfixOp::GreaterThan => write!(f, ">"),
+            InfixOp::GreaterEqual => write!(f, ">="),
+            InfixOp::Equal => write!(f, "=="),
+            InfixOp::NotEqual => write!(f, "!="),
+            InfixOp::And => write!(f, "and"),
+            InfixOp::Or => write!(f, "or"),
+        }
+    }
 }
