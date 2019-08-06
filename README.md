@@ -32,7 +32,7 @@ WIP
 
 #### Convenience
 
-Yolol doesn't support arrays, so each element must be a separate variable.
+YOLOL doesn't support arrays, so each element must be a separate variable.
 
 Yolk handles array expansion so that you don't have to.
 
