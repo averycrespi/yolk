@@ -16,7 +16,7 @@
     <a href="#attribution">Attribution</a> •
 </p>
 
-**Note: Yolk is currently in development.**
+# Yolk is currently in development
 
 ## What is Yolk?
 
@@ -27,6 +27,8 @@ Yolk specializes in working with **numbers** and **arrays**.
 ## Why should I use Yolk?
 
 #### Simplicity
+
+WIP
 
 #### Convenience
 
@@ -44,11 +46,11 @@ let v = [1, 2, 4, 8];
 
 ### Efficiency
 
-**WIP**
+WIP
 
 ## How do I get started?
 
-**WIP**
+WIP
 
 ## License
 
