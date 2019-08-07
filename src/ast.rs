@@ -41,7 +41,7 @@ pub enum YolkNode {
 }
 
 /// Represents a Yolol AST node.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum YololNode {
     AssignStmt {
         ident: String,

@@ -10,7 +10,7 @@ use crate::value::{Array, Number, Value};
 ///
 /// Panics if any Yolk statements are malformed.
 pub fn transpile(stmts: &[YolkNode]) -> Result<Vec<YololNode>, YolkError> {
-    //TODO: refactor
+    //TODO: refactor - split up YolkError internally?
     let mut env = Environment::new();
     let mut assigns = Vec::new();
     for stmt in stmts.iter() {

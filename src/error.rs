@@ -4,8 +4,6 @@ use std::fmt;
 /// Represents a general Yolk error.
 #[derive(Debug, Clone)]
 pub enum YolkError {
-    //TODO: expand to multiple types
-
     // Wrapped errors
     WithStmt { stmt: String, error: Box<YolkError> },
 

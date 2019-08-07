@@ -79,7 +79,14 @@ impl Number {
     }
 
     // Creates a Yolk number from a float.
+    //
+    // # Panics
+    //
+    // Panics if the float is NaN or infinite.
     pub fn from_float(float: f64) -> Number {
+        if float.is_nan() || float.is_infinite() {
+            panic!("cannot create number from float: {}", float);
+        }
         Number {
             expr: YololNode::Literal(float),
         }

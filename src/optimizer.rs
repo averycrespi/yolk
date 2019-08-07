@@ -1,83 +1,76 @@
-use crate::ast::YololNode;
+use crate::ast::{InfixOp, YololNode};
 
 use std::collections::HashMap;
 
 /// Optimizes Yolol assign statements.
 pub fn optimize(stmts: &[YololNode]) -> Vec<YololNode> {
-    // TODO: implement
-    let propagated = propagate_constants(stmts);
-    let folded = fold_constants(&propagated);
-    folded
+    let mut curr = stmts.to_vec();
+    loop {
+        let reduced = reduce_constants(&curr);
+        if reduced == curr {
+            break;
+        }
+        curr = reduced;
+    }
+    curr
 }
 
-fn propagate_constants(stmts: &[YololNode]) -> Vec<YololNode> {
-    let mut propagated = Vec::new();
+fn reduce_constants(stmts: &[YololNode]) -> Vec<YololNode> {
+    let mut reduced = Vec::new();
     let mut variables: HashMap<String, YololNode> = HashMap::new();
     for stmt in stmts.iter() {
         if let YololNode::AssignStmt { ident, expr } = stmt {
             variables.insert(ident.to_string(), *expr.clone());
-            propagated.push(propagate_node(&variables, stmt));
+            reduced.push(reduce_node(&variables, stmt));
         } else {
             panic!("expected Yolol assign statement, but got: {:?}", stmt);
         }
     }
-    propagated
+    reduced
 }
 
-fn propagate_node(variables: &HashMap<String, YololNode>, node: &YololNode) -> YololNode {
+fn reduce_node(vars: &HashMap<String, YololNode>, node: &YololNode) -> YololNode {
     match node {
         YololNode::AssignStmt { ident, expr } => YololNode::AssignStmt {
             ident: ident.to_string(),
-            expr: Box::new(propagate_node(variables, expr)),
-        },
-        YololNode::PrefixExpr { op, expr } => YololNode::PrefixExpr {
-            op: op.clone(),
-            expr: Box::new(propagate_node(variables, expr)),
-        },
-        YololNode::InfixExpr { lhs, op, rhs } => YololNode::InfixExpr {
-            lhs: Box::new(propagate_node(variables, lhs)),
-            op: op.clone(),
-            rhs: Box::new(propagate_node(variables, rhs)),
-        },
-        YololNode::Ident(s) => match variables.get(s) {
-            Some(YololNode::Literal(f)) => YololNode::Literal(f.clone()),
-            Some(node) => propagate_node(variables, node),
-            None => panic!("expected Yolol variable to be defined: {:?}", s),
-        },
-        YololNode::Literal(f) => YololNode::Literal(f.clone()),
-    }
-}
-
-fn fold_constants(stmts: &[YololNode]) -> Vec<YololNode> {
-    let mut folded = Vec::new();
-    for stmt in stmts.iter() {
-        if let YololNode::AssignStmt { ident: _, expr: _ } = stmt {
-            folded.push(fold_node(stmt));
-        } else {
-            panic!("expected Yolol assign statement, but got: {:?}", stmt);
-        }
-    }
-    folded
-}
-
-fn fold_node(node: &YololNode) -> YololNode {
-    match node {
-        YololNode::AssignStmt { ident, expr } => YololNode::AssignStmt {
-            ident: ident.to_string(),
-            expr: Box::new(fold_node(expr)),
+            expr: Box::new(reduce_node(vars, expr)),
         },
         //TODO: implement prefix folding
         YololNode::PrefixExpr { op, expr } => YololNode::PrefixExpr {
             op: op.clone(),
-            expr: Box::new(fold_node(expr)),
+            expr: Box::new(reduce_node(vars, expr)),
         },
-        //TODO: implement infix folding
-        YololNode::InfixExpr { lhs, op, rhs } => YololNode::InfixExpr {
-            lhs: Box::new(fold_node(lhs)),
-            op: op.clone(),
-            rhs: Box::new(fold_node(rhs)),
+        YololNode::InfixExpr { lhs, op, rhs } => match (*lhs.clone(), op, *rhs.clone()) {
+            // Fold `0 + n` and `n + 0` to `n`
+            (YololNode::Literal(f), InfixOp::Add, _) if f == 0.0 => *rhs.clone(),
+            (_, InfixOp::Add, YololNode::Literal(f)) if f == 0.0 => *lhs.clone(),
+            // Fold `n - 0` to `n`
+            (_, InfixOp::Sub, YololNode::Literal(f)) if f == 0.0 => *lhs.clone(),
+            // Fold `0 * n` and `n * 0` to `0`
+            (YololNode::Literal(f), InfixOp::Mul, _) if f == 0.0 => *lhs.clone(),
+            (_, InfixOp::Mul, YololNode::Literal(f)) if f == 0.0 => *rhs.clone(),
+            // Fold `1 * n` and `n * 1` to `n`
+            (YololNode::Literal(f), InfixOp::Mul, _) if f == 1.0 => *rhs.clone(),
+            (_, InfixOp::Mul, YololNode::Literal(f)) if f == 1.0 => *lhs.clone(),
+            // Fold `n / 1` to `n`
+            (_, InfixOp::Div, YololNode::Literal(f)) if f == 1.0 => *lhs.clone(),
+            // Fold `1 ^ n` to `1`
+            (YololNode::Literal(f), InfixOp::Exp, _) if f == 1.0 => *lhs.clone(),
+            // Fold `n ^ 1` to `n`
+            (_, InfixOp::Exp, YololNode::Literal(f)) if f == 1.0 => *lhs.clone(),
+            //TODO: implement literal binary folding
+            _ => YololNode::InfixExpr {
+                lhs: Box::new(reduce_node(vars, lhs)),
+                op: op.clone(),
+                rhs: Box::new(reduce_node(vars, rhs)),
+            },
         },
-        YololNode::Ident(s) => YololNode::Ident(s.to_string()),
+        // Propagate literals
+        YololNode::Ident(s) => match vars.get(s) {
+            Some(YololNode::Literal(f)) => YololNode::Literal(f.clone()),
+            Some(node) => reduce_node(vars, node),
+            None => panic!("expected Yolol variable to be defined: {:?}", s),
+        },
         YololNode::Literal(f) => YololNode::Literal(*f),
     }
 }
