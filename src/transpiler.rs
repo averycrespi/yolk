@@ -66,28 +66,8 @@ fn expr_to_value(env: &Environment, expr: &YolkNode) -> Result<Value, YolkError>
             Ok(value.apply_prefix_op(&op))
         }
         YolkNode::CallExpr { ident, args } => match ident.as_ref() {
-            "sum" => {
-                let mut values = Vec::new();
-                for arg in args.iter() {
-                    values.push(expr_to_value(env, arg)?);
-                }
-                Ok(Value::reduce(
-                    &values,
-                    &InfixOp::Add,
-                    &Number::from_float(0.0),
-                ))
-            }
-            "product" => {
-                let mut values = Vec::new();
-                for arg in args.iter() {
-                    values.push(expr_to_value(env, arg)?);
-                }
-                Ok(Value::reduce(
-                    &values,
-                    &InfixOp::Mul,
-                    &Number::from_float(1.0),
-                ))
-            }
+            "sum" => sum_to_value(env, args),
+            "product" => product_to_value(env, args),
             _ => {
                 let function = env.function(ident)?;
                 let expr = function.call(args)?;
@@ -114,4 +94,28 @@ fn expr_to_value(env: &Environment, expr: &YolkNode) -> Result<Value, YolkError>
         }
         _ => panic!("unexpected expression: {:?}", expr),
     }
+}
+
+fn sum_to_value(env: &Environment, args: &[YolkNode]) -> Result<Value, YolkError> {
+    let mut values = Vec::new();
+    for arg in args.iter() {
+        values.push(expr_to_value(env, arg)?);
+    }
+    Ok(Value::reduce(
+        &values,
+        &InfixOp::Add,
+        &Number::from_float(0.0),
+    ))
+}
+
+fn product_to_value(env: &Environment, args: &[YolkNode]) -> Result<Value, YolkError> {
+    let mut values = Vec::new();
+    for arg in args.iter() {
+        values.push(expr_to_value(env, arg)?);
+    }
+    Ok(Value::reduce(
+        &values,
+        &InfixOp::Mul,
+        &Number::from_float(1.0),
+    ))
 }
