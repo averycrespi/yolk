@@ -9,8 +9,9 @@ license = "MIT"
 repository = "https://github.com/averycrespi/yolk"
 readme = "README.md"
 
-exclude = ["resources/*"]
+exclude = ["/resources/*"]
 
 [dependencies]
-pest = "2.0.0"
-pest_derive = "2.0.0"
+clap = "2.33.0"
+pest = "2.1.0"
+pest_derive = "2.1.0"

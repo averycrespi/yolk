@@ -1,11 +1,11 @@
-.PHONY: all doc open run
+.PHONY: all build doc run
 
 all: run
 
-doc:
-	cargo doc
+build:
+	cargo build
 
-open:
+doc:
 	cargo doc --open
 
 run:
