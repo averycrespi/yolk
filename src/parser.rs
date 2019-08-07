@@ -8,10 +8,6 @@ use crate::ast::{InfixOp, PrefixOp, YolkNode};
 pub struct YolkParser;
 
 /// Parses Yolk statements from source text.
-///
-/// # Panics
-///
-/// Panics if the source text is invalid or any statements are malformed.
 pub fn parse(source: &str) -> Result<Vec<YolkNode>, Error<Rule>> {
     let mut ast = vec![];
     let pairs = YolkParser::parse(Rule::program, source)?;
