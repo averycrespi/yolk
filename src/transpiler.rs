@@ -1,4 +1,4 @@
-use crate::ast::{YolkNode, YololNode};
+use crate::ast::{InfixOp, YolkNode, YololNode};
 use crate::environment::Environment;
 use crate::error::YolkError;
 use crate::function::Function;
@@ -65,11 +65,35 @@ fn expr_to_value(env: &Environment, expr: &YolkNode) -> Result<Value, YolkError>
             let value = expr_to_value(env, &expr)?;
             Ok(value.apply_prefix_op(&op))
         }
-        YolkNode::CallExpr { ident, args } => {
-            let function = env.function(ident)?;
-            let expr = function.call(args)?;
-            expr_to_value(env, &expr)
-        }
+        YolkNode::CallExpr { ident, args } => match ident.as_ref() {
+            "sum" => {
+                let mut values = Vec::new();
+                for arg in args.iter() {
+                    values.push(expr_to_value(env, arg)?);
+                }
+                Ok(Value::reduce(
+                    &values,
+                    &InfixOp::Add,
+                    &Number::from_float(0.0),
+                ))
+            }
+            "product" => {
+                let mut values = Vec::new();
+                for arg in args.iter() {
+                    values.push(expr_to_value(env, arg)?);
+                }
+                Ok(Value::reduce(
+                    &values,
+                    &InfixOp::Mul,
+                    &Number::from_float(1.0),
+                ))
+            }
+            _ => {
+                let function = env.function(ident)?;
+                let expr = function.call(args)?;
+                expr_to_value(env, &expr)
+            }
+        },
         YolkNode::InfixExpr { lhs, op, rhs } => {
             let lhs = expr_to_value(env, &lhs)?;
             let rhs = expr_to_value(env, &rhs)?;

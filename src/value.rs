@@ -48,6 +48,22 @@ impl Value {
             }
         }
     }
+
+    // Reduces values to a single Yolk number.
+    pub fn reduce(values: &[Value], op: &InfixOp, start: &Number) -> Value {
+        let mut result = start.clone();
+        for value in values.iter() {
+            match value {
+                Value::Number(number) => result = result.apply_infix_op(op, number),
+                Value::Array(array) => {
+                    for number in array.numbers.iter() {
+                        result = result.apply_infix_op(op, number);
+                    }
+                }
+            }
+        }
+        Value::Number(result)
+    }
 }
 
 /// Represents a Yolk number.
