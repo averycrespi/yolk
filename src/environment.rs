@@ -3,36 +3,36 @@ use crate::error::YolkError;
 use crate::function::Function;
 use crate::value::{Array, Number, Value};
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 /// Represents a Yolk program environment.
 #[derive(Debug, Clone)]
 pub struct Environment {
     // Stores the identifiers of imported variables
-    imports: Vec<String>,
+    imports: HashSet<String>,
     // Maps variable identifiers to values
     variables: HashMap<String, Value>,
     // Maps function identifiers to functions
     functions: HashMap<String, Function>,
     // Stores the identifiers of exported variables
-    exports: Vec<String>,
+    exports: HashSet<String>,
     // Stores the identifiers of reserved keywords
-    keywords: Vec<String>,
+    keywords: HashSet<String>,
     // Stores the identifiers of reserved builtins
-    builtins: Vec<String>,
+    builtins: HashSet<String>,
     // Stores variable identifiers that must not be eliminated
-    saved: Vec<String>,
+    saved: HashSet<String>,
 }
 
 impl Environment {
     /// Creates an empty environment.
     pub fn new() -> Environment {
         Environment {
-            imports: Vec::new(),
+            imports: HashSet::new(),
             variables: HashMap::new(),
             functions: HashMap::new(),
-            exports: Vec::new(),
-            keywords: vec![
+            exports: HashSet::new(),
+            keywords: [
                 "import".to_string(),
                 "define".to_string(),
                 "let".to_string(),
@@ -48,9 +48,15 @@ impl Environment {
                 "atan".to_string(),
                 "and".to_string(),
                 "or".to_string(),
-            ],
-            builtins: vec!["sum".to_string(), "product".to_string()],
-            saved: Vec::new(),
+            ]
+            .iter()
+            .cloned()
+            .collect(),
+            builtins: ["sum".to_string(), "product".to_string()]
+                .iter()
+                .cloned()
+                .collect(),
+            saved: HashSet::new(),
         }
     }
 
@@ -73,7 +79,7 @@ impl Environment {
     }
 
     /// Returs the variable identifiers that must not be eliminated.
-    pub fn saved(&self) -> Vec<String> {
+    pub fn saved(&self) -> HashSet<String> {
         self.saved.clone()
     }
 
@@ -87,7 +93,7 @@ impl Environment {
         } else if self.keywords.contains(&ident) {
             Err(YolkError::ImportKeyword(ident))
         } else {
-            self.imports.push(ident.clone());
+            self.imports.insert(ident.clone());
             self.variables
                 .insert(ident.clone(), Value::Number(Number::from_ident(&ident)));
             Ok(())
@@ -154,20 +160,24 @@ impl Environment {
         } else {
             match self.variables.get(&ident) {
                 Some(Value::Number(number)) => match number.as_expr() {
-                    YololNode::Ident(s) => self.saved.push(s.to_string()),
+                    YololNode::Ident(s) => {
+                        self.saved.insert(s.to_string());
+                    }
                     _ => panic!("expected identifier, but got: {:?}", number.as_expr()),
                 },
                 Some(Value::Array(array)) => {
                     for expr in array.as_exprs().iter() {
                         match expr {
-                            YololNode::Ident(s) => self.saved.push(s.to_string()),
+                            YololNode::Ident(s) => {
+                                self.saved.insert(s.to_string());
+                            }
                             _ => panic!("expected identifier, but got: {:?}", expr),
                         }
                     }
                 }
                 None => return Err(YolkError::GetUndefinedVariable(ident)),
             }
-            self.exports.push(ident);
+            self.exports.insert(ident);
             Ok(())
         }
     }

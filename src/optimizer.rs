@@ -1,9 +1,10 @@
 use crate::ast::{InfixOp, YololNode};
+use crate::graph::DepGraph;
 
 use std::collections::{HashMap, HashSet};
 
 /// Optimizes Yolol assign statements.
-pub fn optimize(stmts: &[YololNode], saved: &[String]) -> Vec<YololNode> {
+pub fn optimize(stmts: &[YololNode], saved: &HashSet<String>) -> Vec<YololNode> {
     let mut curr = stmts.to_vec();
     loop {
         let reduced = reduce_constants(&curr);
@@ -76,63 +77,18 @@ fn reduce_node(vars: &HashMap<String, YololNode>, node: &YololNode) -> YololNode
     }
 }
 
-fn eliminate_dead_code(stmts: &[YololNode], saved: &[String]) -> Vec<YololNode> {
-    let mut dag: HashMap<String, HashSet<String>> = HashMap::new();
-    for stmt in stmts.iter() {
-        if let YololNode::AssignStmt { ident, expr } = stmt {
-            let mut deps = HashSet::new();
-            find_dependencies(&mut deps, expr);
-            dag.insert(ident.to_string(), deps);
-        } else {
-            panic!("expected assign statement, but got: {:?}", stmt)
-        }
-    }
-    let saved = expand_saved(&dag, saved);
-    filter_dead_stmts(stmts, &saved)
-}
-
-fn find_dependencies(deps: &mut HashSet<String>, expr: &YololNode) {
-    match expr {
-        YololNode::PrefixExpr { op: _, expr } => find_dependencies(deps, expr),
-        YololNode::InfixExpr { lhs, op: _, rhs } => {
-            find_dependencies(deps, lhs);
-            find_dependencies(deps, rhs);
-        }
-        YololNode::Ident(s) => {
-            deps.insert(s.to_string());
-        }
-        _ => (),
-    }
-}
-
-fn expand_saved(dag: &HashMap<String, HashSet<String>>, saved: &[String]) -> Vec<String> {
-    let mut expanded = Vec::new();
-    let mut queue = saved.to_vec();
-    while queue.len() > 0 {
-        let ident = queue.pop().unwrap();
-        if expanded.contains(&ident) {
-            continue;
-        }
-        expanded.push(ident.to_string());
-        if let Some(deps) = dag.get(&ident) {
-            for dep in deps.iter() {
-                queue.push(dep.to_string());
-            }
-        }
-    }
-    expanded
-}
-
-fn filter_dead_stmts(stmts: &[YololNode], saved: &[String]) -> Vec<YololNode> {
-    let mut filtered = Vec::new();
+fn eliminate_dead_code(stmts: &[YololNode], saved: &HashSet<String>) -> Vec<YololNode> {
+    let graph = DepGraph::from_assign_stmts(stmts);
+    let saved = graph.search_from(saved);
+    let mut living = Vec::new();
     for stmt in stmts.iter() {
         if let YololNode::AssignStmt { ident, expr: _ } = stmt {
             if saved.contains(ident) {
-                filtered.push(stmt.clone());
+                living.push(stmt.clone());
             }
         } else {
             panic!("expected assign statement, but got: {:?}", stmt)
         }
     }
-    filtered
+    living
 }

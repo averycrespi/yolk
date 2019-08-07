@@ -3,3 +3,5 @@ import n;
 
 let a = m + n;
 let b = 0;
+
+export a;

@@ -4,6 +4,8 @@ use crate::error::YolkError;
 use crate::function::Function;
 use crate::value::{Array, Number, Value};
 
+use std::collections::HashSet;
+
 /// Transpiles Yolk statements to Yolol assign statements.
 ///
 /// Returns assign statements and saved identifiers.
@@ -11,7 +13,7 @@ use crate::value::{Array, Number, Value};
 /// # Panics
 ///
 /// Panics if any Yolk statements are malformed.
-pub fn transpile(stmts: &[YolkNode]) -> Result<(Vec<YololNode>, Vec<String>), YolkError> {
+pub fn transpile(stmts: &[YolkNode]) -> Result<(Vec<YololNode>, HashSet<String>), YolkError> {
     let mut env = Environment::new();
     let mut assigns = Vec::new();
     for stmt in stmts.iter() {
