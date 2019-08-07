@@ -18,7 +18,7 @@ pub fn parse(source: &str) -> Result<Vec<YolkNode>, Error<Rule>> {
             Rule::let_stmt => ast.push(parse_let_stmt(pair)),
             Rule::export_stmt => ast.push(parse_export_stmt(pair)),
             Rule::EOI => (),
-            _ => panic!("unexpected pair: {:?}", pair),
+            _ => panic!("expected rule statement, but got: {:?}", pair),
         }
     }
     Ok(ast)
@@ -99,7 +99,7 @@ fn parse_expr(expr: pest::iterators::Pair<Rule>) -> YolkNode {
             let exprs: Vec<YolkNode> = expr.into_inner().map(parse_expr).collect();
             YolkNode::Array(exprs)
         }
-        _ => panic!("unexpected expression: {:?}", expr),
+        _ => panic!("expected rule expression, but got: {:?}", expr),
     }
 }
 
@@ -115,7 +115,7 @@ fn parse_prefix_expr(op: pest::iterators::Pair<Rule>, expr: YolkNode) -> YolkNod
             "asin" => PrefixOp::Asin,
             "acos" => PrefixOp::Acos,
             "atan" => PrefixOp::Atan,
-            _ => panic!("unexpected prefix op: {}", op.as_str()),
+            _ => panic!("expected prefix op, but got: {:?}", op),
         },
         expr: Box::new(expr),
     }
@@ -139,7 +139,7 @@ fn parse_infix_expr(lhs: YolkNode, op: pest::iterators::Pair<Rule>, rhs: YolkNod
             "!=" => InfixOp::NotEqual,
             "and" => InfixOp::And,
             "or" => InfixOp::Or,
-            _ => panic!("unexpected infix op: {}", op.as_str()),
+            _ => panic!("expected infix op, but got: {:?}", op),
         },
         rhs: Box::new(rhs),
     }

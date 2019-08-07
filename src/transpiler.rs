@@ -54,7 +54,7 @@ pub fn transpile(stmts: &[YolkNode]) -> Result<Vec<YololNode>, YolkError> {
                     error: Box::new(e),
                 })?
             }
-            _ => panic!("unexpected statement: {:?}", stmt),
+            _ => panic!("expected Yolk statement, but got: {:?}", stmt),
         }
     }
     Ok(assigns)
@@ -93,7 +93,7 @@ fn expr_to_value(env: &Environment, expr: &YolkNode) -> Result<Value, YolkError>
             }
             Ok(Value::Array(Array::from_numbers(&numbers)))
         }
-        _ => panic!("unexpected expression: {:?}", expr),
+        _ => panic!("expected YOlk expression, but got: {:?}", expr),
     }
 }
 
