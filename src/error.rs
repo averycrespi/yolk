@@ -51,7 +51,7 @@ impl fmt::Display for YolkError {
             YolkError::BadSyntax(message) => {
                 write!(f, "syntax error at line:column {}", message.trim())
             }
-            YolkError::WithStmt { stmt, error } => write!(f, "{}\nwith statement: {}", error, stmt),
+            YolkError::WithStmt { stmt, error } => write!(f, "{}\nin statement: {}", error, stmt),
             YolkError::ImportExisting(variable) => {
                 write!(f, "cannot import existing variable: {}", variable)
             }
