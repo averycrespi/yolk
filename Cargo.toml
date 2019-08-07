@@ -3,10 +3,11 @@ name = "yolk"
 version = "0.1.0"
 authors = ["Avery Crespi <averycrespi@gmail.com>"]
 edition = "2018"
+description = "Numerical computing for YOLOL"
+license = "MIT"
 
 repository = "https://github.com/averycrespi/yolk"
 readme = "README.md"
-license = "AGPL-3.0-only"
 
 [dependencies]
 pest = "2.0.0"
