@@ -13,9 +13,7 @@ impl Value {
     pub fn apply_prefix_op(&self, op: &PrefixOp) -> Value {
         match self {
             Value::Number(n) => Value::Number(n.apply_prefix_op(op)),
-            Value::Array(a) => Value::Array(Array {
-                numbers: a.numbers.iter().map(|n| n.apply_prefix_op(op)).collect(),
-            }),
+            Value::Array(a) => Value::Array(a.apply_prefix_op(op)),
         }
     }
 
@@ -155,6 +153,12 @@ impl Array {
             });
         }
         assign_stmts
+    }
+
+    fn apply_prefix_op(&self, op: &PrefixOp) -> Array {
+        Array {
+            numbers: self.numbers.iter().map(|n| n.apply_prefix_op(op)).collect(),
+        }
     }
 
     fn apply_infix_op(&self, op: &InfixOp, other: &Array) -> Array {
