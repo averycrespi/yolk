@@ -17,7 +17,7 @@ pub enum YolkError {
     RedefineFunction(String),
 
     // Assign errors
-    AssignConflict(String),
+    AssignInsensitive(String),
     AssignToKeyword(String),
     ReassignVariable(String),
 
@@ -61,9 +61,11 @@ impl fmt::Display for YolkError {
             YolkError::RedefineFunction(function) => {
                 write!(f, "cannot redefine existing function: {}", function)
             }
-            YolkError::AssignConflict(variable) => {
-                write!(f, "cannot assign to conflicting variable: {}", variable)
-            }
+            YolkError::AssignInsensitive(variable) => write!(
+                f,
+                "multiple variables cannot have the same case-insensitive name: {}",
+                variable.to_lowercase()
+            ),
             YolkError::AssignToKeyword(keyword) => {
                 write!(f, "cannot assign to reserved keyword: {}", keyword)
             }

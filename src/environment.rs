@@ -115,8 +115,7 @@ impl Environment {
             .collect::<Vec<String>>()
             .contains(&ident.to_lowercase())
         {
-            //TODO: better error information here
-            Err(YolkError::AssignConflict(ident))
+            Err(YolkError::AssignInsensitive(ident))
         } else {
             match value {
                 Value::Number(number) => {
