@@ -4,22 +4,18 @@ use std::fmt;
 #[derive(Debug, Clone)]
 pub enum YolkNode {
     ImportStmt {
-        source: String,
         ident: String,
     },
     DefineStmt {
-        source: String,
         ident: String,
         params: Vec<String>,
         body: Box<YolkNode>,
     },
     LetStmt {
-        source: String,
         ident: String,
         expr: Box<YolkNode>,
     },
     ExportStmt {
-        source: String,
         ident: String,
     },
     PrefixExpr {
@@ -38,33 +34,6 @@ pub enum YolkNode {
     Ident(String),
     Literal(f64),
     Array(Vec<YolkNode>),
-}
-
-//TODO: include source for all Yolk nodes?
-impl YolkNode {
-    /// Gets the source code of a Yolk AST node.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the node is not a statement.
-    pub fn source(&self) -> String {
-        match self {
-            YolkNode::ImportStmt { source, ident: _ } => source.to_string(),
-            YolkNode::DefineStmt {
-                source,
-                ident: _,
-                params: _,
-                body: _,
-            } => source.to_string(),
-            YolkNode::LetStmt {
-                source,
-                ident: _,
-                expr: _,
-            } => source.to_string(),
-            YolkNode::ExportStmt { source, ident: _ } => source.to_string(),
-            _ => panic!("expected statement, but got: {:?}", self),
-        }
-    }
 }
 
 /// Represents a Yolol AST node.

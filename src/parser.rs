@@ -29,7 +29,6 @@ fn parse_import_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
     let mut pair = stmt.clone().into_inner();
     let ident = pair.next().unwrap();
     YolkNode::ImportStmt {
-        source: pair.as_str().to_string(),
         ident: ident.as_str().to_string(),
     }
 }
@@ -40,7 +39,6 @@ fn parse_define_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
     let params = pair.next().unwrap();
     let body = pair.next().unwrap();
     YolkNode::DefineStmt {
-        source: stmt.as_str().to_string(),
         ident: ident.as_str().to_string(),
         params: params
             .into_inner()
@@ -55,7 +53,6 @@ fn parse_let_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
     let ident = pair.next().unwrap();
     let expr = pair.next().unwrap();
     YolkNode::LetStmt {
-        source: stmt.as_str().to_string(),
         ident: ident.as_str().to_string(),
         expr: Box::new(parse_expr(expr)),
     }
@@ -65,7 +62,6 @@ fn parse_export_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
     let mut pair = stmt.clone().into_inner();
     let ident = pair.next().unwrap();
     YolkNode::ExportStmt {
-        source: stmt.as_str().to_string(),
         ident: ident.as_str().to_string(),
     }
 }

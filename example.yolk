@@ -9,3 +9,5 @@ export baz;
 export foo;
 
 let zero = (0 + 1) * (0 * 1);
+
+import bar;

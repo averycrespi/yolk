@@ -78,7 +78,7 @@ impl Environment {
     }
 
     /// Imports a variable into an environment.
-    pub fn import(&mut self, ident: &str) -> Result<Vec<YololNode>, YolkError> {
+    pub fn import(&mut self, ident: &str) -> Result<(), YolkError> {
         let ident = ident.to_string();
         if self.imports.contains(&ident) {
             Err(YolkError::ImportTwice(ident))
@@ -90,16 +90,12 @@ impl Environment {
             self.imports.push(ident.clone());
             self.variables
                 .insert(ident.clone(), Value::Number(Number::from_ident(&ident)));
-            Ok(Vec::new())
+            Ok(())
         }
     }
 
     /// Defines a function in an environmnent.
-    pub fn define(
-        &mut self,
-        ident: &str,
-        function: &Function,
-    ) -> Result<Vec<YololNode>, YolkError> {
+    pub fn define(&mut self, ident: &str, function: &Function) -> Result<(), YolkError> {
         let ident = ident.to_string();
         if self.functions.contains_key(&ident) {
             Err(YolkError::RedefineFunction(ident))
@@ -107,7 +103,7 @@ impl Environment {
             Err(YolkError::DefineBuiltin(ident))
         } else {
             self.functions.insert(ident, function.to_owned());
-            Ok(Vec::new())
+            Ok(())
         }
     }
 
@@ -151,7 +147,7 @@ impl Environment {
     /// Exports a variable from an environment.
     ///
     /// Tracks which variable identifiers must not be eliminated.
-    pub fn export(&mut self, ident: &str) -> Result<Vec<YololNode>, YolkError> {
+    pub fn export(&mut self, ident: &str) -> Result<(), YolkError> {
         let ident = ident.to_string();
         if self.exports.contains(&ident) {
             Err(YolkError::ExportTwice(ident))
@@ -172,7 +168,7 @@ impl Environment {
                 None => return Err(YolkError::GetUndefinedVariable(ident)),
             }
             self.exports.push(ident);
-            Ok(Vec::new())
+            Ok(())
         }
     }
 }
