@@ -1,11 +1,5 @@
-import bar;
+import m;
+import n;
 
-define square_half(A) = (A / 2) ^ 2;
-
-let baz = 4;
-let foo = square_half([1, 2, 3]);
-
-export baz;
-export foo;
-
-let zero = (0 + 1) * (0 * 1);
+let a = m + n;
+let b = 0;
