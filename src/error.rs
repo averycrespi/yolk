@@ -4,6 +4,9 @@ use std::fmt;
 /// Represents a general Yolk error.
 #[derive(Debug, Clone)]
 pub enum YolkError {
+    // Parse errors
+    BadSyntax(String),
+
     // Wrapped errors
     WithStmt { stmt: String, error: Box<YolkError> },
 
@@ -45,6 +48,9 @@ impl error::Error for YolkError {}
 impl fmt::Display for YolkError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            YolkError::BadSyntax(message) => {
+                write!(f, "syntax error at line:column {}", message.trim())
+            }
             YolkError::WithStmt { stmt, error } => write!(f, "{}\nwith statement: {}", error, stmt),
             YolkError::ImportExisting(variable) => {
                 write!(f, "cannot import existing variable: {}", variable)

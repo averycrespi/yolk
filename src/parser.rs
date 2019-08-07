@@ -1,16 +1,17 @@
-use pest::error::Error;
 use pest::Parser;
 
 use crate::ast::{InfixOp, PrefixOp, YolkNode};
+use crate::error::YolkError;
 
 #[derive(Parser)]
 #[grammar = "grammar/yolk.pest"]
 pub struct YolkParser;
 
 /// Parses Yolk statements from source text.
-pub fn parse(source: &str) -> Result<Vec<YolkNode>, Error<Rule>> {
+pub fn parse(source: &str) -> Result<Vec<YolkNode>, YolkError> {
     let mut ast = vec![];
-    let pairs = YolkParser::parse(Rule::program, source)?;
+    let pairs = YolkParser::parse(Rule::program, source)
+        .map_err(|e| YolkError::BadSyntax(e.to_string()))?;
     for pair in pairs {
         match pair.as_rule() {
             Rule::import_stmt => ast.push(parse_import_stmt(pair)),
