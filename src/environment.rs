@@ -20,6 +20,8 @@ pub struct Environment {
     keywords: Vec<String>,
     // Stores the identifiers of reserved builtins
     builtins: Vec<String>,
+    // Stores variable identifiers that must not be eliminated
+    saved: Vec<String>,
 }
 
 impl Environment {
@@ -48,6 +50,7 @@ impl Environment {
                 "or".to_string(),
             ],
             builtins: vec!["sum".to_string(), "product".to_string()],
+            saved: Vec::new(),
         }
     }
 
@@ -69,8 +72,13 @@ impl Environment {
         }
     }
 
+    /// Returs the variable identifiers that must not be eliminated.
+    pub fn saved(&self) -> Vec<String> {
+        self.saved.clone()
+    }
+
     /// Imports a variable into an environment.
-    pub fn import(&mut self, ident: &str) -> Result<(), YolkError> {
+    pub fn import(&mut self, ident: &str) -> Result<Vec<YololNode>, YolkError> {
         let ident = ident.to_string();
         if self.imports.contains(&ident) {
             Err(YolkError::ImportTwice(ident))
@@ -82,12 +90,16 @@ impl Environment {
             self.imports.push(ident.clone());
             self.variables
                 .insert(ident.clone(), Value::Number(Number::from_ident(&ident)));
-            Ok(())
+            Ok(Vec::new())
         }
     }
 
     /// Defines a function in an environmnent.
-    pub fn define(&mut self, ident: &str, function: &Function) -> Result<(), YolkError> {
+    pub fn define(
+        &mut self,
+        ident: &str,
+        function: &Function,
+    ) -> Result<Vec<YololNode>, YolkError> {
         let ident = ident.to_string();
         if self.functions.contains_key(&ident) {
             Err(YolkError::RedefineFunction(ident))
@@ -95,7 +107,7 @@ impl Environment {
             Err(YolkError::DefineBuiltin(ident))
         } else {
             self.functions.insert(ident, function.to_owned());
-            Ok(())
+            Ok(Vec::new())
         }
     }
 
@@ -137,15 +149,30 @@ impl Environment {
     }
 
     /// Exports a variable from an environment.
-    pub fn export(&mut self, ident: &str) -> Result<(), YolkError> {
+    ///
+    /// Tracks which variable identifiers must not be eliminated.
+    pub fn export(&mut self, ident: &str) -> Result<Vec<YololNode>, YolkError> {
         let ident = ident.to_string();
         if self.exports.contains(&ident) {
             Err(YolkError::ExportTwice(ident))
-        } else if !self.variables.contains_key(&ident) {
-            Err(YolkError::GetUndefinedVariable(ident))
         } else {
+            match self.variables.get(&ident) {
+                Some(Value::Number(number)) => match number.as_expr() {
+                    YololNode::Ident(s) => self.saved.push(s.to_string()),
+                    _ => panic!("expected identifier, but got: {:?}", number.as_expr()),
+                },
+                Some(Value::Array(array)) => {
+                    for expr in array.as_exprs().iter() {
+                        match expr {
+                            YololNode::Ident(s) => self.saved.push(s.to_string()),
+                            _ => panic!("expected identifier, but got: {:?}", expr),
+                        }
+                    }
+                }
+                None => return Err(YolkError::GetUndefinedVariable(ident)),
+            }
             self.exports.push(ident);
-            Ok(())
+            Ok(Vec::new())
         }
     }
 }

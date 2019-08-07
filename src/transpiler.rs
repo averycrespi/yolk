@@ -6,58 +6,48 @@ use crate::value::{Array, Number, Value};
 
 /// Transpiles Yolk statements to Yolol assign statements.
 ///
+/// Returns assign statements and saved identifiers.
+///
 /// # Panics
 ///
 /// Panics if any Yolk statements are malformed.
-pub fn transpile(stmts: &[YolkNode]) -> Result<Vec<YololNode>, YolkError> {
-    //TODO: refactor - split up YolkError internally?
+pub fn transpile(stmts: &[YolkNode]) -> Result<(Vec<YololNode>, Vec<String>), YolkError> {
     let mut env = Environment::new();
     let mut assigns = Vec::new();
     for stmt in stmts.iter() {
-        match stmt {
-            YolkNode::ImportStmt { source, ident } => {
-                env.import(&ident).map_err(|e| YolkError::WithStmt {
-                    stmt: source.to_string(),
-                    error: Box::new(e),
-                })?
-            }
-            YolkNode::DefineStmt {
-                source,
-                ident,
-                params,
-                body,
-            } => {
-                let function = Function::new(&ident, params, &*body)?;
-                env.define(&ident, &function)
-                    .map_err(|e| YolkError::WithStmt {
-                        stmt: source.to_string(),
-                        error: Box::new(e),
-                    })?;
-            }
-            YolkNode::LetStmt {
-                source,
-                ident,
-                expr,
-            } => {
-                let value = expr_to_value(&env, &*expr)?;
-                assigns.extend(
-                    env.let_value(&ident, &value)
-                        .map_err(|e| YolkError::WithStmt {
-                            stmt: source.to_string(),
-                            error: Box::new(e),
-                        })?,
-                );
-            }
-            YolkNode::ExportStmt { source, ident } => {
-                env.export(&ident).map_err(|e| YolkError::WithStmt {
-                    stmt: source.to_string(),
-                    error: Box::new(e),
-                })?
-            }
-            _ => panic!("expected Yolk statement, but got: {:?}", stmt),
-        }
+        assigns.extend(
+            transpile_stmt(&mut env, stmt).map_err(|e| YolkError::WithStmt {
+                stmt: stmt.source(),
+                error: Box::new(e),
+            })?,
+        )
     }
-    Ok(assigns)
+    Ok((assigns, env.saved()))
+}
+
+fn transpile_stmt(env: &mut Environment, stmt: &YolkNode) -> Result<Vec<YololNode>, YolkError> {
+    match stmt {
+        YolkNode::ImportStmt { source: _, ident } => env.import(&ident),
+        YolkNode::DefineStmt {
+            source: _,
+            ident,
+            params,
+            body,
+        } => {
+            let function = Function::new(&ident, params, &*body)?;
+            env.define(&ident, &function)
+        }
+        YolkNode::LetStmt {
+            source: _,
+            ident,
+            expr,
+        } => {
+            let value = expr_to_value(&env, &*expr)?;
+            env.let_value(&ident, &value)
+        }
+        YolkNode::ExportStmt { source: _, ident } => env.export(&ident),
+        _ => panic!("expected Yolk statement, but got: {:?}", stmt),
+    }
 }
 
 fn expr_to_value(env: &Environment, expr: &YolkNode) -> Result<Value, YolkError> {

@@ -3,7 +3,7 @@ use crate::ast::{InfixOp, YololNode};
 use std::collections::HashMap;
 
 /// Optimizes Yolol assign statements.
-pub fn optimize(stmts: &[YololNode]) -> Vec<YololNode> {
+pub fn optimize(stmts: &[YololNode], saved: &[String]) -> Vec<YololNode> {
     let mut curr = stmts.to_vec();
     loop {
         let reduced = reduce_constants(&curr);
@@ -12,7 +12,7 @@ pub fn optimize(stmts: &[YololNode]) -> Vec<YololNode> {
         }
         curr = reduced;
     }
-    curr
+    eliminate_dead_code(&curr, saved)
 }
 
 fn reduce_constants(stmts: &[YololNode]) -> Vec<YololNode> {
@@ -73,4 +73,9 @@ fn reduce_node(vars: &HashMap<String, YololNode>, node: &YololNode) -> YololNode
         },
         YololNode::Literal(f) => YololNode::Literal(*f),
     }
+}
+
+fn eliminate_dead_code(stmts: &[YololNode], saved: &[String]) -> Vec<YololNode> {
+    //TODO: implement
+    unimplemented!()
 }

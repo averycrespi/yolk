@@ -148,6 +148,11 @@ impl Array {
         }
     }
 
+    // Returns a Yolk array as a vector of Yolol expressions.
+    pub fn as_exprs(&self) -> Vec<YololNode> {
+        self.numbers.iter().map(|n| n.as_expr()).collect()
+    }
+
     // Converts a Yolk array to Yolol assign statements.
     //
     // The number of statements will be equal to the length of the array.
