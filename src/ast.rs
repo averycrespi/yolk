@@ -88,26 +88,24 @@ impl YololNode {
         match expr {
             YololNode::PrefixExpr { op, expr } => {
                 let prec = op.to_precedence();
-                let formatted = format!("{} {}", op, YololNode::format_expr(expr, prec));
-                if prec < parent_prec {
-                    format!("({})", formatted)
-                } else {
-                    formatted
-                }
+                format!(
+                    "{}{} {}{}",
+                    if prec < parent_prec { "(" } else { "" },
+                    op,
+                    YololNode::format_expr(expr, prec),
+                    if prec < parent_prec { ")" } else { "" },
+                )
             }
             YololNode::InfixExpr { lhs, op, rhs } => {
                 let prec = op.to_precedence();
-                let formatted = format!(
-                    "{}{}{}",
+                format!(
+                    "{}{}{}{}{}",
+                    if prec < parent_prec { "(" } else { "" },
                     YololNode::format_expr(lhs, prec),
                     op,
-                    YololNode::format_expr(rhs, prec)
-                );
-                if prec < parent_prec {
-                    format!("({})", formatted)
-                } else {
-                    formatted
-                }
+                    YololNode::format_expr(rhs, prec),
+                    if prec < parent_prec { ")" } else { "" },
+                )
             }
             YololNode::Ident(s) => s.to_string(),
             YololNode::Literal(f) => f.to_string(),
@@ -123,7 +121,7 @@ impl fmt::Display for YololNode {
             YololNode::PrefixExpr { op, expr } => write!(f, "{}({})", op, expr),
             YololNode::InfixExpr { lhs, op, rhs } => write!(f, "({}){}({})", lhs, op, rhs),
             YololNode::Ident(s) => write!(f, "{}", s),
-            YololNode::Literal(n) => write!(f, "{}", n),
+            YololNode::Literal(ft) => write!(f, "{}", ft),
         }
     }
 }
@@ -215,6 +213,7 @@ impl fmt::Display for InfixOp {
             InfixOp::GreaterEqual => write!(f, ">="),
             InfixOp::Equal => write!(f, "=="),
             InfixOp::NotEqual => write!(f, "!="),
+            //TODO: add spaces in formatter instead
             InfixOp::And => write!(f, " and "),
             InfixOp::Or => write!(f, " or "),
         }
