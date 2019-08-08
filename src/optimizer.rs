@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use num_traits::identities::{One, Zero};
 use yolol_number::YololNumber;
 
-use crate::ast::{InfixOp, YololNode};
+use crate::ast::{InfixOp, PrefixOp, YololNode};
 use crate::graph::DepGraph;
 
 /// Optimizes Yolol assign statements.
@@ -41,10 +41,23 @@ fn reduce_node(vars: &HashMap<String, YololNode>, node: &YololNode) -> YololNode
             ident: ident.to_string(),
             expr: Box::new(reduce_node(vars, expr)),
         },
-        //TODO: implement prefix folding
-        YololNode::PrefixExpr { op, expr } => YololNode::PrefixExpr {
-            op: op.clone(),
-            expr: Box::new(reduce_node(vars, expr)),
+        YololNode::PrefixExpr { op, expr } => match (op, *expr.clone()) {
+            // Fold literals
+            (op, YololNode::Literal(y)) => match op {
+                PrefixOp::Not => YololNode::Literal(!y),
+                PrefixOp::Abs => YololNode::Literal(y.abs()),
+                PrefixOp::Sqrt => YololNode::Literal(y.sqrt()),
+                PrefixOp::Sin => YololNode::Literal(y.sin()),
+                PrefixOp::Cos => YololNode::Literal(y.cos()),
+                PrefixOp::Tan => YololNode::Literal(y.tan()),
+                PrefixOp::Asin => YololNode::Literal(y.arcsin()),
+                PrefixOp::Acos => YololNode::Literal(y.arccos()),
+                PrefixOp::Atan => YololNode::Literal(y.arctan()),
+            },
+            _ => YololNode::PrefixExpr {
+                op: op.clone(),
+                expr: Box::new(reduce_node(vars, expr)),
+            },
         },
         YololNode::InfixExpr { lhs, op, rhs } => match (*lhs.clone(), op, *rhs.clone()) {
             // Fold `0 + n` and `n + 0` to `n`
@@ -64,7 +77,17 @@ fn reduce_node(vars: &HashMap<String, YololNode>, node: &YololNode) -> YololNode
             (YololNode::Literal(y), InfixOp::Exp, _) if y == one => *lhs.clone(),
             // Fold `n ^ 1` to `n`
             (_, InfixOp::Exp, YololNode::Literal(y)) if y == one => *lhs.clone(),
-            //TODO: implement literal binary folding
+            // Fold literals
+            (YololNode::Literal(y), op, YololNode::Literal(z)) => match op {
+                InfixOp::Add => YololNode::Literal(y + z),
+                InfixOp::Sub => YololNode::Literal(y - z),
+                InfixOp::Mul => YololNode::Literal(y * z),
+                InfixOp::Div => YololNode::Literal(y / z),
+                InfixOp::Mod => YololNode::Literal(y % z),
+                InfixOp::Exp => YololNode::Literal(y.pow(z)),
+                //TODO: handle comparison and boolean
+                _ => node.clone(),
+            },
             _ => YololNode::InfixExpr {
                 lhs: Box::new(reduce_node(vars, lhs)),
                 op: op.clone(),
