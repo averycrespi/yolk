@@ -10,14 +10,12 @@ use crate::graph::DepGraph;
 /// Optimizes Yolol assign statements.
 pub fn optimize(stmts: &[YololNode], context: &Context) -> Vec<YololNode> {
     let mut curr = stmts.to_vec();
-    loop {
-        let reduced = reduce_constants(&curr);
-        if reduced == curr {
-            break;
-        }
-        curr = reduced;
+    let mut next = reduce_constants(&curr);
+    while curr != next {
+        curr = next;
+        next = reduce_constants(&curr);
     }
-    eliminate_dead_code(&curr, &context.exported())
+    eliminate_dead_code(&next, &context.exported())
 }
 
 fn reduce_constants(stmts: &[YololNode]) -> Vec<YololNode> {
