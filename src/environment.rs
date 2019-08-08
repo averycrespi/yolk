@@ -1,7 +1,7 @@
 use crate::ast::YololNode;
 use crate::error::YolkError;
 use crate::function::Function;
-use crate::value::{Array, Number, Value};
+use crate::value::{ArrayExpr, NumberExpr, Value};
 
 use std::collections::{HashMap, HashSet};
 
@@ -95,7 +95,7 @@ impl Environment {
         } else {
             self.imports.insert(ident.clone());
             self.variables
-                .insert(ident.clone(), Value::Number(Number::from_ident(&ident)));
+                .insert(ident.clone(), Value::Number(NumberExpr::from_ident(&ident)));
             Ok(())
         }
     }
@@ -134,15 +134,17 @@ impl Environment {
             match value {
                 Value::Number(number) => {
                     let assign_stmt = number.to_assign_stmt(&ident);
-                    self.variables
-                        .insert(ident.to_string(), Value::Number(Number::from_ident(&ident)));
+                    self.variables.insert(
+                        ident.to_string(),
+                        Value::Number(NumberExpr::from_ident(&ident)),
+                    );
                     Ok(vec![assign_stmt])
                 }
                 Value::Array(array) => {
                     let assign_stmts = array.to_assign_stmts(&ident);
                     self.variables.insert(
                         ident.to_string(),
-                        Value::Array(Array::from_ident(&ident, assign_stmts.len())),
+                        Value::Array(ArrayExpr::from_ident(&ident, assign_stmts.len())),
                     );
                     Ok(assign_stmts)
                 }
