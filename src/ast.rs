@@ -1,5 +1,7 @@
 use std::fmt;
 
+use yolol_number::YololNumber;
+
 const LINE_LIMIT: usize = 70;
 
 /// Represents a Yolk AST node.
@@ -34,7 +36,7 @@ pub enum YolkNode {
         rhs: Box<YolkNode>,
     },
     Ident(String),
-    Literal(f64),
+    Literal(YololNumber<i128>),
     Array(Vec<YolkNode>),
 }
 
@@ -55,7 +57,7 @@ pub enum YololNode {
         rhs: Box<YololNode>,
     },
     Ident(String),
-    Literal(f64),
+    Literal(YololNumber<i128>),
 }
 
 impl YololNode {
@@ -108,7 +110,7 @@ impl YololNode {
                 )
             }
             YololNode::Ident(s) => s.to_string(),
-            YololNode::Literal(f) => f.to_string(),
+            YololNode::Literal(y) => y.to_string(),
             _ => panic!("expected expression, but got: {:?}", expr),
         }
     }
@@ -121,7 +123,7 @@ impl fmt::Display for YololNode {
             YololNode::PrefixExpr { op, expr } => write!(f, "{}({})", op, expr),
             YololNode::InfixExpr { lhs, op, rhs } => write!(f, "({}){}({})", lhs, op, rhs),
             YololNode::Ident(s) => write!(f, "{}", s),
-            YololNode::Literal(ft) => write!(f, "{}", ft),
+            YololNode::Literal(y) => write!(f, "{}", y),
         }
     }
 }

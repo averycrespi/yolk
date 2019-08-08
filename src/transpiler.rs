@@ -1,10 +1,13 @@
+use std::collections::HashSet;
+
+use yolol_number::YololNumber;
+use num_traits::identities::{Zero, One};
+
 use crate::ast::{InfixOp, YolkNode, YololNode};
 use crate::environment::Environment;
 use crate::error::YolkError;
 use crate::function::Function;
 use crate::value::{ArrayExpr, NumberExpr, Value};
-
-use std::collections::HashSet;
 
 /// Transpiles Yolk statements to Yolol assign statements.
 ///
@@ -55,7 +58,7 @@ fn expr_to_value(env: &Environment, expr: &YolkNode) -> Result<Value, YolkError>
             lhs.apply_infix_op(&op, &rhs)
         }
         YolkNode::Ident(s) => env.variable(s),
-        YolkNode::Literal(f) => Ok(Value::Number(NumberExpr::from_float(*f))),
+        YolkNode::Literal(y) => Ok(Value::Number(NumberExpr::from_yolol_number(y.clone()))),
         YolkNode::Array(exprs) => {
             let mut numbers = Vec::new();
             for expr in exprs.iter() {
@@ -67,7 +70,7 @@ fn expr_to_value(env: &Environment, expr: &YolkNode) -> Result<Value, YolkError>
             }
             Ok(Value::Array(ArrayExpr::from_number_exprs(&numbers)))
         }
-        _ => panic!("expected YOlk expression, but got: {:?}", expr),
+        _ => panic!("expected Yolk expression, but got: {:?}", expr),
     }
 }
 
@@ -79,7 +82,7 @@ fn sum_to_value(env: &Environment, args: &[YolkNode]) -> Result<Value, YolkError
     Ok(Value::reduce(
         &values,
         &InfixOp::Add,
-        &NumberExpr::from_float(0.0),
+        &NumberExpr::from_yolol_number(YololNumber::zero()),
     ))
 }
 
@@ -91,7 +94,7 @@ fn product_to_value(env: &Environment, args: &[YolkNode]) -> Result<Value, YolkE
     Ok(Value::reduce(
         &values,
         &InfixOp::Mul,
-        &NumberExpr::from_float(1.0),
+        &NumberExpr::from_yolol_number(YololNumber::one()),
     ))
 }
 

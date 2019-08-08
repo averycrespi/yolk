@@ -1,7 +1,7 @@
+use std::collections::HashSet;
+
 use crate::ast::YolkNode;
 use crate::error::YolkError;
-
-use std::collections::HashSet;
 
 /// Represents a Yolk function.
 #[derive(Debug, Clone)]

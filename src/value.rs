@@ -1,3 +1,5 @@
+use yolol_number::YololNumber;
+
 use crate::ast::{InfixOp, PrefixOp, YololNode};
 use crate::error::YolkError;
 
@@ -78,17 +80,10 @@ impl NumberExpr {
         }
     }
 
-    // Creates a Yolk number expression from a float.
-    //
-    // # Panics
-    //
-    // Panics if the float is NaN or infinite.
-    pub fn from_float(float: f64) -> NumberExpr {
-        if float.is_nan() || float.is_infinite() {
-            panic!("cannot create number from float: {}", float);
-        }
+    // Creates a Yolk number expression from a Yolol number.
+    pub fn from_yolol_number(num: YololNumber<i128>) -> NumberExpr {
         NumberExpr {
-            expr: YololNode::Literal(float),
+            expr: YololNode::Literal(num),
         }
     }
 

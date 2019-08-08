@@ -1,7 +1,7 @@
-use crate::ast::YololNode;
-
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
+
+use crate::ast::YololNode;
 
 /// Represents dependencies between Yolol variables.
 #[derive(Debug, Clone)]

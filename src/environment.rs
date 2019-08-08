@@ -1,9 +1,9 @@
+use std::collections::{HashMap, HashSet};
+
 use crate::ast::YololNode;
 use crate::error::YolkError;
 use crate::function::Function;
 use crate::value::{ArrayExpr, NumberExpr, Value};
-
-use std::collections::{HashMap, HashSet};
 
 /// Represents a Yolk program environment.
 #[derive(Debug, Clone)]

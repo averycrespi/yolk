@@ -1,4 +1,7 @@
+use std::str::FromStr;
+
 use pest::Parser;
+use yolol_number::YololNumber;
 
 use crate::ast::{InfixOp, PrefixOp, YolkNode};
 use crate::error::YolkError;
@@ -95,7 +98,7 @@ fn parse_expr(expr: pest::iterators::Pair<Rule>) -> YolkNode {
             parse_infix_expr(parse_expr(lhs), op, parse_expr(rhs))
         }
         Rule::ident => YolkNode::Ident(expr.as_str().to_string()),
-        Rule::literal => YolkNode::Literal(expr.as_str().parse::<f64>().unwrap()),
+        Rule::literal => YolkNode::Literal(YololNumber::from_str(expr.as_str()).unwrap()),
         Rule::array => {
             let exprs: Vec<YolkNode> = expr.into_inner().map(parse_expr).collect();
             YolkNode::Array(exprs)
