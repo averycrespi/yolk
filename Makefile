@@ -1,4 +1,4 @@
-.PHONY: all build doc run
+.PHONY: all build doc run test
 
 all: run
 
@@ -10,3 +10,6 @@ doc:
 
 run:
 	cargo run
+
+test:
+	cargo test

@@ -11,7 +11,3 @@ pub mod optimizer;
 pub mod parser;
 pub mod transpiler;
 pub mod value;
-
-pub use optimizer::optimize;
-pub use parser::parse;
-pub use transpiler::transpile;

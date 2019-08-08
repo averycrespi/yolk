@@ -94,3 +94,69 @@ fn product_to_value(env: &Environment, args: &[YolkNode]) -> Result<Value, YolkE
         &Number::from_float(1.0),
     ))
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::ast::{YolkNode, YololNode};
+    use crate::error::YolkError;
+    use crate::transpiler::transpile;
+
+    #[test]
+    fn test_transpile_let_number() -> Result<(), YolkError> {
+        let yolk = vec![YolkNode::LetStmt {
+            ident: "number".to_string(),
+            expr: Box::new(YolkNode::Literal(0.0)),
+        }];
+        let (yolol, _) = transpile(&yolk)?;
+        assert_eq!(
+            yolol,
+            vec![YololNode::AssignStmt {
+                ident: "number".to_string(),
+                expr: Box::new(YololNode::Literal(0.0))
+            }]
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_transpile_let_array() -> Result<(), YolkError> {
+        let yolk = vec![YolkNode::LetStmt {
+            ident: "array".to_string(),
+            expr: Box::new(YolkNode::Array(vec![
+                YolkNode::Literal(0.0),
+                YolkNode::Literal(1.0),
+            ])),
+        }];
+        let (yolol, _) = transpile(&yolk)?;
+        assert_eq!(
+            yolol,
+            vec![
+                YololNode::AssignStmt {
+                    ident: "array_0".to_string(),
+                    expr: Box::new(YololNode::Literal(0.0))
+                },
+                YololNode::AssignStmt {
+                    ident: "array_1".to_string(),
+                    expr: Box::new(YololNode::Literal(1.0))
+                }
+            ]
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_transpile_saved() -> Result<(), YolkError> {
+        let yolk = vec![
+            YolkNode::LetStmt {
+                ident: "number".to_string(),
+                expr: Box::new(YolkNode::Literal(0.0)),
+            },
+            YolkNode::ExportStmt {
+                ident: "number".to_string(),
+            },
+        ];
+        let (_, saved) = transpile(&yolk)?;
+        assert!(saved.contains("number"));
+        Ok(())
+    }
+}
