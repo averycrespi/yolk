@@ -4,10 +4,11 @@ use num_traits::identities::{One, Zero};
 use yolol_number::YololNumber;
 
 use crate::ast::{InfixOp, PrefixOp, YololNode};
+use crate::environment::Context;
 use crate::graph::DepGraph;
 
 /// Optimizes Yolol assign statements.
-pub fn optimize(stmts: &[YololNode], saved: &HashSet<String>) -> Vec<YololNode> {
+pub fn optimize(stmts: &[YololNode], context: &Context) -> Vec<YololNode> {
     let mut curr = stmts.to_vec();
     loop {
         let reduced = reduce_constants(&curr);
@@ -16,7 +17,7 @@ pub fn optimize(stmts: &[YololNode], saved: &HashSet<String>) -> Vec<YololNode> 
         }
         curr = reduced;
     }
-    eliminate_dead_code(&curr, saved)
+    eliminate_dead_code(&curr, &context.exported())
 }
 
 fn reduce_constants(stmts: &[YololNode]) -> Vec<YololNode> {
@@ -107,13 +108,13 @@ fn reduce_node(vars: &HashMap<String, YololNode>, node: &YololNode) -> YololNode
     }
 }
 
-fn eliminate_dead_code(stmts: &[YololNode], saved: &HashSet<String>) -> Vec<YololNode> {
+fn eliminate_dead_code(stmts: &[YololNode], exported: &HashSet<String>) -> Vec<YololNode> {
     let graph = DepGraph::from_assign_stmts(stmts);
-    let saved = graph.search_from(saved);
+    let exported = graph.search_from(exported);
     let mut living = Vec::new();
     for stmt in stmts.iter() {
         if let YololNode::AssignStmt { ident, expr: _ } = stmt {
-            if saved.contains(ident) {
+            if exported.contains(ident) {
                 living.push(stmt.clone());
             }
         } else {

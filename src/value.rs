@@ -92,7 +92,7 @@ impl NumberExpr {
         self.expr.clone()
     }
 
-    // Converts a Yolk number expression to a YOLOL assign statement.
+    // Converts a Yolk number expression to a Yolol assign statement.
     pub fn to_assign_stmt(&self, ident: &str) -> YololNode {
         YololNode::AssignStmt {
             ident: ident.to_string(),

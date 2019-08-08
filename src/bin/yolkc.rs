@@ -27,8 +27,8 @@ fn main() {
     if let Some(infile) = matches.value_of("infile") {
         let source = fs::read_to_string(infile).expect("cannot read from file");
         let yolk = parse(&source).unwrap_or_else(|e| panic!("{}", e));
-        let (yolol, saved) = transpile(&yolk).unwrap_or_else(|e| panic!("{}", e));
-        let optimized = optimize(&yolol, &saved);
+        let (yolol, context) = transpile(&yolk).unwrap_or_else(|e| panic!("{}", e));
+        let optimized = optimize(&yolol, &context);
         println!("{}", YololNode::format_as_program(&optimized));
     }
 }

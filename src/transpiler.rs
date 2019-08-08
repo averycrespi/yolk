@@ -1,18 +1,16 @@
-use std::collections::HashSet;
-
 use num_traits::identities::{One, Zero};
 use yolol_number::YololNumber;
 
 use crate::ast::{InfixOp, YolkNode, YololNode};
-use crate::environment::Environment;
+use crate::environment::{Context, Environment};
 use crate::error::YolkError;
 use crate::function::Function;
 use crate::value::{ArrayExpr, NumberExpr, Value};
 
 /// Transpiles Yolk statements to Yolol assign statements.
 ///
-/// Returns assign statements and saved identifiers.
-pub fn transpile(stmts: &[YolkNode]) -> Result<(Vec<YololNode>, HashSet<String>), YolkError> {
+/// Returns assign statements and the program context.
+pub fn transpile(stmts: &[YolkNode]) -> Result<(Vec<YololNode>, Context), YolkError> {
     let mut env = Environment::new();
     let mut assigns = Vec::new();
     for stmt in stmts.iter() {
@@ -30,7 +28,7 @@ pub fn transpile(stmts: &[YolkNode]) -> Result<(Vec<YololNode>, HashSet<String>)
             _ => panic!("expected statement, but got: {:?}", stmt),
         }
     }
-    Ok((assigns, env.saved()))
+    Ok((assigns, env.context()))
 }
 
 fn expr_to_value(env: &Environment, expr: &YolkNode) -> Result<Value, YolkError> {
@@ -144,22 +142,6 @@ mod tests {
                 }
             ]
         );
-        Ok(())
-    }
-
-    #[test]
-    fn test_transpile_saved() -> Result<(), YolkError> {
-        let yolk = vec![
-            YolkNode::LetStmt {
-                ident: "number".to_string(),
-                expr: Box::new(YolkNode::Literal(YololNumber::from_str("0").unwrap())),
-            },
-            YolkNode::ExportStmt {
-                ident: "number".to_string(),
-            },
-        ];
-        let (_, saved) = transpile(&yolk)?;
-        assert!(saved.contains("number"));
         Ok(())
     }
 }
