@@ -15,6 +15,7 @@ call_expr = { ident ~ args }
 base_expr = _{ ident | literal | array | "(" ~ expr ~ ")" }
 
 prefix_op = {
+    "neg" |
     "not" | "abs" | "sqrt" |
     "sin" | "cos" | "tan" | "asin" | "acos" | "atan"
 }

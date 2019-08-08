@@ -109,6 +109,7 @@ fn parse_expr(expr: pest::iterators::Pair<Rule>) -> YolkNode {
 fn parse_prefix_expr(op: pest::iterators::Pair<Rule>, expr: YolkNode) -> YolkNode {
     YolkNode::PrefixExpr {
         op: match op.as_str() {
+            "neg" => PrefixOp::Neg,
             "not" => PrefixOp::Not,
             "abs" => PrefixOp::Abs,
             "sqrt" => PrefixOp::Sqrt,

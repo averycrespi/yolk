@@ -44,6 +44,7 @@ fn reduce_node(vars: &HashMap<String, YololNode>, node: &YololNode) -> YololNode
         YololNode::PrefixExpr { op, expr } => match (op, *expr.clone()) {
             // Fold literals
             (op, YololNode::Literal(y)) => match op {
+                PrefixOp::Neg => YololNode::Literal(-y),
                 PrefixOp::Not => YololNode::Literal(!y),
                 PrefixOp::Abs => YololNode::Literal(y.abs()),
                 PrefixOp::Sqrt => YololNode::Literal(y.sqrt()),

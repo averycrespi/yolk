@@ -87,6 +87,7 @@ impl YololNode {
             YololNode::PrefixExpr { op, expr } => {
                 let prec = op.to_precedence();
                 format!(
+                    //TODO: remove extra space after op
                     "{}{} {}{}",
                     if prec < parent_prec { "(" } else { "" },
                     op,
@@ -97,7 +98,8 @@ impl YololNode {
             YololNode::InfixExpr { lhs, op, rhs } => {
                 let prec = op.to_precedence();
                 format!(
-                    "{}{}{}{}{}",
+                    //TODO: remove extra spaces around op
+                    "{}{} {} {}{}",
                     if prec < parent_prec { "(" } else { "" },
                     YololNode::format_expr(lhs, prec),
                     op,
@@ -112,21 +114,10 @@ impl YololNode {
     }
 }
 
-impl fmt::Display for YololNode {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            YololNode::AssignStmt { ident, expr } => write!(f, "{}={}", ident, expr),
-            YololNode::PrefixExpr { op, expr } => write!(f, "{}({})", op, expr),
-            YololNode::InfixExpr { lhs, op, rhs } => write!(f, "({}){}({})", lhs, op, rhs),
-            YololNode::Ident(s) => write!(f, "{}", s),
-            YololNode::Literal(y) => write!(f, "{}", y),
-        }
-    }
-}
-
 /// Represents a prefix operation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PrefixOp {
+    Neg,
     Not,
     Abs,
     Sqrt,
@@ -140,13 +131,17 @@ pub enum PrefixOp {
 
 impl PrefixOp {
     fn to_precedence(&self) -> u32 {
-        90
+        match self {
+            PrefixOp::Neg => 100,
+            _ => 90,
+        }
     }
 }
 
 impl fmt::Display for PrefixOp {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            PrefixOp::Neg => write!(f, "-"),
             PrefixOp::Not => write!(f, "not"),
             PrefixOp::Abs => write!(f, "abs"),
             PrefixOp::Sqrt => write!(f, "sqrt"),
@@ -211,9 +206,8 @@ impl fmt::Display for InfixOp {
             InfixOp::GreaterEqual => write!(f, ">="),
             InfixOp::Equal => write!(f, "=="),
             InfixOp::NotEqual => write!(f, "!="),
-            //TODO: add spaces in formatter instead
-            InfixOp::And => write!(f, " and "),
-            InfixOp::Or => write!(f, " or "),
+            InfixOp::And => write!(f, "and"),
+            InfixOp::Or => write!(f, "or"),
         }
     }
 }
