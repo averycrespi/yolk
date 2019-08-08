@@ -115,7 +115,7 @@ impl YololNode {
 }
 
 /// Represents a prefix operation.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PrefixOp {
     Neg,
     Not,
@@ -156,7 +156,7 @@ impl fmt::Display for PrefixOp {
 }
 
 /// Represents an infix operation.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum InfixOp {
     Add,
     Sub,

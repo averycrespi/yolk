@@ -84,7 +84,7 @@ impl Function {
     ) -> Result<YolkNode, YolkError> {
         match node {
             YolkNode::PrefixExpr { op, expr } => Ok(YolkNode::PrefixExpr {
-                op: op.clone(),
+                op: *op,
                 expr: Box::new(self.replace_params_with_args(args, expr)?),
             }),
             YolkNode::CallExpr {
@@ -102,7 +102,7 @@ impl Function {
             }
             YolkNode::InfixExpr { lhs, op, rhs } => Ok(YolkNode::InfixExpr {
                 lhs: Box::new(self.replace_params_with_args(args, lhs)?),
-                op: op.clone(),
+                op: *op,
                 rhs: Box::new(self.replace_params_with_args(args, rhs)?),
             }),
             // Replace local variables with their respective arguments

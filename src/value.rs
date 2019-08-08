@@ -103,7 +103,7 @@ impl NumberExpr {
     fn apply_prefix_op(&self, op: &PrefixOp) -> NumberExpr {
         NumberExpr {
             expr: YololNode::PrefixExpr {
-                op: op.clone(),
+                op: *op,
                 expr: Box::new(self.as_expr()),
             },
         }
@@ -113,7 +113,7 @@ impl NumberExpr {
         NumberExpr {
             expr: YololNode::InfixExpr {
                 lhs: Box::new(self.as_expr()),
-                op: op.clone(),
+                op: *op,
                 rhs: Box::new(other.as_expr()),
             },
         }

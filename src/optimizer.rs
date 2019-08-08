@@ -58,7 +58,7 @@ fn reduce_node(vars: &HashMap<String, YololNode>, node: &YololNode) -> YololNode
                 _ => node.clone(),
             },
             _ => YololNode::PrefixExpr {
-                op: op.clone(),
+                op: *op,
                 expr: Box::new(reduce_node(vars, expr)),
             },
         },
@@ -93,7 +93,7 @@ fn reduce_node(vars: &HashMap<String, YololNode>, node: &YololNode) -> YololNode
             },
             _ => YololNode::InfixExpr {
                 lhs: Box::new(reduce_node(vars, lhs)),
-                op: op.clone(),
+                op: *op,
                 rhs: Box::new(reduce_node(vars, rhs)),
             },
         },
