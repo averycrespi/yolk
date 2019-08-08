@@ -10,7 +10,7 @@ export_stmt = { "export" ~ ident }
 
 expr = _{ infix_expr | prefix_expr | call_expr | base_expr }
 infix_expr = { (prefix_expr | call_expr | base_expr) ~ infix_op ~ expr }
-prefix_expr = { prefix_op ~ expr ~ "!" }
+prefix_expr = { prefix_op ~ expr }
 call_expr = { ident ~ args }
 base_expr = _{ ident | literal | array | "(" ~ expr ~ ")" }
 

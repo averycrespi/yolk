@@ -3,6 +3,7 @@ extern crate clap;
 
 use clap::{App, Arg};
 
+use yolk::ast::YololNode;
 use yolk::optimizer::optimize;
 use yolk::parser::parse;
 use yolk::transpiler::transpile;
@@ -28,8 +29,6 @@ fn main() {
         let yolk = parse(&source).unwrap_or_else(|e| panic!("{}", e));
         let (yolol, saved) = transpile(&yolk).unwrap_or_else(|e| panic!("{}", e));
         let optimized = optimize(&yolol, &saved);
-        for stmt in optimized.iter() {
-            println!("{}", stmt);
-        }
+        println!("{}", YololNode::format_as_program(&optimized));
     }
 }

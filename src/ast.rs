@@ -1,5 +1,7 @@
 use std::fmt;
 
+const LINE_LIMIT: usize = 70;
+
 /// Represents a Yolk AST node.
 #[derive(Debug, Clone, PartialEq)]
 pub enum YolkNode {
@@ -56,6 +58,64 @@ pub enum YololNode {
     Literal(f64),
 }
 
+impl YololNode {
+    /// Format Yolol assign statements as a program.
+    ///
+    /// # Panics
+    ///
+    /// Panics if any Yolol statements are malformed.
+    pub fn format_as_program(stmts: &[YololNode]) -> String {
+        let mut program = String::new();
+        let mut line = String::new();
+        for stmt in stmts.iter() {
+            if let YololNode::AssignStmt { ident, expr } = stmt {
+                let formatted = YololNode::format_expr(expr, 0);
+                if line.len() + formatted.len() + 1 > LINE_LIMIT {
+                    program.push_str(&format!("{}\n{}={}\n", line, ident, formatted));
+                    line.clear();
+                } else {
+                    line.push_str(&format!("{}={} ", ident, formatted));
+                }
+            } else {
+                panic!("expected assign statement, but got: {:?}", stmt);
+            }
+        }
+        program.push_str(line.as_str());
+        program.trim().to_string()
+    }
+
+    fn format_expr(expr: &YololNode, parent_prec: u32) -> String {
+        match expr {
+            YololNode::PrefixExpr { op, expr } => {
+                let prec = op.to_precedence();
+                let formatted = format!("{} {}", op, YololNode::format_expr(expr, prec));
+                if prec < parent_prec {
+                    format!("({})", formatted)
+                } else {
+                    formatted
+                }
+            }
+            YololNode::InfixExpr { lhs, op, rhs } => {
+                let prec = op.to_precedence();
+                let formatted = format!(
+                    "{}{}{}",
+                    YololNode::format_expr(lhs, prec),
+                    op,
+                    YololNode::format_expr(rhs, prec)
+                );
+                if prec < parent_prec {
+                    format!("({})", formatted)
+                } else {
+                    formatted
+                }
+            }
+            YololNode::Ident(s) => s.to_string(),
+            YololNode::Literal(f) => f.to_string(),
+            _ => panic!("expected expression, but got: {:?}", expr),
+        }
+    }
+}
+
 impl fmt::Display for YololNode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -80,6 +140,12 @@ pub enum PrefixOp {
     Asin,
     Acos,
     Atan,
+}
+
+impl PrefixOp {
+    fn to_precedence(&self) -> u32 {
+        90
+    }
 }
 
 impl fmt::Display for PrefixOp {
@@ -117,6 +183,23 @@ pub enum InfixOp {
     Or,
 }
 
+impl InfixOp {
+    fn to_precedence(&self) -> u32 {
+        match self {
+            InfixOp::Exp => 80,
+            InfixOp::Mul | InfixOp::Div | InfixOp::Mod => 70,
+            InfixOp::Add | InfixOp::Sub => 60,
+            InfixOp::LessThan
+            | InfixOp::LessEqual
+            | InfixOp::GreaterThan
+            | InfixOp::GreaterEqual => 50,
+            InfixOp::Equal | InfixOp::NotEqual => 40,
+            InfixOp::Or => 30,
+            InfixOp::And => 20,
+        }
+    }
+}
+
 impl fmt::Display for InfixOp {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -132,8 +215,8 @@ impl fmt::Display for InfixOp {
             InfixOp::GreaterEqual => write!(f, ">="),
             InfixOp::Equal => write!(f, "=="),
             InfixOp::NotEqual => write!(f, "!="),
-            InfixOp::And => write!(f, "and"),
-            InfixOp::Or => write!(f, "or"),
+            InfixOp::And => write!(f, " and "),
+            InfixOp::Or => write!(f, " or "),
         }
     }
 }

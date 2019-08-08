@@ -29,7 +29,7 @@ impl DepGraph {
         DepGraph { graph: graph }
     }
 
-    /// Search for connected variables from a starting set.
+    /// Search for dependent variables from a starting set.
     pub fn search_from(&self, idents: &HashSet<String>) -> HashSet<String> {
         let mut found = HashSet::new();
         let mut queue = Vec::from_iter(idents.iter().cloned());
