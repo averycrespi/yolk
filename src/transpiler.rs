@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
+use num_traits::identities::{One, Zero};
 use yolol_number::YololNumber;
-use num_traits::identities::{Zero, One};
 
 use crate::ast::{InfixOp, YolkNode, YololNode};
 use crate::environment::Environment;
@@ -12,10 +12,6 @@ use crate::value::{ArrayExpr, NumberExpr, Value};
 /// Transpiles Yolk statements to Yolol assign statements.
 ///
 /// Returns assign statements and saved identifiers.
-///
-/// # Panics
-///
-/// Panics if any Yolk statements are malformed.
 pub fn transpile(stmts: &[YolkNode]) -> Result<(Vec<YololNode>, HashSet<String>), YolkError> {
     let mut env = Environment::new();
     let mut assigns = Vec::new();
@@ -100,6 +96,10 @@ fn product_to_value(env: &Environment, args: &[YolkNode]) -> Result<Value, YolkE
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
+    use yolol_number::YololNumber;
+
     use crate::ast::{YolkNode, YololNode};
     use crate::error::YolkError;
     use crate::transpiler::transpile;
@@ -108,14 +108,14 @@ mod tests {
     fn test_transpile_let_number() -> Result<(), YolkError> {
         let yolk = vec![YolkNode::LetStmt {
             ident: "number".to_string(),
-            expr: Box::new(YolkNode::Literal(0.0)),
+            expr: Box::new(YolkNode::Literal(YololNumber::from_str("0").unwrap())),
         }];
         let (yolol, _) = transpile(&yolk)?;
         assert_eq!(
             yolol,
             vec![YololNode::AssignStmt {
                 ident: "number".to_string(),
-                expr: Box::new(YololNode::Literal(0.0))
+                expr: Box::new(YololNode::Literal(YololNumber::from_str("0").unwrap()))
             }]
         );
         Ok(())
@@ -126,8 +126,8 @@ mod tests {
         let yolk = vec![YolkNode::LetStmt {
             ident: "array".to_string(),
             expr: Box::new(YolkNode::Array(vec![
-                YolkNode::Literal(0.0),
-                YolkNode::Literal(1.0),
+                YolkNode::Literal(YololNumber::from_str("0").unwrap()),
+                YolkNode::Literal(YololNumber::from_str("1").unwrap()),
             ])),
         }];
         let (yolol, _) = transpile(&yolk)?;
@@ -136,11 +136,11 @@ mod tests {
             vec![
                 YololNode::AssignStmt {
                     ident: "array_0".to_string(),
-                    expr: Box::new(YololNode::Literal(0.0))
+                    expr: Box::new(YololNode::Literal(YololNumber::from_str("0").unwrap()))
                 },
                 YololNode::AssignStmt {
                     ident: "array_1".to_string(),
-                    expr: Box::new(YololNode::Literal(1.0))
+                    expr: Box::new(YololNode::Literal(YololNumber::from_str("1").unwrap()))
                 }
             ]
         );
@@ -152,7 +152,7 @@ mod tests {
         let yolk = vec![
             YolkNode::LetStmt {
                 ident: "number".to_string(),
-                expr: Box::new(YolkNode::Literal(0.0)),
+                expr: Box::new(YolkNode::Literal(YololNumber::from_str("0").unwrap())),
             },
             YolkNode::ExportStmt {
                 ident: "number".to_string(),

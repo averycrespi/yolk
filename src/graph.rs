@@ -11,10 +11,6 @@ pub struct DepGraph {
 
 impl DepGraph {
     /// Creates a dependency graph from Yolol assign statements.
-    ///
-    /// # Panics
-    ///
-    /// Panics if any of the statements are malformed.
     pub fn from_assign_stmts(stmts: &[YololNode]) -> DepGraph {
         let mut graph: HashMap<String, HashSet<String>> = HashMap::new();
         for stmt in stmts.iter() {
@@ -34,7 +30,7 @@ impl DepGraph {
         let mut found = HashSet::new();
         let mut queue = Vec::from_iter(idents.iter().cloned());
         while queue.len() > 0 {
-            let ident = queue.pop().unwrap();
+            let ident = queue.pop().expect("failed to pop ident from queue");
             if !found.contains(&ident) {
                 found.insert(ident.to_string());
                 if let Some(deps) = self.graph.get(&ident) {

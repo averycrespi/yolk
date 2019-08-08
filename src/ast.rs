@@ -62,10 +62,6 @@ pub enum YololNode {
 
 impl YololNode {
     /// Format Yolol assign statements as a program.
-    ///
-    /// # Panics
-    ///
-    /// Panics if any Yolol statements are malformed.
     pub fn format_as_program(stmts: &[YololNode]) -> String {
         let mut program = String::new();
         let mut line = String::new();

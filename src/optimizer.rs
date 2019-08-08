@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use num_traits::identities::{Zero, One};
+use num_traits::identities::{One, Zero};
 use yolol_number::YololNumber;
 
 use crate::ast::{InfixOp, YololNode};

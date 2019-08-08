@@ -11,10 +11,6 @@ use crate::error::YolkError;
 pub struct YolkParser;
 
 /// Parses Yolk statements from source text.
-///
-/// # Panics
-///
-/// Panics if an unrecoverable parse error occurs.
 pub fn parse(source: &str) -> Result<Vec<YolkNode>, YolkError> {
     let mut ast = vec![];
     let pairs = YolkParser::parse(Rule::program, source)
@@ -34,7 +30,7 @@ pub fn parse(source: &str) -> Result<Vec<YolkNode>, YolkError> {
 
 fn parse_import_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
     let mut pair = stmt.clone().into_inner();
-    let ident = pair.next().unwrap();
+    let ident = pair.next().expect("failed to unwrap ident from pair");
     YolkNode::ImportStmt {
         ident: ident.as_str().to_string(),
     }
@@ -42,9 +38,9 @@ fn parse_import_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
 
 fn parse_define_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
     let mut pair = stmt.clone().into_inner();
-    let ident = pair.next().unwrap();
-    let params = pair.next().unwrap();
-    let body = pair.next().unwrap();
+    let ident = pair.next().expect("failed to unwrap ident from pair");
+    let params = pair.next().expect("failed to unwrap params from pair");
+    let body = pair.next().expect("failed to unwrap body from pair");
     YolkNode::DefineStmt {
         ident: ident.as_str().to_string(),
         params: params
@@ -57,8 +53,8 @@ fn parse_define_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
 
 fn parse_let_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
     let mut pair = stmt.clone().into_inner();
-    let ident = pair.next().unwrap();
-    let expr = pair.next().unwrap();
+    let ident = pair.next().expect("failed to unwrap ident from pair");
+    let expr = pair.next().expect("failed to unwrap expr from pair");
     YolkNode::LetStmt {
         ident: ident.as_str().to_string(),
         expr: Box::new(parse_expr(expr)),
@@ -67,7 +63,7 @@ fn parse_let_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
 
 fn parse_export_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
     let mut pair = stmt.clone().into_inner();
-    let ident = pair.next().unwrap();
+    let ident = pair.next().expect("failed to unwrap ident from pair");
     YolkNode::ExportStmt {
         ident: ident.as_str().to_string(),
     }
@@ -77,14 +73,14 @@ fn parse_expr(expr: pest::iterators::Pair<Rule>) -> YolkNode {
     match expr.as_rule() {
         Rule::prefix_expr => {
             let mut pair = expr.into_inner();
-            let op = pair.next().unwrap();
-            let expr = pair.next().unwrap();
+            let op = pair.next().expect("failed to unwrap op from pair");
+            let expr = pair.next().expect("failed to unwrap expr from pair");
             parse_prefix_expr(op, parse_expr(expr))
         }
         Rule::call_expr => {
             let mut pair = expr.into_inner();
-            let ident = pair.next().unwrap();
-            let args = pair.next().unwrap();
+            let ident = pair.next().expect("failed to unwrap ident from pair");
+            let args = pair.next().expect("failed to unwrap args from pair");
             YolkNode::CallExpr {
                 ident: ident.as_str().to_string(),
                 args: args.into_inner().map(parse_expr).collect(),
@@ -92,13 +88,16 @@ fn parse_expr(expr: pest::iterators::Pair<Rule>) -> YolkNode {
         }
         Rule::infix_expr => {
             let mut pair = expr.into_inner();
-            let lhs = pair.next().unwrap();
-            let op = pair.next().unwrap();
-            let rhs = pair.next().unwrap();
+            let lhs = pair.next().expect("failed to unwrap lhs from pair");
+            let op = pair.next().expect("failed to unwrap op from pair");
+            let rhs = pair.next().expect("failed to unwrap rhs from pair");
             parse_infix_expr(parse_expr(lhs), op, parse_expr(rhs))
         }
         Rule::ident => YolkNode::Ident(expr.as_str().to_string()),
-        Rule::literal => YolkNode::Literal(YololNumber::from_str(expr.as_str()).unwrap()),
+        Rule::literal => YolkNode::Literal(
+            YololNumber::from_str(expr.as_str())
+                .unwrap_or_else(|e| panic!("failed to parse YololNumber from string: {}", e)),
+        ),
         Rule::array => {
             let exprs: Vec<YolkNode> = expr.into_inner().map(parse_expr).collect();
             YolkNode::Array(exprs)
@@ -151,6 +150,10 @@ fn parse_infix_expr(lhs: YolkNode, op: pest::iterators::Pair<Rule>, rhs: YolkNod
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
+    use yolol_number::YololNumber;
+
     use crate::ast::YolkNode;
     use crate::error::YolkError;
     use crate::parser::parse;
@@ -172,7 +175,7 @@ mod tests {
             parse("let number = 0;")?,
             vec![YolkNode::LetStmt {
                 ident: "number".to_string(),
-                expr: Box::new(YolkNode::Literal(0.0))
+                expr: Box::new(YolkNode::Literal(YololNumber::from_str("0").unwrap()))
             }]
         );
         Ok(())
@@ -185,8 +188,8 @@ mod tests {
             vec![YolkNode::LetStmt {
                 ident: "array".to_string(),
                 expr: Box::new(YolkNode::Array(vec![
-                    YolkNode::Literal(0.0),
-                    YolkNode::Literal(1.0)
+                    YolkNode::Literal(YololNumber::from_str("0").unwrap()),
+                    YolkNode::Literal(YololNumber::from_str("1").unwrap())
                 ]))
             }]
         );

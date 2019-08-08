@@ -107,7 +107,11 @@ impl Function {
             }),
             // Replace local variables with their respective arguments
             YolkNode::Ident(s) => {
-                let index = self.params.iter().position(|param| param == s).unwrap();
+                let index = self
+                    .params
+                    .iter()
+                    .position(|param| param == s)
+                    .expect("failed to get index of param");
                 Ok(args[index].clone())
             }
             YolkNode::Array(exprs) => {
