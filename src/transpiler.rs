@@ -20,9 +20,9 @@ pub fn transpile(stmts: &[YolkNode]) -> Result<(Vec<YololNode>, Context), YolkEr
                 ident,
                 params,
                 body,
-            } => env.define(&ident, &Function::new(&ident, params, &*body)?)?,
+            } => env.define(&ident, Function::new(&ident, params, &*body)?)?,
             YolkNode::LetStmt { ident, expr } => {
-                assigns.extend(env.let_value(&ident, &expr_to_value(&env, &*expr)?)?);
+                assigns.extend(env.let_value(&ident, expr_to_value(&env, &*expr)?)?);
             }
             YolkNode::ExportStmt { ident } => env.export(&ident)?,
             _ => panic!("expected statement, but got: {:?}", stmt),
