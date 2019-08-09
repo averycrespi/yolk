@@ -16,7 +16,7 @@ pub enum YolkError {
     ImportTwice(String),
 
     // Define errors
-    DefineBuiltin(String),
+    DefineKeyword(String),
     RedefineFunction(String),
 
     // Assign errors
@@ -61,8 +61,8 @@ impl fmt::Display for YolkError {
             YolkError::ImportTwice(variable) => {
                 write!(f, "cannot import variable twice: {}", variable)
             }
-            YolkError::DefineBuiltin(builtin) => {
-                write!(f, "cannot define builtin function: {}", builtin)
+            YolkError::DefineKeyword(keyword) => {
+                write!(f, "cannot define reserved keyword: {}", keyword)
             }
             YolkError::RedefineFunction(function) => {
                 write!(f, "cannot redefine existing function: {}", function)

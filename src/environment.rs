@@ -44,8 +44,6 @@ pub struct Environment {
     exports: HashSet<String>,
     // Stores the identifiers of reserved keywords
     keywords: HashSet<String>,
-    // Stores the identifiers of reserved builtins
-    builtins: HashSet<String>,
 }
 
 impl Environment {
@@ -73,14 +71,12 @@ impl Environment {
                 "atan".to_string(),
                 "and".to_string(),
                 "or".to_string(),
+                "sum".to_string(),
+                "product".to_string(),
             ]
             .iter()
             .cloned()
             .collect(),
-            builtins: ["sum".to_string(), "product".to_string()]
-                .iter()
-                .cloned()
-                .collect(),
         }
     }
 
@@ -127,8 +123,8 @@ impl Environment {
     pub fn define(&mut self, ident: &str, function: Function) -> Result<(), YolkError> {
         if self.functions.contains_key(ident) {
             Err(YolkError::RedefineFunction(ident.to_string()))
-        } else if self.builtins.contains(ident) {
-            Err(YolkError::DefineBuiltin(ident.to_string()))
+        } else if self.keywords.contains(ident) {
+            Err(YolkError::DefineKeyword(ident.to_string()))
         } else {
             self.functions.insert(ident.to_string(), function);
             Ok(())
