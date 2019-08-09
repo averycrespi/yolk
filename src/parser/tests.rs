@@ -9,9 +9,9 @@ use crate::parser::parse;
 #[test]
 fn test_parse_import() -> Result<(), YolkError> {
     assert_eq!(
-        parse("import variable;")?,
+        parse("import number;")?,
         vec![YolkNode::ImportStmt {
-            ident: "variable".to_string()
+            ident: "number".to_string()
         }]
     );
     Ok(())
@@ -21,6 +21,7 @@ fn test_parse_import() -> Result<(), YolkError> {
 fn test_parse_let_number() -> Result<(), YolkError> {
     let cases = vec!["0", "1", "1.0", "-1", "-1.0", "1.2345", "-1.2345"];
     for case in cases.iter() {
+        println!("case: {}", case);
         assert_eq!(
             parse(&format!("let number = {};", case))?,
             vec![YolkNode::LetStmt {
@@ -49,18 +50,28 @@ fn test_parse_let_array() -> Result<(), YolkError> {
 
 #[test]
 fn test_parse_let_prefix() -> Result<(), YolkError> {
-    parse("let number = neg (not (abs (sqrt (sin (cos (tan (asin (acos (atan (0))))))))));")?;
+    //TODO: check results
+    parse("let number = not (abs (sqrt (sin (cos (tan (asin (acos (atan (0)))))))));")?;
     Ok(())
 }
 
 #[test]
 fn test_parse_let_infix() -> Result<(), YolkError> {
+    //TODO: check results
     parse("let number = 1 + 2 - 3 * 4 / 5 % 6 ^ 7 < 8 <= 9 > 10 >= 11 == 12 != 13 and 14 or 15;")?;
     Ok(())
 }
 
 #[test]
+fn test_parse_let_builtin() -> Result<(), YolkError> {
+    //TODO: check results
+    parse("let number = sum(0);")?;
+    Ok(())
+}
+
+#[test]
 fn test_parse_let_call() -> Result<(), YolkError> {
+    //TODO: check results
     parse("let number = function(0) + function([0, 1]) + function(number);")?;
     Ok(())
 }

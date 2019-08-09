@@ -18,7 +18,7 @@ fn evaluate(source: &str) -> Result<(Environment, Environment), YolkError> {
 }
 
 #[test]
-fn test_let_number() -> Result<(), YolkError> {
+fn test_optimize_let_number() -> Result<(), YolkError> {
     let (original_env, optimized_env) = evaluate("let output = 1; export output;")?;
     assert_eq!(
         original_env.get_val("output"),
@@ -28,7 +28,7 @@ fn test_let_number() -> Result<(), YolkError> {
 }
 
 #[test]
-fn test_let_array() -> Result<(), YolkError> {
+fn test_optimize_let_array() -> Result<(), YolkError> {
     let (original_env, optimized_env) = evaluate("let output = [1, 2, 3]; export output;")?;
     assert_eq!(
         vec![
@@ -41,6 +41,16 @@ fn test_let_array() -> Result<(), YolkError> {
             optimized_env.get_val("output_2"),
             optimized_env.get_val("output_3")
         ]
+    );
+    Ok(())
+}
+
+#[test]
+fn test_optimize_let_complex() -> Result<(), YolkError> {
+    let (original_env, optimized_env) = evaluate("let output = 1 + 2 - 3 + 4 * 5 / 6 % 7;")?;
+    assert_eq!(
+        original_env.get_val("output"),
+        optimized_env.get_val("output2")
     );
     Ok(())
 }
