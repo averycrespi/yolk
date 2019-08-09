@@ -29,7 +29,7 @@ pub fn parse(source: &str) -> Result<Vec<YolkNode>, YolkError> {
 }
 
 fn parse_import_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
-    let mut pair = stmt.clone().into_inner();
+    let mut pair = stmt.into_inner();
     let ident = pair.next().expect("failed to unwrap ident from pair");
     YolkNode::ImportStmt {
         ident: ident.as_str().to_string(),
@@ -37,7 +37,7 @@ fn parse_import_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
 }
 
 fn parse_define_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
-    let mut pair = stmt.clone().into_inner();
+    let mut pair = stmt.into_inner();
     let ident = pair.next().expect("failed to unwrap ident from pair");
     let params = pair.next().expect("failed to unwrap params from pair");
     let body = pair.next().expect("failed to unwrap body from pair");
@@ -52,7 +52,7 @@ fn parse_define_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
 }
 
 fn parse_let_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
-    let mut pair = stmt.clone().into_inner();
+    let mut pair = stmt.into_inner();
     let ident = pair.next().expect("failed to unwrap ident from pair");
     let expr = pair.next().expect("failed to unwrap expr from pair");
     YolkNode::LetStmt {
@@ -62,7 +62,7 @@ fn parse_let_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
 }
 
 fn parse_export_stmt(stmt: pest::iterators::Pair<Rule>) -> YolkNode {
-    let mut pair = stmt.clone().into_inner();
+    let mut pair = stmt.into_inner();
     let ident = pair.next().expect("failed to unwrap ident from pair");
     YolkNode::ExportStmt {
         ident: ident.as_str().to_string(),
