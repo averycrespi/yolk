@@ -47,10 +47,11 @@ fn test_optimize_let_array() -> Result<(), YolkError> {
 
 #[test]
 fn test_optimize_let_complex() -> Result<(), YolkError> {
-    let (original_env, optimized_env) = evaluate("let output = 1 + 2 - 3 + 4 * 5 / 6 % 7;")?;
+    let (original_env, optimized_env) =
+        evaluate("let output = 1 + 2 - 3 + 4 * 5 / 6 % 7; export output;")?;
     assert_eq!(
         original_env.get_val("output"),
-        optimized_env.get_val("output2")
+        optimized_env.get_val("output")
     );
     Ok(())
 }
