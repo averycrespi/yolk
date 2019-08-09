@@ -1,11 +1,13 @@
+use yolol_number::YololNumber;
+
 use crate::ast::{InfixOp, PrefixOp, YololNode};
 use crate::error::YolkError;
 
 /// Represents a Yolk value.
 #[derive(Debug, Clone)]
 pub enum Value {
-    Number(Number),
-    Array(Array),
+    Number(NumberExpr),
+    Array(ArrayExpr),
 }
 
 impl Value {
@@ -13,9 +15,7 @@ impl Value {
     pub fn apply_prefix_op(&self, op: &PrefixOp) -> Value {
         match self {
             Value::Number(n) => Value::Number(n.apply_prefix_op(op)),
-            Value::Array(a) => Value::Array(Array {
-                numbers: a.numbers.iter().map(|n| n.apply_prefix_op(op)).collect(),
-            }),
+            Value::Array(a) => Value::Array(a.apply_prefix_op(op)),
         }
     }
 
@@ -27,14 +27,14 @@ impl Value {
             }
             (Value::Array(lhs), Value::Number(rhs)) => {
                 // Expand the right-hand side into an array of identical numbers
-                let rhs = Array {
+                let rhs = ArrayExpr {
                     numbers: vec![rhs.clone(); lhs.numbers.len()],
                 };
                 Ok(Value::Array(lhs.apply_infix_op(op, &rhs)))
             }
             (Value::Number(lhs), Value::Array(rhs)) => {
                 // Expand the left-hand side into an array of identical numbers
-                let lhs = Array {
+                let lhs = ArrayExpr {
                     numbers: vec![lhs.clone(); rhs.numbers.len()],
                 };
                 Ok(Value::Array(lhs.apply_infix_op(op, rhs)))
@@ -49,8 +49,8 @@ impl Value {
         }
     }
 
-    // Reduces values to a single Yolk number.
-    pub fn reduce(values: &[Value], op: &InfixOp, start: &Number) -> Value {
+    // Reduces Yolk values to a single Yolk number expression.
+    pub fn reduce(values: &[Value], op: &InfixOp, start: &NumberExpr) -> Value {
         let mut result = start.clone();
         for value in values.iter() {
             match value {
@@ -66,33 +66,33 @@ impl Value {
     }
 }
 
-/// Represents a Yolk number.
+/// Represents a Yolk number expression.
 #[derive(Debug, Clone)]
-pub struct Number {
+pub struct NumberExpr {
     expr: YololNode,
 }
 
-impl Number {
-    /// Creates a Yolk number from an identifier.
-    pub fn from_ident(ident: &str) -> Number {
-        Number {
+impl NumberExpr {
+    /// Creates a Yolk number expression from an identifier.
+    pub fn from_ident(ident: &str) -> NumberExpr {
+        NumberExpr {
             expr: YololNode::Ident(ident.to_string()),
         }
     }
 
-    // Creates a Yolk number from a float.
-    pub fn from_float(float: f64) -> Number {
-        Number {
-            expr: YololNode::Literal(float),
+    // Creates a Yolk number expression from a Yolol number.
+    pub fn from_yolol_number(num: YololNumber<i128>) -> NumberExpr {
+        NumberExpr {
+            expr: YololNode::Literal(num),
         }
     }
 
-    /// Returns a Yolk number as a Yolol expression.
+    /// Returns a Yolk number expression as a Yolol expression.
     pub fn as_expr(&self) -> YololNode {
         self.expr.clone()
     }
 
-    // Converts a Yolk number to a YOLOL assign statement.
+    // Converts a Yolk number expression to a Yolol assign statement.
     pub fn to_assign_stmt(&self, ident: &str) -> YololNode {
         YololNode::AssignStmt {
             ident: ident.to_string(),
@@ -100,52 +100,55 @@ impl Number {
         }
     }
 
-    fn apply_prefix_op(&self, op: &PrefixOp) -> Number {
-        Number {
+    fn apply_prefix_op(&self, op: &PrefixOp) -> NumberExpr {
+        NumberExpr {
             expr: YololNode::PrefixExpr {
-                op: op.clone(),
+                op: *op,
                 expr: Box::new(self.as_expr()),
             },
         }
     }
 
-    fn apply_infix_op(&self, op: &InfixOp, other: &Number) -> Number {
-        Number {
+    fn apply_infix_op(&self, op: &InfixOp, other: &NumberExpr) -> NumberExpr {
+        NumberExpr {
             expr: YololNode::InfixExpr {
                 lhs: Box::new(self.as_expr()),
-                op: op.clone(),
+                op: *op,
                 rhs: Box::new(other.as_expr()),
             },
         }
     }
 }
 
-/// Represents an array of Yolk numbers.
+/// Represents an array of Yolk number expression.
 #[derive(Debug, Clone)]
-pub struct Array {
-    numbers: Vec<Number>,
+pub struct ArrayExpr {
+    numbers: Vec<NumberExpr>,
 }
 
-impl Array {
-    // Creates a Yolk array from an identifier.
-    pub fn from_ident(ident: &str, size: usize) -> Array {
+impl ArrayExpr {
+    // Creates a Yolk array expression from an identifier.
+    pub fn from_ident(ident: &str, size: usize) -> ArrayExpr {
         let mut numbers = Vec::new();
         for i in 0..size {
-            numbers.push(Number::from_ident(&format!("{}_{}", ident, i)));
+            numbers.push(NumberExpr::from_ident(&format!("{}_{}", ident, i)));
         }
-        Array { numbers: numbers }
+        ArrayExpr { numbers: numbers }
     }
 
-    // Creates a Yolk array from Yolk numbers.
-    pub fn from_numbers(numbers: &[Number]) -> Array {
-        Array {
+    // Creates a Yolk array expression from Yolk number expressions.
+    pub fn from_number_exprs(numbers: &[NumberExpr]) -> ArrayExpr {
+        ArrayExpr {
             numbers: numbers.to_vec(),
         }
     }
 
-    // Converts a Yolk array to Yolol assign statements.
-    //
-    // The number of statements will be equal to the length of the array.
+    // Returns a Yolk array expression as a vector of Yolol expressions.
+    pub fn as_exprs(&self) -> Vec<YololNode> {
+        self.numbers.iter().map(|n| n.as_expr()).collect()
+    }
+
+    // Converts a Yolk array expression to Yolol assign statements.
     pub fn to_assign_stmts(&self, ident: &str) -> Vec<YololNode> {
         let mut assign_stmts = Vec::new();
         for (elem_index, number) in self.numbers.iter().enumerate() {
@@ -157,8 +160,14 @@ impl Array {
         assign_stmts
     }
 
-    fn apply_infix_op(&self, op: &InfixOp, other: &Array) -> Array {
-        Array {
+    fn apply_prefix_op(&self, op: &PrefixOp) -> ArrayExpr {
+        ArrayExpr {
+            numbers: self.numbers.iter().map(|n| n.apply_prefix_op(op)).collect(),
+        }
+    }
+
+    fn apply_infix_op(&self, op: &InfixOp, other: &ArrayExpr) -> ArrayExpr {
+        ArrayExpr {
             numbers: self
                 .numbers
                 .iter()

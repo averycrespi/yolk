@@ -1,9 +1,0 @@
-import bar;
-
-define square_half(A) = (A / 2) ^ 2;
-
-let baz = 4;
-let foo = square_half([1, 2, 3]);
-
-export baz;
-export foo;

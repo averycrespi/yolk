@@ -1,33 +1,64 @@
-WHITESPACE = _{ " " | "\t" | NEWLINE }
+WHITESPACE      = _{ " " | "\t" | NEWLINE }
 
-program = _{ SOI ~ (stmt ~ ";")* ~ EOI }
+program         = _{ SOI ~ (stmt ~ ";")* ~ EOI }
 
-stmt = _{ import_stmt | define_stmt | let_stmt | export_stmt }
-import_stmt = { "import" ~ ident }
-define_stmt = { "define" ~ ident ~ params ~ "=" ~ expr }
-let_stmt = { "let" ~ ident ~ "=" ~ expr }
-export_stmt = { "export" ~ ident }
+stmt            = _{ import_stmt | define_stmt | let_stmt | export_stmt }
+import_stmt     = { "import" ~ ident }
+define_stmt     = { "define" ~ ident ~ "(" ~ params ~ ")" ~ "=" ~ expr }
+let_stmt        = { "let" ~ ident ~ "=" ~ expr }
+export_stmt     = { "export" ~ ident }
 
-expr = _{ infix_expr | prefix_expr | call_expr | base_expr }
-infix_expr = { (prefix_expr | call_expr | base_expr) ~ infix_op ~ expr }
-prefix_expr = { prefix_op ~ expr ~ "!" }
-call_expr = { ident ~ args }
-base_expr = _{ ident | literal | array | "(" ~ expr ~ ")" }
+expr            = _{ infix_expr | base_expr }
+infix_expr      = { base_expr ~ (infix_op ~ base_expr)+ }
+base_expr       = _{ prefix_expr | builtin_expr | call_expr | ident | literal | array | "(" ~ expr ~ ")" }
+prefix_expr     = { prefix_op ~ "(" ~ expr ~ ")" }
+builtin_expr    = { builtin ~ "(" ~ args ~ ")" }
+call_expr       = { ident ~ "(" ~ args ~ ")" }
 
-prefix_op = {
-    "not" | "abs" | "sqrt" |
-    "sin" | "cos" | "tan" | "asin" | "acos" | "atan"
+builtin = _{ sum | product }
+
+sum             = { "sum" }
+product         = { "product" }
+
+prefix_op = _{
+    logical_not | abs | sqrt |
+    sin | cos | tan | asin | acos | atan
 }
 
-infix_op = {
-    "+" | "-" | "*" | "/" | "%" | "^" |
-    "<" | "<=" | ">" | ">=" | "==" | "!=" |
-    "and" | "or"
+logical_not     = { "not" }
+abs             = { "abs" }
+sqrt            = { "sqrt" }
+sin             = { "sin" }
+cos             = { "cos" }
+tan             = { "tan" }
+asin            = { "asin" }
+acos            = { "acos" }
+atan            = { "atan" }
+
+infix_op = _{
+    plus | minus | multiply | divide | modulus | exponent |
+    less_equal | less_than | greater_equal | greater_than | equal | not_equal |
+    logical_and | logical_or
 }
 
-params = { "(" ~ ident ~ ("," ~ ident)* ~ ")" }
-args = { "(" ~ expr ~ ("," ~ expr)* ~ ")" }
+plus            = { "+" }
+minus           = { "-" }
+multiply        = { "*" }
+divide          = { "/" }
+modulus         = { "%" }
+exponent        = { "^" }
+less_than       = { "<" }
+less_equal      = { "<=" }
+greater_than    = { ">" }
+greater_equal   = { ">=" }
+equal           = { "==" }
+not_equal       = { "!=" }
+logical_and     = { "and" }
+logical_or      = { "or" }
 
-ident = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHA | "_")* }
-literal = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT{1,4})? }
-array = { "[" ~ expr ~ ("," ~ expr)* ~ "]" }
+params          = { ident ~ ("," ~ ident)* }
+args            = { expr ~ ("," ~ expr)* }
+
+ident           = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHA | "_")* }
+literal         = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT{1,4})? }
+array           = { "[" ~ expr ~ ("," ~ expr)* ~ "]" }

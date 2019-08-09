@@ -1,12 +1,12 @@
-.PHONY: all doc open run
+.PHONY: all build doc test
 
-all: run
+all: test build
+
+build:
+	cargo build
 
 doc:
-	cargo doc
-
-open:
 	cargo doc --open
 
-run:
-	cargo run
+test:
+	cargo test

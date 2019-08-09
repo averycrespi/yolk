@@ -1,7 +1,7 @@
+use std::collections::HashSet;
+
 use crate::ast::YolkNode;
 use crate::error::YolkError;
-
-use std::collections::HashSet;
 
 /// Represents a Yolk function.
 #[derive(Debug, Clone)]
@@ -84,7 +84,7 @@ impl Function {
     ) -> Result<YolkNode, YolkError> {
         match node {
             YolkNode::PrefixExpr { op, expr } => Ok(YolkNode::PrefixExpr {
-                op: op.clone(),
+                op: *op,
                 expr: Box::new(self.replace_params_with_args(args, expr)?),
             }),
             YolkNode::CallExpr {
@@ -102,12 +102,16 @@ impl Function {
             }
             YolkNode::InfixExpr { lhs, op, rhs } => Ok(YolkNode::InfixExpr {
                 lhs: Box::new(self.replace_params_with_args(args, lhs)?),
-                op: op.clone(),
+                op: *op,
                 rhs: Box::new(self.replace_params_with_args(args, rhs)?),
             }),
             // Replace local variables with their respective arguments
             YolkNode::Ident(s) => {
-                let index = self.params.iter().position(|param| param == s).unwrap();
+                let index = self
+                    .params
+                    .iter()
+                    .position(|param| param == s)
+                    .expect("failed to get index of param");
                 Ok(args[index].clone())
             }
             YolkNode::Array(exprs) => {

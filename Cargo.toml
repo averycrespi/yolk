@@ -1,13 +1,21 @@
 [package]
 name = "yolk"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Avery Crespi <averycrespi@gmail.com>"]
 edition = "2018"
+description = "Numerical computing for YOLOL"
+license = "MIT"
 
 repository = "https://github.com/averycrespi/yolk"
 readme = "README.md"
-license = "AGPL-3.0-only"
+
+exclude = ["/resources/*"]
 
 [dependencies]
-pest = "2.0.0"
-pest_derive = "2.0.0"
+clap = "2.33.0"
+lazy_static = "1.3.0"
+num-traits = "0.2.8"
+pest = "2.1.0"
+pest_derive = "2.1.0"
+yolol_number = "0.2.0"
+yoloxide = "0.3.2"

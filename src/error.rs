@@ -4,6 +4,9 @@ use std::fmt;
 /// Represents a general Yolk error.
 #[derive(Debug, Clone)]
 pub enum YolkError {
+    // Parse errors
+    BadSyntax(String),
+
     // Wrapped errors
     WithStmt { stmt: String, error: Box<YolkError> },
 
@@ -13,11 +16,11 @@ pub enum YolkError {
     ImportTwice(String),
 
     // Define errors
-    DefineBuiltin(String),
+    DefineKeyword(String),
     RedefineFunction(String),
 
     // Assign errors
-    AssignConflict(String),
+    AssignInsensitive(String),
     AssignToKeyword(String),
     ReassignVariable(String),
 
@@ -45,7 +48,10 @@ impl error::Error for YolkError {}
 impl fmt::Display for YolkError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            YolkError::WithStmt { stmt, error } => write!(f, "{}\nwith statement: {}", error, stmt),
+            YolkError::BadSyntax(message) => {
+                write!(f, "syntax error at line:column {}", message.trim())
+            }
+            YolkError::WithStmt { stmt, error } => write!(f, "{}\nin statement: {}", error, stmt),
             YolkError::ImportExisting(variable) => {
                 write!(f, "cannot import existing variable: {}", variable)
             }
@@ -55,15 +61,17 @@ impl fmt::Display for YolkError {
             YolkError::ImportTwice(variable) => {
                 write!(f, "cannot import variable twice: {}", variable)
             }
-            YolkError::DefineBuiltin(builtin) => {
-                write!(f, "cannot define builtin function: {}", builtin)
+            YolkError::DefineKeyword(keyword) => {
+                write!(f, "cannot define reserved keyword: {}", keyword)
             }
             YolkError::RedefineFunction(function) => {
                 write!(f, "cannot redefine existing function: {}", function)
             }
-            YolkError::AssignConflict(variable) => {
-                write!(f, "cannot assign to conflicting variable: {}", variable)
-            }
+            YolkError::AssignInsensitive(variable) => write!(
+                f,
+                "multiple variables cannot have the same case-insensitive name: {}",
+                variable.to_lowercase()
+            ),
             YolkError::AssignToKeyword(keyword) => {
                 write!(f, "cannot assign to reserved keyword: {}", keyword)
             }
