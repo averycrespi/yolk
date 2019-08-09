@@ -22,6 +22,8 @@
 
 Yolk is a [domain-specific language](https://en.wikipedia.org/wiki/Domain-specific_language) that transpiles to [YOLOL](https://wiki.starbasegame.com/index.php/YOLOL).
 
+Yolk specializes in working with numbers and arrays.
+
 ## Why should I use Yolk?
 
 #### Convenience
