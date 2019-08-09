@@ -40,15 +40,16 @@ fn expr_to_value(env: &Environment, expr: &YolkNode) -> Result<Value, YolkError>
             let value = expr_to_value(env, &expr)?;
             Ok(value.apply_prefix_op(&op))
         }
-        YolkNode::CallExpr { ident, args } => match ident.as_ref() {
+        YolkNode::BuiltinExpr { ident, args } => match ident.as_ref() {
             "sum" => sum_to_value(env, args),
             "product" => product_to_value(env, args),
-            _ => {
-                let function = env.function(ident)?;
-                let expr = function.call(args)?;
-                expr_to_value(env, &expr)
-            }
+            _ => panic!("expected builtin, but got: {:?}", ident),
         },
+        YolkNode::CallExpr { ident, args } => {
+            let function = env.function(ident)?;
+            let expr = function.call(args)?;
+            expr_to_value(env, &expr)
+        }
         YolkNode::InfixExpr { lhs, op, rhs } => {
             let lhs = expr_to_value(env, &lhs)?;
             let rhs = expr_to_value(env, &rhs)?;

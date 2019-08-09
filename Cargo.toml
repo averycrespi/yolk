@@ -13,6 +13,7 @@ exclude = ["/resources/*"]
 
 [dependencies]
 clap = "2.33.0"
+lazy_static = "1.3.0"
 num-traits = "0.2.8"
 pest = "2.1.0"
 pest_derive = "2.1.0"

@@ -49,7 +49,7 @@ fn test_parse_let_array() -> Result<(), YolkError> {
 
 #[test]
 fn test_parse_let_prefix() -> Result<(), YolkError> {
-    parse("let number = neg (not abs sqrt sin cos tan asin acos atan 0);")?;
+    parse("let number = neg (not (abs (sqrt (sin (cos (tan (asin (acos (atan (0))))))))));")?;
     Ok(())
 }
 

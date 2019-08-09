@@ -26,6 +26,10 @@ pub enum YolkNode {
         op: PrefixOp,
         expr: Box<YolkNode>,
     },
+    BuiltinExpr {
+        ident: String,
+        args: Vec<YolkNode>,
+    },
     CallExpr {
         ident: String,
         args: Vec<YolkNode>,
