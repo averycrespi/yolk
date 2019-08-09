@@ -6,6 +6,9 @@ use yolol_number::YololNumber;
 use crate::ast::{InfixOp, PrefixOp, YolkNode};
 use crate::error::YolkError;
 
+#[cfg(test)]
+mod tests;
+
 #[derive(Parser)]
 #[grammar = "grammar/yolk.pest"]
 pub struct YolkParser;
@@ -146,89 +149,5 @@ fn parse_infix_expr(lhs: YolkNode, op: pest::iterators::Pair<Rule>, rhs: YolkNod
             _ => panic!("expected infix op, but got: {:?}", op),
         },
         rhs: Box::new(rhs),
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use std::str::FromStr;
-
-    use yolol_number::YololNumber;
-
-    use crate::ast::YolkNode;
-    use crate::error::YolkError;
-    use crate::parser::parse;
-
-    #[test]
-    fn test_parse_import() -> Result<(), YolkError> {
-        assert_eq!(
-            parse("import variable;")?,
-            vec![YolkNode::ImportStmt {
-                ident: "variable".to_string()
-            }]
-        );
-        Ok(())
-    }
-
-    #[test]
-    fn test_parse_let_number() -> Result<(), YolkError> {
-        assert_eq!(
-            parse("let number = 0;")?,
-            vec![YolkNode::LetStmt {
-                ident: "number".to_string(),
-                expr: Box::new(YolkNode::Literal(YololNumber::from_str("0").unwrap()))
-            }]
-        );
-        Ok(())
-    }
-
-    #[test]
-    fn test_parse_let_array() -> Result<(), YolkError> {
-        assert_eq!(
-            parse("let array = [0, 1];")?,
-            vec![YolkNode::LetStmt {
-                ident: "array".to_string(),
-                expr: Box::new(YolkNode::Array(vec![
-                    YolkNode::Literal(YololNumber::from_str("0").unwrap()),
-                    YolkNode::Literal(YololNumber::from_str("1").unwrap())
-                ]))
-            }]
-        );
-        Ok(())
-    }
-
-    #[test]
-    fn test_parse_define() -> Result<(), YolkError> {
-        assert_eq!(
-            parse("define identity(A) = A;")?,
-            vec![YolkNode::DefineStmt {
-                ident: "identity".to_string(),
-                params: vec!["A".to_string()],
-                body: Box::new(YolkNode::Ident("A".to_string()))
-            }]
-        );
-        Ok(())
-    }
-
-    #[test]
-    fn test_parse_extra_newlines() -> Result<(), YolkError> {
-        assert_eq!(
-            parse("let number = 0;")?,
-            parse("\nlet\nnumber\n=\n0\n;\n")?
-        );
-        Ok(())
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_parse_missing_semicolon() {
-        parse("let number = 0").unwrap();
-    }
-
-    #[test]
-    #[should_panic]
-    #[allow(unused_variables)]
-    fn test_parse_invalid_ident() {
-        parse("let !@#$%^&*() = 0;").unwrap();
     }
 }
