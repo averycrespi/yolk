@@ -404,13 +404,13 @@ dependencies = [
  "num-traits 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "pest 2.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pest_derive 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "yolol_number 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "yolol_number 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "yoloxide 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "yolol_number"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "num-traits 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -482,5 +482,5 @@ dependencies = [
 "checksum winapi 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)" = "f10e386af2b13e47c89e7236a7a14a086791a2b88ebad6df9bf42040195cf770"
 "checksum winapi-i686-pc-windows-gnu 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ac3b87c63620426dd9b991e5ce0329eff545bccbbb34f3be09ff6fb6ab51b7b6"
 "checksum winapi-x86_64-pc-windows-gnu 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
-"checksum yolol_number 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "c67b571cfc2790db7e48b63a5b13bc0ef8d6f7e8a75fc9a50a6e4a4dd2b4b0d8"
+"checksum yolol_number 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "a26abfc5953a3ca2a10f6966e2676c9d3af82e489d107beabe15f55f6a261283"
 "checksum yoloxide 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "344f5390d8c91588060c87355820d2770799038e267171cecc34aebe083b4319"
