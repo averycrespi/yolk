@@ -87,7 +87,14 @@ fn reduce_node(vars: &HashMap<String, YololNode>, node: &YololNode) -> YololNode
                 InfixOp::Div if !z.is_zero() => YololNode::Literal(y / z),
                 InfixOp::Mod if !z.is_zero() => YololNode::Literal(y % z),
                 InfixOp::Exp if !(y.is_zero() && z.is_zero()) => YololNode::Literal(y.pow(z)),
-                //TODO: handle comparison and boolean
+                InfixOp::LessThan => YololNode::Literal(YololNumber::from(y < z)),
+                InfixOp::LessEqual => YololNode::Literal(YololNumber::from(y <= z)),
+                InfixOp::GreaterThan => YololNode::Literal(YololNumber::from(y > z)),
+                InfixOp::GreaterEqual => YololNode::Literal(YololNumber::from(y >= z)),
+                InfixOp::Equal => YololNode::Literal(YololNumber::from(y == z)),
+                InfixOp::NotEqual => YololNode::Literal(YololNumber::from(y != z)),
+                InfixOp::And => YololNode::Literal(YololNumber::from((y != zero) && (z != zero))),
+                InfixOp::Or => YololNode::Literal(YololNumber::from((y != zero) || (z != zero))),
                 _ => node.clone(),
             },
             _ => YololNode::InfixExpr {
