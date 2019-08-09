@@ -19,7 +19,7 @@ fn test_parse_import() -> Result<(), YolkError> {
 
 #[test]
 fn test_parse_let_number() -> Result<(), YolkError> {
-    let cases = vec!["0", "1", "-1", "1.2345", "-1.2345"];
+    let cases = vec!["0", "1", "1.0", "-1", "-1.0", "1.2345", "-1.2345"];
     for case in cases.iter() {
         assert_eq!(
             parse(&format!("let number = {};", case))?,
@@ -60,6 +60,12 @@ fn test_parse_let_infix() -> Result<(), YolkError> {
 }
 
 #[test]
+fn test_parse_let_call() -> Result<(), YolkError> {
+    parse("let number = function(0) + function([0, 1]) + function(number);")?;
+    Ok(())
+}
+
+#[test]
 fn test_parse_define() -> Result<(), YolkError> {
     assert_eq!(
         parse("define identity(A) = A;")?,
@@ -73,7 +79,7 @@ fn test_parse_define() -> Result<(), YolkError> {
 }
 
 #[test]
-fn test_parse_extra_newlines() -> Result<(), YolkError> {
+fn test_parse_extra_whitespace() -> Result<(), YolkError> {
     assert_eq!(
         parse("let number = 0;")?,
         parse(" \n\tlet \n\tnumber \n\t= \n\t0 \n\t; \n\t")?
@@ -89,6 +95,12 @@ fn test_parse_missing_semicolon() {
 
 #[test]
 #[should_panic]
+fn test_parse_extra_semicolon() {
+    parse("let number = 0;;").unwrap();
+}
+
+#[test]
+#[should_panic]
 #[allow(unused_variables)]
 fn test_parse_invalid_ident() {
     parse("let !@#$%^&*() = 0;").unwrap();
@@ -98,4 +110,16 @@ fn test_parse_invalid_ident() {
 #[should_panic]
 fn test_parse_too_much_precision() {
     parse("let number = 1.23456;").unwrap();
+}
+
+#[test]
+#[should_panic]
+fn test_parse_missing_whole() {
+    parse("let number = .0;").unwrap();
+}
+
+#[test]
+#[should_panic]
+fn test_parse_missing_fraction() {
+    parse("let number = 1.;").unwrap();
 }
