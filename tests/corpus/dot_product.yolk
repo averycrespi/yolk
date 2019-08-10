@@ -1,0 +1,7 @@
+define dot(a, b) = sum(a * b);
+
+let n = dot([1, 2], [3, 4]);
+export n;
+
+let e = 11;
+export e;
