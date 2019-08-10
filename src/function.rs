@@ -36,11 +36,11 @@ impl Function {
     fn check_body_node(&self, node: &YolkNode) -> Result<(), YolkError> {
         match node {
             YolkNode::PrefixExpr { op: _, expr } => self.check_body_node(expr)?,
-            // Check for recursive calls
-            YolkNode::CallExpr { ident, args } => {
+            YolkNode::BuiltinExpr { ident, args } | YolkNode::CallExpr { ident, args } => {
                 for arg in args.iter() {
                     self.check_body_node(arg)?;
                 }
+                // Check for recursive calls
                 if self.ident == ident.to_string() {
                     return Err(YolkError::RecursiveCall(self.ident.to_string()));
                 }
@@ -49,8 +49,8 @@ impl Function {
                 self.check_body_node(lhs)?;
                 self.check_body_node(rhs)?;
             }
-            // Check for undefined local variables
             YolkNode::Ident(s) => {
+                // Check for undefined local variables
                 if !self.params.contains(s) {
                     return Err(YolkError::GetUndefinedLocal {
                         function: self.ident.to_string(),
@@ -87,6 +87,19 @@ impl Function {
                 op: *op,
                 expr: Box::new(self.replace_params_with_args(args, expr)?),
             }),
+            YolkNode::BuiltinExpr {
+                ident,
+                args: call_args,
+            } => {
+                let mut replaced_args = Vec::new();
+                for arg in call_args.iter() {
+                    replaced_args.push(self.replace_params_with_args(args, arg)?);
+                }
+                Ok(YolkNode::BuiltinExpr {
+                    ident: ident.to_string(),
+                    args: replaced_args,
+                })
+            }
             YolkNode::CallExpr {
                 ident,
                 args: call_args,
