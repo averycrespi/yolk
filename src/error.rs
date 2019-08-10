@@ -1,15 +1,55 @@
 use std::error;
 use std::fmt;
 
-/// Represents a general Yolk error.
+/// Represents a general error.
 #[derive(Debug, Clone)]
-pub enum YolkError {
-    // Parse errors
+pub enum Error {
+    ParseError(ParseError),
+    TranspileError(TranspileError),
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Error::ParseError(e) => write!(f, "{}", e),
+            Error::TranspileError(e) => write!(f, "{}", e),
+        }
+    }
+}
+
+impl error::Error for Error {}
+
+impl From<ParseError> for Error {
+    fn from(error: ParseError) -> Self {
+        Error::ParseError(error)
+    }
+}
+
+impl From<TranspileError> for Error {
+    fn from(error: TranspileError) -> Self {
+        Error::TranspileError(error)
+    }
+}
+
+/// Represents an error during parsing.
+#[derive(Debug, Clone)]
+pub enum ParseError {
     BadSyntax(String),
+    BadYololNumber(String),
+}
 
-    // Wrapped errors
-    WithStmt { stmt: String, error: Box<YolkError> },
+impl fmt::Display for ParseError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            ParseError::BadSyntax(s) => write!(f, "syntax error: {}", s),
+            ParseError::BadYololNumber(s) => write!(f, "failed to parse number: {}", s),
+        }
+    }
+}
 
+/// Represents an error during transpilation.
+#[derive(Debug, Clone)]
+pub enum TranspileError {
     // Import errors
     ImportExisting(String),
     ImportKeyword(String),
@@ -20,7 +60,7 @@ pub enum YolkError {
     RedefineFunction(String),
 
     // Assign errors
-    AssignInsensitive(String),
+    AssignSameLowercase(String),
     AssignToKeyword(String),
     ReassignVariable(String),
 
@@ -30,83 +70,67 @@ pub enum YolkError {
 
     // Access errors
     GetUndefinedFunction(String),
-    GetUndefinedLocal { function: String, local: String },
+    GetUndefinedLocal(String),
     GetUndefinedVariable(String),
 
-    // Function errors
-    DuplicateParams(String),
-    RecursiveCall(String),
+    // TODO: separate error type?
+    DuplicateParams,
+    RecursiveCall,
     WrongNumberOfArgs(String),
 
-    // Value errors
+    // Type errors
+    // TODO: separate error type?
     MismatchedArrays,
     NestedArrays,
 }
 
-impl error::Error for YolkError {}
-
-impl fmt::Display for YolkError {
+impl fmt::Display for TranspileError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            YolkError::BadSyntax(message) => {
-                write!(f, "syntax error at line:column {}", message.trim())
-            }
-            YolkError::WithStmt { stmt, error } => write!(f, "{}\nin statement: {}", error, stmt),
-            YolkError::ImportExisting(variable) => {
+            TranspileError::ImportExisting(variable) => {
                 write!(f, "cannot import existing variable: {}", variable)
             }
-            YolkError::ImportKeyword(keyword) => {
+            TranspileError::ImportKeyword(keyword) => {
                 write!(f, "cannot import reserved keyword: {}", keyword)
             }
-            YolkError::ImportTwice(variable) => {
-                write!(f, "cannot import variable twice: {}", variable)
-            }
-            YolkError::DefineKeyword(keyword) => {
+            TranspileError::ImportTwice(variable) => write!(f, "duplicate import: {}", variable),
+            TranspileError::DefineKeyword(keyword) => {
                 write!(f, "cannot define reserved keyword: {}", keyword)
             }
-            YolkError::RedefineFunction(function) => {
-                write!(f, "cannot redefine existing function: {}", function)
+            TranspileError::RedefineFunction(function) => {
+                write!(f, "cannot redefine function: {}", function)
             }
-            YolkError::AssignInsensitive(variable) => write!(
+            TranspileError::AssignSameLowercase(variable) => write!(
                 f,
-                "multiple variables cannot have the same case-insensitive name: {}",
-                variable.to_lowercase()
+                "multiple variable must not have the same lowercase representation: {}",
+                variable
             ),
-            YolkError::AssignToKeyword(keyword) => {
-                write!(f, "cannot assign to reserved keyword: {}", keyword)
+            TranspileError::AssignToKeyword(keyword) => {
+                write!(f, "cannot assign to keyword: {}", keyword)
             }
-            YolkError::ReassignVariable(variable) => {
-                write!(f, "cannot reassign existing variable: {}", variable)
+            TranspileError::ReassignVariable(variable) => {
+                write!(f, "cannot reassign variable: {}", variable)
             }
-            YolkError::ExportTwice(variable) => {
-                write!(f, "cannot export variable twice: {}", variable)
-            }
-            YolkError::ExportUndefined(variable) => {
+            TranspileError::ExportTwice(variable) => write!(f, "duplicate export: {}", variable),
+            TranspileError::ExportUndefined(variable) => {
                 write!(f, "cannot export undefined variable: {}", variable)
             }
-            YolkError::GetUndefinedFunction(function) => {
+            TranspileError::GetUndefinedFunction(function) => {
                 write!(f, "undefined function: {}", function)
             }
-            YolkError::GetUndefinedLocal { function, local } => {
-                write!(f, "undefined local: {} in function: {}", local, function)
+            TranspileError::GetUndefinedLocal(local) => {
+                write!(f, "undefined local variable: {}", local)
             }
-            YolkError::GetUndefinedVariable(variable) => {
+            TranspileError::GetUndefinedVariable(variable) => {
                 write!(f, "undefined variable: {}", variable)
             }
-            YolkError::DuplicateParams(function) => {
-                write!(f, "duplicate parameters in function: {}", function)
-            }
-            YolkError::RecursiveCall(function) => {
-                write!(f, "recursive call in function: {}", function)
-            }
-            YolkError::WrongNumberOfArgs(function) => {
+            TranspileError::DuplicateParams => write!(f, "duplicate function parameters"),
+            TranspileError::RecursiveCall => write!(f, "cannot define function recursively"),
+            TranspileError::WrongNumberOfArgs(function) => {
                 write!(f, "wrong number of args for function: {}", function)
             }
-            YolkError::MismatchedArrays => write!(
-                f,
-                "cannot perform operation on arrays with different lengths"
-            ),
-            YolkError::NestedArrays => write!(f, "cannot create nested arrays"),
+            TranspileError::MismatchedArrays => write!(f, "cannot operate on mismatched arrays"),
+            TranspileError::NestedArrays => write!(f, "cannot create nested arrays"),
         }
     }
 }

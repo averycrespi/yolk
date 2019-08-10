@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::ast::YololNode;
-use crate::error::YolkError;
+use crate::error::TranspileError;
 use crate::function::Function;
 use crate::value::{ArrayExpr, NumberExpr, Value};
 
@@ -86,29 +86,29 @@ impl Environment {
     }
 
     /// Gets the value of a variable from an environment.
-    pub fn variable(&self, ident: &str) -> Result<Value, YolkError> {
+    pub fn variable(&self, ident: &str) -> Result<Value, TranspileError> {
         match self.variables.get(ident) {
             Some(value) => Ok(value.clone()),
-            None => Err(YolkError::GetUndefinedVariable(ident.to_string())),
+            None => Err(TranspileError::GetUndefinedVariable(ident.to_string())),
         }
     }
 
     /// Gets a function from an environment.
-    pub fn function(&self, ident: &str) -> Result<Function, YolkError> {
+    pub fn function(&self, ident: &str) -> Result<Function, TranspileError> {
         match self.functions.get(ident) {
             Some(function) => Ok(function.clone()),
-            None => Err(YolkError::GetUndefinedFunction(ident.to_string())),
+            None => Err(TranspileError::GetUndefinedFunction(ident.to_string())),
         }
     }
 
     /// Imports a variable into an environment.
-    pub fn import(&mut self, ident: &str) -> Result<(), YolkError> {
+    pub fn import(&mut self, ident: &str) -> Result<(), TranspileError> {
         if self.imports.contains(ident) {
-            Err(YolkError::ImportTwice(ident.to_string()))
+            Err(TranspileError::ImportTwice(ident.to_string()))
         } else if self.variables.contains_key(ident) {
-            Err(YolkError::ImportExisting(ident.to_string()))
+            Err(TranspileError::ImportExisting(ident.to_string()))
         } else if self.keywords.contains(ident) {
-            Err(YolkError::ImportKeyword(ident.to_string()))
+            Err(TranspileError::ImportKeyword(ident.to_string()))
         } else {
             self.imports.insert(ident.to_string());
             self.variables.insert(
@@ -120,11 +120,11 @@ impl Environment {
     }
 
     /// Defines a function in an environmnent.
-    pub fn define(&mut self, ident: &str, function: Function) -> Result<(), YolkError> {
+    pub fn define(&mut self, ident: &str, function: Function) -> Result<(), TranspileError> {
         if self.functions.contains_key(ident) {
-            Err(YolkError::RedefineFunction(ident.to_string()))
+            Err(TranspileError::RedefineFunction(ident.to_string()))
         } else if self.keywords.contains(ident) {
-            Err(YolkError::DefineKeyword(ident.to_string()))
+            Err(TranspileError::DefineKeyword(ident.to_string()))
         } else {
             self.functions.insert(ident.to_string(), function);
             Ok(())
@@ -134,11 +134,15 @@ impl Environment {
     /// Assigns a value to a variable in an environment.
     ///
     /// Returns the associated Yolol assign statements.
-    pub fn let_value(&mut self, ident: &str, value: Value) -> Result<Vec<YololNode>, YolkError> {
+    pub fn let_value(
+        &mut self,
+        ident: &str,
+        value: Value,
+    ) -> Result<Vec<YololNode>, TranspileError> {
         if self.imports.contains(ident) || self.variables.contains_key(ident) {
-            Err(YolkError::ReassignVariable(ident.to_string()))
+            Err(TranspileError::ReassignVariable(ident.to_string()))
         } else if self.keywords.contains(ident) {
-            Err(YolkError::AssignToKeyword(ident.to_string()))
+            Err(TranspileError::AssignToKeyword(ident.to_string()))
         } else if self
             .variables
             .iter()
@@ -146,7 +150,7 @@ impl Environment {
             .collect::<Vec<String>>()
             .contains(&ident.to_lowercase())
         {
-            Err(YolkError::AssignInsensitive(ident.to_string()))
+            Err(TranspileError::AssignSameLowercase(ident.to_string()))
         } else {
             match value {
                 Value::Number(number) => {
@@ -172,9 +176,9 @@ impl Environment {
     /// Exports a variable from an environment.
     ///
     /// Tracks which variable identifiers must not be eliminated.
-    pub fn export(&mut self, ident: &str) -> Result<(), YolkError> {
+    pub fn export(&mut self, ident: &str) -> Result<(), TranspileError> {
         if self.exports.contains(ident) {
-            Err(YolkError::ExportTwice(ident.to_string()))
+            Err(TranspileError::ExportTwice(ident.to_string()))
         } else {
             match self.variables.get(ident) {
                 Some(Value::Number(number)) => match number.as_expr() {
@@ -193,7 +197,7 @@ impl Environment {
                         }
                     }
                 }
-                None => return Err(YolkError::GetUndefinedVariable(ident.to_string())),
+                None => return Err(TranspileError::ExportUndefined(ident.to_string())),
             }
             self.exports.insert(ident.to_string());
             Ok(())

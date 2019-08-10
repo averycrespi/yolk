@@ -6,7 +6,7 @@ use pest::Parser;
 use yolol_number::YololNumber;
 
 use crate::ast::{InfixOp, PrefixOp, YolkNode};
-use crate::error::YolkError;
+use crate::error::ParseError;
 
 #[cfg(test)]
 mod tests;
@@ -37,10 +37,10 @@ fn build_prec_climber() -> PrecClimber<Rule> {
 pub struct YolkParser;
 
 /// Parses Yolk statements from source text.
-pub fn parse(source: &str) -> Result<Vec<YolkNode>, YolkError> {
+pub fn parse(source: &str) -> Result<Vec<YolkNode>, ParseError> {
     let mut ast = vec![];
     let pairs = YolkParser::parse(Rule::program, source)
-        .map_err(|e| YolkError::BadSyntax(e.to_string()))?;
+        .map_err(|e| ParseError::BadSyntax(e.to_string()))?;
     for pair in pairs {
         match pair.as_rule() {
             Rule::import_stmt => ast.push(parse_import_stmt(pair)),
