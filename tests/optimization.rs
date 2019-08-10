@@ -3,9 +3,7 @@ use yoloxide::execute_line;
 
 use yolk::ast::YololNode;
 use yolk::error::YolkError;
-use yolk::optimizer::optimize;
-use yolk::parser::parse;
-use yolk::transpiler::transpile;
+use yolk::{optimize, parse, transpile};
 
 fn source_to_envs(source: &str) -> Result<Vec<Environment>, YolkError> {
     let (original, context) = transpile(&parse(source)?)?;
