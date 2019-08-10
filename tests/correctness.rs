@@ -17,6 +17,7 @@ fn source_to_env(source: &str) -> Result<Environment, YolkError> {
 }
 
 fn expect(env: &Environment, ident: &str, value: &str) {
+    assert!(value != "0", "expecting default value");
     assert_eq!(env.get_val(ident).to_string(), value.to_string());
 }
 
@@ -36,7 +37,6 @@ fn test_dot_product() -> Result<(), YolkError> {
 
 #[test]
 fn test_sum_opposites() -> Result<(), YolkError> {
-    // Add 1 to result to avoid default confusion
     let env = source_to_env("let n = sum(0, 1, -1, 1.0, -1.0, 1.23, -1.23) + 1; export n;")?;
     expect(&env, "n", "1");
     Ok(())
