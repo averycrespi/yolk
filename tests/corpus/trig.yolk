@@ -1,0 +1,5 @@
+let n = sin(90) + cos(0) + tan(45);
+export n;
+
+let e = 3;
+export e;
