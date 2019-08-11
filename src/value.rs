@@ -1,7 +1,6 @@
-use yolol_number::YololNumber;
-
 use crate::ast::{InfixOp, PrefixOp, YololNode};
 use crate::error::TranspileError;
+use crate::number::YololNumber;
 
 /// Represents a Yolk value.
 #[derive(Debug, Clone)]
@@ -81,7 +80,7 @@ impl NumberExpr {
     }
 
     // Creates a Yolk number expression from a Yolol number.
-    pub fn from_yolol_number(num: YololNumber<i128>) -> NumberExpr {
+    pub fn from_yolol_number(num: YololNumber) -> NumberExpr {
         NumberExpr {
             expr: YololNode::Literal(num),
         }

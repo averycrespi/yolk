@@ -1,12 +1,9 @@
 use std::collections::{HashMap, HashSet};
 
-use num_traits::identities::{One, Zero};
-use num_traits::sign::Signed;
-use yolol_number::YololNumber;
-
 use crate::ast::{InfixOp, PrefixOp, YololNode};
 use crate::environment::Context;
 use crate::graph::DepGraph;
+use crate::number::YololNumber;
 
 /// Optimizes Yolol assign statements.
 pub fn optimize(stmts: &[YololNode], context: &Context) -> Vec<YololNode> {
@@ -42,6 +39,7 @@ fn reduce_node(vars: &HashMap<String, YololNode>, node: &YololNode) -> YololNode
             expr: Box::new(reduce_node(vars, expr)),
         },
         YololNode::PrefixExpr { op, expr } => match (op, *expr.clone()) {
+            /*
             // Fold literals
             (op, YololNode::Literal(y)) => match op {
                 PrefixOp::Neg => YololNode::Literal(-y),
@@ -56,6 +54,7 @@ fn reduce_node(vars: &HashMap<String, YololNode>, node: &YololNode) -> YololNode
                 PrefixOp::Atan => YololNode::Literal(y.arctan()),
                 _ => node.clone(),
             },
+            */
             _ => YololNode::PrefixExpr {
                 op: *op,
                 expr: Box::new(reduce_node(vars, expr)),
@@ -81,12 +80,13 @@ fn reduce_node(vars: &HashMap<String, YololNode>, node: &YololNode) -> YololNode
             (_, InfixOp::Exp, YololNode::Literal(y)) if y == one => *lhs.clone(),
             // Fold literals
             (YololNode::Literal(y), op, YololNode::Literal(z)) => match op {
-                InfixOp::Add => YololNode::Literal(y + z),
-                InfixOp::Sub => YololNode::Literal(y - z),
-                InfixOp::Mul => YololNode::Literal(y * z),
-                InfixOp::Div if !z.is_zero() => YololNode::Literal(y / z),
-                InfixOp::Mod if !z.is_zero() => YololNode::Literal(y % z),
-                InfixOp::Exp if !(y.is_zero() && z.is_zero()) => YololNode::Literal(y.pow(z)),
+                InfixOp::Add => YololNode::Literal(y.add(z)),
+                InfixOp::Sub => YololNode::Literal(y.sub(z)),
+                InfixOp::Mul => YololNode::Literal(y.mul(z)),
+                InfixOp::Div if z != zero => YololNode::Literal(y.div(z)),
+                InfixOp::Mod if z != zero => YololNode::Literal(y.modulus(z)),
+                InfixOp::Exp if !((y == zero) && (z == zero)) => YololNode::Literal(y.pow(z)),
+                /*
                 InfixOp::LessThan => YololNode::Literal(YololNumber::from(y < z)),
                 InfixOp::LessEqual => YololNode::Literal(YololNumber::from(y <= z)),
                 InfixOp::GreaterThan => YololNode::Literal(YololNumber::from(y > z)),
@@ -95,6 +95,7 @@ fn reduce_node(vars: &HashMap<String, YololNode>, node: &YololNode) -> YololNode
                 InfixOp::NotEqual => YololNode::Literal(YololNumber::from(y != z)),
                 InfixOp::And => YololNode::Literal(YololNumber::from((y != zero) && (z != zero))),
                 InfixOp::Or => YololNode::Literal(YololNumber::from((y != zero) || (z != zero))),
+                */
                 _ => node.clone(),
             },
             _ => YololNode::InfixExpr {

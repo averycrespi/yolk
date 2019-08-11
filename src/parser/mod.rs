@@ -3,10 +3,10 @@ use std::str::FromStr;
 use pest::iterators::Pair;
 use pest::prec_climber::{Assoc, Operator, PrecClimber};
 use pest::Parser;
-use yolol_number::YololNumber;
 
 use crate::ast::{InfixOp, PrefixOp, YolkNode};
 use crate::error::ParseError;
+use crate::number::YololNumber;
 
 #[cfg(test)]
 mod tests;

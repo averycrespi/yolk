@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
-use yolol_number::YololNumber;
 
+use crate::number::YololNumber;
 use crate::ast::YolkNode;
 use crate::error::ParseError;
 use crate::parser::parse;

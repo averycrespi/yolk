@@ -1,10 +1,8 @@
-use num_traits::identities::{One, Zero};
-use yolol_number::YololNumber;
-
 use crate::ast::{InfixOp, YolkNode, YololNode};
 use crate::environment::{Context, Environment};
 use crate::error::TranspileError;
 use crate::function::Function;
+use crate::number::YololNumber;
 use crate::value::{ArrayExpr, NumberExpr, Value};
 
 #[cfg(test)]

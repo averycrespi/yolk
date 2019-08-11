@@ -1,6 +1,6 @@
 use std::fmt;
 
-use yolol_number::YololNumber;
+use crate::number::YololNumber;
 
 const LINE_LIMIT: usize = 70;
 
@@ -40,7 +40,7 @@ pub enum YolkNode {
         rhs: Box<YolkNode>,
     },
     Ident(String),
-    Literal(YololNumber<i128>),
+    Literal(YololNumber),
     Array(Vec<YolkNode>),
 }
 
@@ -61,7 +61,7 @@ pub enum YololNode {
         rhs: Box<YololNode>,
     },
     Ident(String),
-    Literal(YololNumber<i128>),
+    Literal(YololNumber),
 }
 
 impl YololNode {

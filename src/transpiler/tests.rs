@@ -1,9 +1,8 @@
 use std::str::FromStr;
 
-use yolol_number::YololNumber;
-
 use crate::ast::{YolkNode, YololNode};
 use crate::error::TranspileError;
+use crate::number::YololNumber;
 use crate::transpiler::transpile;
 
 #[test]

@@ -7,6 +7,7 @@ extern crate pest_derive;
 pub mod ast;
 pub mod environment;
 pub mod error;
+pub mod number;
 pub mod function;
 pub mod graph;
 pub mod optimizer;
