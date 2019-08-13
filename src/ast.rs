@@ -40,7 +40,7 @@ pub enum YolkNode {
         rhs: Box<YolkNode>,
     },
     Ident(String),
-    Literal(YololNumber<i128>),
+    Literal(YololNumber),
     Array(Vec<YolkNode>),
 }
 
@@ -61,7 +61,7 @@ pub enum YololNode {
         rhs: Box<YololNode>,
     },
     Ident(String),
-    Literal(YololNumber<i128>),
+    Literal(YololNumber),
 }
 
 impl YololNode {

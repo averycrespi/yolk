@@ -81,7 +81,7 @@ impl NumberExpr {
     }
 
     // Creates a Yolk number expression from a Yolol number.
-    pub fn from_yolol_number(num: YololNumber<i128>) -> NumberExpr {
+    pub fn from_yolol_number(num: YololNumber) -> NumberExpr {
         NumberExpr {
             expr: YololNode::Literal(num),
         }

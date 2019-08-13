@@ -1,7 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
 use num_traits::identities::{One, Zero};
-use num_traits::sign::Signed;
 use yolol_number::YololNumber;
 
 use crate::ast::{InfixOp, PrefixOp, YololNode};
@@ -51,9 +50,9 @@ fn reduce_node(vars: &HashMap<String, YololNode>, node: &YololNode) -> YololNode
                 PrefixOp::Sin => YololNode::Literal(y.sin()),
                 PrefixOp::Cos => YololNode::Literal(y.cos()),
                 PrefixOp::Tan if y.cos() != zero => YololNode::Literal(y.tan()),
-                PrefixOp::Asin if y.abs() <= one => YololNode::Literal(y.arcsin()),
-                PrefixOp::Acos if y.abs() <= one => YololNode::Literal(y.arccos()),
-                PrefixOp::Atan => YololNode::Literal(y.arctan()),
+                PrefixOp::Asin if y.abs() <= one => YololNode::Literal(y.asin()),
+                PrefixOp::Acos if y.abs() <= one => YololNode::Literal(y.acos()),
+                PrefixOp::Atan => YololNode::Literal(y.atan()),
                 _ => node.clone(),
             },
             _ => YololNode::PrefixExpr {
