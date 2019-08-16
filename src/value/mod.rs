@@ -3,8 +3,11 @@ use yolol_number::YololNumber;
 use crate::ast::{InfixOp, PrefixOp, YololNode};
 use crate::error::TranspileError;
 
+#[cfg(test)]
+mod tests;
+
 /// Represents a Yolk value.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Value {
     Number(NumberExpr),
     Array(ArrayExpr),
@@ -67,7 +70,7 @@ impl Value {
 }
 
 /// Represents a Yolk number expression.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct NumberExpr {
     expr: YololNode,
 }
@@ -121,7 +124,7 @@ impl NumberExpr {
 }
 
 /// Represents an array of Yolk number expression.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ArrayExpr {
     numbers: Vec<NumberExpr>,
 }
