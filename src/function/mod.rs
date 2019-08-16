@@ -3,6 +3,9 @@ use std::collections::HashSet;
 use crate::ast::YolkNode;
 use crate::error::TranspileError;
 
+#[cfg(test)]
+mod tests;
+
 /// Represents a Yolk function.
 #[derive(Debug, Clone)]
 pub struct Function {
@@ -18,6 +21,9 @@ impl Function {
         params: &[String],
         body: &YolkNode,
     ) -> Result<Function, TranspileError> {
+        if params.len() < 1 {
+            panic!("function has no parameters");
+        }
         let function = Function {
             ident: ident.to_string(),
             params: params.to_vec(),
