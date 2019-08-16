@@ -27,7 +27,7 @@ fn build_prec_climber() -> PrecClimber<Rule> {
         Operator::new(Rule::plus, Assoc::Left) | Operator::new(Rule::minus, Assoc::Left),
         Operator::new(Rule::multiply, Assoc::Left)
             | Operator::new(Rule::divide, Assoc::Left)
-            | Operator::new(Rule::modulus, Assoc::Left),
+            | Operator::new(Rule::modulo, Assoc::Left),
         Operator::new(Rule::exponent, Assoc::Right),
     ])
 }
@@ -145,7 +145,7 @@ fn parse_expr(expr: Pair<Rule>) -> YolkNode {
                     Rule::minus => InfixOp::Sub,
                     Rule::multiply => InfixOp::Mul,
                     Rule::divide => InfixOp::Div,
-                    Rule::modulus => InfixOp::Mod,
+                    Rule::modulo => InfixOp::Mod,
                     Rule::exponent => InfixOp::Exp,
                     Rule::less_than => InfixOp::LessThan,
                     Rule::less_equal => InfixOp::LessEqual,

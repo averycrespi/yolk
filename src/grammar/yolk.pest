@@ -36,7 +36,7 @@ acos            = { "acos" }
 atan            = { "atan" }
 
 infix_op = _{
-    plus | minus | multiply | divide | modulus | exponent |
+    plus | minus | multiply | divide | modulo | exponent |
     less_equal | less_than | greater_equal | greater_than | equal | not_equal |
     logical_and | logical_or
 }
@@ -45,7 +45,7 @@ plus            = { "+" }
 minus           = { "-" }
 multiply        = { "*" }
 divide          = { "/" }
-modulus         = { "%" }
+modulo          = { "%" }
 exponent        = { "^" }
 less_than       = { "<" }
 less_equal      = { "<=" }
