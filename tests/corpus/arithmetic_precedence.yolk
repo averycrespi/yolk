@@ -1,5 +1,5 @@
-let n = 1 + 2 - 3 * 4 / 5 % 6;
-export n;
+let n = 1 + 2 - 3 * 4 / 5 % 6
+export n
 
-let e = 0.6;
-export e;
+let e = 0.6
+export e

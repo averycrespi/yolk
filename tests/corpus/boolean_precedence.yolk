@@ -1,5 +1,5 @@
-let n = 1 and 0 or 1;
-export n;
+let n = 1 and 0 or 1
+export n
 
-let e = 1;
-export e;
+let e = 1
+export e

@@ -1,5 +1,5 @@
-let n = product(1, [2, 3, 4], 5);
-export n;
+let n = product(1, [2, 3, 4], 5)
+export n
 
-let e = 120;
-export e;
+let e = 120
+export e

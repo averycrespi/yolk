@@ -1,5 +1,5 @@
-let n = sum(1, [2, 3, 4], 5);
-export n;
+let n = sum(1, [2, 3, 4], 5)
+export n
 
-let e = 15;
-export e;
+let e = 15
+export e
