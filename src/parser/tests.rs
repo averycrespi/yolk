@@ -87,10 +87,7 @@ fn test_define() -> Result<(), ParseError> {
 
 #[test]
 fn test_extra_whitespace() -> Result<(), ParseError> {
-    assert_eq!(
-        parse("let number = 0;")?,
-        parse(" \n\tlet \n\tnumber \n\t= \n\t0 \n\t; \n\t")?
-    );
+    assert_eq!(parse("let number = (0);")?, parse("let number = (\n0\n);")?,);
     Ok(())
 }
 

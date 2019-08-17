@@ -1,29 +1,27 @@
-WHITESPACE      = _{ " " | "\t" | NEWLINE }
+WHITESPACE      = _{ " " | "\t" }
 
-program         = _{ SOI ~ (stmt ~ ";")* ~ EOI }
+program         = _{ SOI ~ ((stmt ~ ";") | NEWLINE)* ~ EOI }
 
 stmt            = _{ import_stmt | define_stmt | let_stmt | export_stmt }
 import_stmt     = { "import" ~ ident }
-define_stmt     = { "define" ~ ident ~ "(" ~ params ~ ")" ~ "=" ~ expr }
+define_stmt     = { "define" ~ ident ~ params ~ "=" ~ expr }
 let_stmt        = { "let" ~ ident ~ "=" ~ expr }
 export_stmt     = { "export" ~ ident }
 
 expr            = _{ infix_expr | base_expr }
 infix_expr      = { base_expr ~ (infix_op ~ base_expr)+ }
-base_expr       = _{ prefix_expr | builtin_expr | call_expr | ident | literal | array | "(" ~ expr ~ ")" }
-prefix_expr     = { prefix_op ~ "(" ~ expr ~ ")" }
-builtin_expr    = { builtin ~ "(" ~ args ~ ")" }
-call_expr       = { ident ~ "(" ~ args ~ ")" }
+base_expr       = _{ prefix_expr | builtin_expr | call_expr | ident | literal | array | wrapped_expr }
+prefix_expr     = { prefix_op ~ wrapped_expr }
+builtin_expr    = { builtin ~ args }
+call_expr       = { ident ~ args }
+wrapped_expr    = _{ "(" ~ NEWLINE* ~ expr ~ NEWLINE* ~ ")" }
 
-builtin = _{ sum | product }
+builtin         = _{ sum | product }
 
 sum             = { "sum" }
 product         = { "product" }
 
-prefix_op = _{
-    logical_not | abs | sqrt |
-    sin | cos | tan | asin | acos | atan
-}
+prefix_op       = _{ logical_not | abs | sqrt | sin | cos | tan | asin | acos | atan }
 
 logical_not     = { "not" }
 abs             = { "abs" }
@@ -56,8 +54,8 @@ not_equal       = { "!=" }
 logical_and     = { "and" }
 logical_or      = { "or" }
 
-params          = { ident ~ ("," ~ ident)* }
-args            = { expr ~ ("," ~ expr)* }
+params          = { "(" ~ ident ~ ("," ~ ident)* ~ ")" }
+args            = { "(" ~ expr ~ ("," ~ expr)* ~ ")" }
 
 ident           = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHA | "_")* }
 literal         = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT{1,4})? }
