@@ -9,7 +9,7 @@ use crate::parser::parse;
 #[test]
 fn test_import() -> Result<(), ParseError> {
     assert_eq!(
-        parse("import number;")?,
+        parse("import number")?,
         vec![YolkNode::ImportStmt {
             ident: "number".to_string()
         }]
@@ -23,7 +23,7 @@ fn test_let_number() -> Result<(), ParseError> {
     for case in cases.iter() {
         println!("case: {}", case);
         assert_eq!(
-            parse(&format!("let number = {};", case))?,
+            parse(&format!("let number = {}", case))?,
             vec![YolkNode::LetStmt {
                 ident: "number".to_string(),
                 expr: Box::new(YolkNode::Literal(YololNumber::from_str(case).unwrap()))
@@ -36,7 +36,7 @@ fn test_let_number() -> Result<(), ParseError> {
 #[test]
 fn test_let_array() -> Result<(), ParseError> {
     assert_eq!(
-        parse("let array = [0, number];")?,
+        parse("let array = [0, number]")?,
         vec![YolkNode::LetStmt {
             ident: "array".to_string(),
             expr: Box::new(YolkNode::Array(vec![
@@ -50,32 +50,32 @@ fn test_let_array() -> Result<(), ParseError> {
 
 #[test]
 fn test_let_prefix() -> Result<(), ParseError> {
-    parse("let number = not (abs (sqrt (sin (cos (tan (asin (acos (atan (0)))))))));")?;
+    parse("let number = not (abs (sqrt (sin (cos (tan (asin (acos (atan (0)))))))))")?;
     Ok(())
 }
 
 #[test]
 fn test_let_infix() -> Result<(), ParseError> {
-    parse("let number = 1 + 2 - 3 * 4 / 5 % 6 ^ 7 < 8 <= 9 > 10 >= 11 == 12 != 13 and 14 or 15;")?;
+    parse("let number = 1 + 2 - 3 * 4 / 5 % 6 ^ 7 < 8 <= 9 > 10 >= 11 == 12 != 13 and 14 or 15")?;
     Ok(())
 }
 
 #[test]
 fn test_let_builtin() -> Result<(), ParseError> {
-    parse("let number = sum([0, 1], 2) + product([0, 1], 2);")?;
+    parse("let number = sum([0, 1], 2) + product([0, 1], 2)")?;
     Ok(())
 }
 
 #[test]
 fn test_let_call() -> Result<(), ParseError> {
-    parse("let number = function(0) + function([0, 1]) + function(number);")?;
+    parse("let number = function(0) + function([0, 1]) + function(number)")?;
     Ok(())
 }
 
 #[test]
 fn test_define() -> Result<(), ParseError> {
     assert_eq!(
-        parse("define identity(A) = A;")?,
+        parse("define identity(A) = A")?,
         vec![YolkNode::DefineStmt {
             ident: "identity".to_string(),
             params: vec!["A".to_string()],
@@ -93,78 +93,66 @@ fn test_comment() -> Result<(), ParseError> {
 
 #[test]
 fn test_inline_comment() -> Result<(), ParseError> {
-    parse("import number; // This is a comment")?;
+    parse("import number // This is a comment")?;
     Ok(())
 }
 
 #[test]
 fn test_extra_newlines() -> Result<(), ParseError> {
-    assert_eq!(parse("let number = (0);")?, parse("let number = (\n0\n);")?,);
+    assert_eq!(parse("let number = (0)")?, parse("let number = (\n0\n)")?,);
     Ok(())
 }
 
 #[test]
 #[should_panic]
-fn test_missing_semicolon() {
-    parse("let number = 0").unwrap();
-}
-
-#[test]
-#[should_panic]
-fn test_extra_semicolon() {
-    parse("let number = 0;;").unwrap();
-}
-
-#[test]
-#[should_panic]
 fn test_invalid_ident() {
-    parse("let !@#$%^&*() = 0;").unwrap();
+    parse("let !@#$%^&*() = 0").unwrap();
 }
 
 #[test]
 #[should_panic]
 fn test_too_much_precision() {
-    parse("let number = 1.23456;").unwrap();
+    parse("let number = 1.23456").unwrap();
 }
 
 #[test]
 #[should_panic]
 fn test_missing_whole() {
-    parse("let number = .0;").unwrap();
+    parse("let number = .0").unwrap();
 }
 
 #[test]
 #[should_panic]
 fn test_missing_fraction() {
-    parse("let number = 1.;").unwrap();
+    parse("let number = 1.").unwrap();
 }
 
 #[test]
 #[should_panic]
 fn test_missing_comma() {
-    parse("let array = [0 1];").unwrap();
+    parse("let array = [0 1]").unwrap();
 }
 
 #[test]
 #[should_panic]
 fn test_leading_comma() {
-    parse("let array = [, 0, 1];").unwrap();
+    parse("let array = [, 0, 1]").unwrap();
 }
 
 #[test]
 #[should_panic]
 fn test_trailing_comma() {
-    parse("let array = [0, 1, ];").unwrap();
+    parse("let array = [0, 1, ]").unwrap();
 }
 
 #[test]
 #[should_panic]
 fn test_missing_bracket() {
-    parse("let array = [0, 1, 2;").unwrap();
+    parse("let array = [0, 1, 2").unwrap();
 }
 
 #[test]
 #[should_panic]
 fn test_missing_paren() {
-    parse("let number = function(0;").unwrap();
+    parse("let number = function(0").unwrap();
 }
