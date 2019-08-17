@@ -47,6 +47,7 @@ pub fn parse(source: &str) -> Result<Vec<YolkNode>, ParseError> {
             Rule::define_stmt => ast.push(parse_define_stmt(pair)),
             Rule::let_stmt => ast.push(parse_let_stmt(pair)),
             Rule::export_stmt => ast.push(parse_export_stmt(pair)),
+            Rule::comment => (),
             Rule::EOI => (),
             _ => panic!("expected rule statement, but got: {:?}", pair),
         }

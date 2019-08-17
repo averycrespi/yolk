@@ -86,7 +86,19 @@ fn test_define() -> Result<(), ParseError> {
 }
 
 #[test]
-fn test_extra_whitespace() -> Result<(), ParseError> {
+fn test_comment() -> Result<(), ParseError> {
+    parse("// This is a comment")?;
+    Ok(())
+}
+
+#[test]
+fn test_inline_comment() -> Result<(), ParseError> {
+    parse("import number; // This is a comment")?;
+    Ok(())
+}
+
+#[test]
+fn test_extra_newlines() -> Result<(), ParseError> {
     assert_eq!(parse("let number = (0);")?, parse("let number = (\n0\n);")?,);
     Ok(())
 }
