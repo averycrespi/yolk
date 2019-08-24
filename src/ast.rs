@@ -63,6 +63,8 @@ pub enum YololNode {
 }
 
 /// Represents a prefix operation.
+///
+/// Yolk and Yolol have the same prefix operations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PrefixOp {
     Neg,
@@ -78,6 +80,7 @@ pub enum PrefixOp {
 }
 
 impl PrefixOp {
+    /// Converts a prefix operation to a precedence value.
     pub fn to_precedence(&self) -> u32 {
         match self {
             PrefixOp::Neg => 100,
@@ -104,6 +107,8 @@ impl fmt::Display for PrefixOp {
 }
 
 /// Represents an infix operation.
+///
+/// Yolk and Yolol have the same infix operations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum InfixOp {
     Add,
@@ -123,6 +128,7 @@ pub enum InfixOp {
 }
 
 impl InfixOp {
+    // Converts an infix operation to a precedence value.
     pub fn to_precedence(&self) -> u32 {
         match self {
             InfixOp::Exp => 80,

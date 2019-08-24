@@ -73,13 +73,12 @@ pub enum TranspileError {
     GetUndefinedLocal(String),
     GetUndefinedVariable(String),
 
-    // TODO: separate error type?
+    // Function errors
     DuplicateParams,
     RecursiveCall,
     WrongNumberOfArgs(String),
 
     // Type errors
-    // TODO: separate error type?
     MismatchedArrays,
     NestedArrays,
 }

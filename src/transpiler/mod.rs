@@ -10,9 +10,13 @@ use crate::value::{ArrayExpr, NumberExpr, Value};
 #[cfg(test)]
 mod tests;
 
-/// Transpiles Yolk statements to Yolol assign statements.
+/// Transpiles Yolk statements to Yolol statements.
 ///
-/// Returns assign statements and the program context.
+/// Returns Yolol statements with context.
+///
+/// # Panics
+///
+/// Panics if any of the nodes are not statements, or if any of the nodes are malformed.
 pub fn transpile(stmts: &[YolkNode]) -> Result<(Vec<YololNode>, Context), TranspileError> {
     let mut env = Environment::new();
     let mut assigns = Vec::new();
@@ -28,7 +32,7 @@ pub fn transpile(stmts: &[YolkNode]) -> Result<(Vec<YololNode>, Context), Transp
                 assigns.extend(env.let_value(&ident, expr_to_value(&env, &*expr)?)?);
             }
             YolkNode::ExportStmt { ident } => env.export(&ident)?,
-            _ => panic!("expected statement, but got: {:?}", stmt),
+            _ => panic!("expected Yolk statement, but got: {:?}", stmt),
         }
     }
     Ok((assigns, env.context()))

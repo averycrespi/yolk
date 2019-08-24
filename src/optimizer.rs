@@ -9,6 +9,12 @@ use crate::environment::Context;
 use crate::graph::DepGraph;
 
 /// Optimizes Yolol assign statements.
+///
+/// Optimization is idempotent when given the same context.
+///
+/// # Panics
+///
+/// Panics if any of the statements are malformed.
 pub fn optimize(stmts: &[YololNode], context: &Context) -> Vec<YololNode> {
     let mut curr = stmts.to_vec();
     let mut next = reduce_constants(&curr);
@@ -27,7 +33,7 @@ fn reduce_constants(stmts: &[YololNode]) -> Vec<YololNode> {
             variables.insert(ident.to_string(), *expr.clone());
             reduced.push(reduce_node(&variables, stmt));
         } else {
-            panic!("expected Yolol assign statement, but got: {:?}", stmt);
+            panic!("expected Yolol statement, but got: {:?}", stmt);
         }
     }
     reduced
@@ -115,7 +121,7 @@ fn reduce_node(vars: &HashMap<String, YololNode>, node: &YololNode) -> YololNode
 }
 
 fn eliminate_dead_code(stmts: &[YololNode], exported: &HashSet<String>) -> Vec<YololNode> {
-    let graph = DepGraph::from_assign_stmts(stmts);
+    let graph = DepGraph::from_statements(stmts);
     let exported = graph.search_from(exported);
     let mut living = Vec::new();
     for stmt in stmts.iter() {
@@ -124,7 +130,7 @@ fn eliminate_dead_code(stmts: &[YololNode], exported: &HashSet<String>) -> Vec<Y
                 living.push(stmt.clone());
             }
         } else {
-            panic!("expected assign statement, but got: {:?}", stmt)
+            panic!("expected Yolol statement, but got: {:?}", stmt)
         }
     }
     living

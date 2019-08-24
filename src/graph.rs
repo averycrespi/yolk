@@ -3,15 +3,19 @@ use std::iter::FromIterator;
 
 use crate::ast::YololNode;
 
-/// Represents dependencies between Yolol variables.
+/// Represents a DAG of dependencies between Yolol variables.
 #[derive(Debug, Clone)]
 pub struct DepGraph {
     graph: HashMap<String, HashSet<String>>,
 }
 
 impl DepGraph {
-    /// Creates a dependency graph from Yolol assign statements.
-    pub fn from_assign_stmts(stmts: &[YololNode]) -> DepGraph {
+    /// Creates a dependency graph from Yolol statements.
+    ///
+    /// # Panics
+    ///
+    /// Panic if any of the nodes are not statements, or if any of the nodes are malformed.
+    pub fn from_statements(stmts: &[YololNode]) -> DepGraph {
         let mut graph: HashMap<String, HashSet<String>> = HashMap::new();
         for stmt in stmts.iter() {
             if let YololNode::AssignStmt { ident, expr } = stmt {
@@ -19,13 +23,13 @@ impl DepGraph {
                 DepGraph::find_deps(&mut deps, expr);
                 graph.insert(ident.to_string(), deps);
             } else {
-                panic!("expected assign statement, but got: {:?}", stmt)
+                panic!("expected Yolol statement, but got: {:?}", stmt)
             }
         }
         DepGraph { graph: graph }
     }
 
-    /// Search for dependent variables from a starting set.
+    /// Search for dependent variables from a starting set of identifiers.
     pub fn search_from(&self, idents: &HashSet<String>) -> HashSet<String> {
         let mut found = HashSet::new();
         let mut queue = Vec::from_iter(idents.iter().cloned());
