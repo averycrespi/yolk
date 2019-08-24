@@ -3,7 +3,7 @@ use yoloxide::execute_line;
 
 use yolk::ast::YololNode;
 use yolk::error::Error;
-use yolk::{optimize, parse, transpile};
+use yolk::{format_as_program, optimize, parse, transpile};
 
 use std::fs;
 use std::path::PathBuf;
@@ -25,7 +25,7 @@ fn find_test_files() -> Vec<String> {
 
 fn yolol_to_env(yolol: &[YololNode]) -> Environment {
     let mut env = Environment::new("");
-    execute_line(&mut env, YololNode::format_as_program(&yolol));
+    execute_line(&mut env, format_as_program(&yolol));
     env
 }
 
