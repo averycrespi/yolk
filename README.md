@@ -13,6 +13,7 @@
     <a href="#why-should-i-use-yolk">Why</a> •
     <a href="#how-do-i-get-started">How</a> •
     <a href="#license">License</a> •
+    <a href="#contribution">Contribution</a> •
     <a href="#credits">Credits</a>
 </p>
 
@@ -93,7 +94,16 @@ Try Yolk online with [Yolk Web](https://averycrespi.github.io/yolk-web/).
 
 ## License
 
-[MIT](https://opensource.org/licenses/MIT)
+Licensed under either of
+
+ * Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+ * MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+
+at your option.
+
+### Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
 
 ## Credits
 
