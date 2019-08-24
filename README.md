@@ -12,6 +12,7 @@
     <a href="#what-is-yolk">What</a> •
     <a href="#why-should-i-use-yolk">Why</a> •
     <a href="#how-do-i-get-started">How</a> •
+    <a href="#development">Development</a> •
     <a href="#license">License</a> •
     <a href="#contribution">Contribution</a> •
     <a href="#credits">Credits</a>
@@ -91,6 +92,21 @@ Yolk uses [SSA form](https://en.wikipedia.org/wiki/Static_single_assignment_form
 Learn the Yolk syntax by checking out some [examples](tests/corpus) or by reading the [language specification](docs/spec.md).
 
 Try Yolk online with [Yolk Web](https://averycrespi.github.io/yolk-web/).
+
+## Development
+
+Requires Git and Rust nightly.
+
+```bash
+# Set nightly as default
+rustup default nightly
+
+# Clone the repository
+git clone https://github.com/averycrespi/yolk.git && cd yolk
+
+# Build and run tests
+make
+```
 
 ## License
 
