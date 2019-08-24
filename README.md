@@ -16,7 +16,7 @@
     <a href="#credits">Credits</a>
 </p>
 
-**Warning: Yolk is currently in development. Things may break at any time!**
+**Warning: Yolk is currently in development. Things may change at any time!**
 
 ## What is Yolk?
 
@@ -39,7 +39,7 @@ Yolk handles array expansion so that you don't have to.
 
 ```
 // Yolk
-let a = [1, 2, 4, 8];
+let a = [1, 2, 4, 8]
 ```
 
 In Yolol, applying element-wise operations to an array is repetitive and error-prone.
@@ -55,8 +55,8 @@ In Yolk, element-wise operations are powerful and concise.
 
 ```
 // Yolk
-let a = [1, 2, 4, 8];
-let b = a ^ 2;
+let a = [1, 2, 4, 8]
+let b = a ^ 2
 // Result: b == [1, 4, 16, 64]
 ```
 
@@ -66,16 +66,16 @@ Yolk's syntax is simple and beginner-friendly.
 
 ```
 // This is a comment!
-import a;
-define b(c, d) = c + d;
-let e = 0;
-export f;
+import a
+define b(c, d) = c + d
+let e = 0
+export f
 ```
 
 Yolk provides the same operators and precedence as Yolol.
 
 ```
-let number = 1 + 2 * 3;
+let number = 1 + 2 * 3
 // Result: number == 7
 ```
 
@@ -83,13 +83,13 @@ let number = 1 + 2 * 3;
 
 Yolol chips are slow and have a limited amount of space.
 
-Yolk aggressively optimizes your code to make it faster and smaller.
-
-TODO
+Yolk uses [SSA form](https://en.wikipedia.org/wiki/Static_single_assignment_form) to aggressively optimizes your code, making it faster and smaller.
 
 ## How do I get started?
 
-TODO
+Learn the Yolk syntax by checking out some [examples](tests/corpus) or by reading the [language specification](docs/spec.md).
+
+Try Yolk online with [Yolk Web](https://averycrespi.github.io/yolk-web/).
 
 ## License
 
