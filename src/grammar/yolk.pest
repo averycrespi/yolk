@@ -59,6 +59,7 @@ logical_or      = { "or" }
 params          = { "(" ~ ident ~ ("," ~ ident)* ~ ")" }
 args            = { "(" ~ expr ~ ("," ~ expr)* ~ ")" }
 
+//TODO: handle literal range check in parser
 ident           = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHA | "_")* }
-literal         = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT{1,4})? }
+literal         = @{ "-"? ~ ASCII_DIGIT{1, 15} ~ ("." ~ ASCII_DIGIT{1,4})? }
 array           = { "[" ~ expr ~ ("," ~ expr)* ~ "]" }
