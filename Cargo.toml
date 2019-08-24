@@ -1,6 +1,6 @@
 [package]
 name = "yolk"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["Avery Crespi <averycrespi@gmail.com>"]
 edition = "2018"
 description = "Numerical computing for YOLOL"
@@ -12,10 +12,10 @@ readme = "README.md"
 exclude = ["/resources/*"]
 
 [dependencies]
-clap = "2.33.0"
-lazy_static = "1.3.0"
-num-traits = "0.2.8"
-pest = "2.1.0"
-pest_derive = "2.1.0"
-yolol_number = "0.6.1"
-yoloxide = "0.4.1"
+clap = "2.33"
+lazy_static = "1.3"
+num-traits = "0.2"
+pest = "2.1"
+pest_derive = "2.1"
+yolol_number = "= 0.6.1"
+yoloxide = "0.4"
