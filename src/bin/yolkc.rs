@@ -3,8 +3,7 @@ extern crate clap;
 
 use clap::{App, Arg};
 
-use yolk::ast::YololNode;
-use yolk::{optimize, parse, transpile};
+use yolk::{format_as_program, optimize, parse, transpile};
 
 use std::fs;
 
@@ -43,6 +42,6 @@ fn main() {
         if debug {
             eprintln!("{:?}\n", optimized);
         }
-        println!("{}", YololNode::format_as_program(&optimized));
+        println!("{}", format_as_program(&optimized));
     }
 }

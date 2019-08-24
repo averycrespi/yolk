@@ -2,8 +2,6 @@ use std::fmt;
 
 use yolol_number::YololNumber;
 
-const LINE_LIMIT: usize = 70;
-
 /// Represents a Yolk AST node.
 #[derive(Debug, Clone, PartialEq)]
 pub enum YolkNode {
@@ -64,60 +62,6 @@ pub enum YololNode {
     Literal(YololNumber),
 }
 
-impl YololNode {
-    /// Format Yolol assign statements as a program.
-    pub fn format_as_program(stmts: &[YololNode]) -> String {
-        let mut program = String::new();
-        let mut line = String::new();
-        for stmt in stmts.iter() {
-            if let YololNode::AssignStmt { ident, expr } = stmt {
-                let formatted = YololNode::format_expr(expr, 0);
-                if line.len() + formatted.len() + 1 > LINE_LIMIT {
-                    program.push_str(&format!("{}\n{}={}\n", line, ident, formatted));
-                    line.clear();
-                } else {
-                    line.push_str(&format!("{}={} ", ident, formatted));
-                }
-            } else {
-                panic!("expected assign statement, but got: {:?}", stmt);
-            }
-        }
-        program.push_str(line.as_str());
-        program.trim().to_string()
-    }
-
-    fn format_expr(expr: &YololNode, parent_prec: u32) -> String {
-        match expr {
-            YololNode::PrefixExpr { op, expr } => {
-                let prec = op.to_precedence();
-                format!(
-                    //TODO: remove extra space after op
-                    "{}{} {}{}",
-                    if prec < parent_prec { "(" } else { "" },
-                    op,
-                    YololNode::format_expr(expr, prec),
-                    if prec < parent_prec { ")" } else { "" },
-                )
-            }
-            YololNode::InfixExpr { lhs, op, rhs } => {
-                let prec = op.to_precedence();
-                format!(
-                    //TODO: remove extra spaces around op
-                    "{}{} {} {}{}",
-                    if prec < parent_prec { "(" } else { "" },
-                    YololNode::format_expr(lhs, prec),
-                    op,
-                    YololNode::format_expr(rhs, prec),
-                    if prec < parent_prec { ")" } else { "" },
-                )
-            }
-            YololNode::Ident(s) => s.to_string(),
-            YololNode::Literal(y) => y.to_string(),
-            _ => panic!("expected expression, but got: {:?}", expr),
-        }
-    }
-}
-
 /// Represents a prefix operation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PrefixOp {
@@ -134,7 +78,7 @@ pub enum PrefixOp {
 }
 
 impl PrefixOp {
-    fn to_precedence(&self) -> u32 {
+    pub fn to_precedence(&self) -> u32 {
         match self {
             PrefixOp::Neg => 100,
             _ => 90,
@@ -179,7 +123,7 @@ pub enum InfixOp {
 }
 
 impl InfixOp {
-    fn to_precedence(&self) -> u32 {
+    pub fn to_precedence(&self) -> u32 {
         match self {
             InfixOp::Exp => 80,
             InfixOp::Mul | InfixOp::Div | InfixOp::Mod => 70,
