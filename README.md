@@ -6,7 +6,7 @@
     <br>
 </h1>
 
-<h4 align="center">Numerical computing for YOLOL.</h4>
+<h4 align="center">Numerical computing for Yolol.</h4>
 
 <p align="center">
     <a href="#what-is-yolk">What</a> •
@@ -20,7 +20,7 @@
 
 ## What is Yolk?
 
-Yolk is a [domain-specific language](https://en.wikipedia.org/wiki/Domain-specific_language) that transpiles to [YOLOL](https://wiki.starbasegame.com/index.php/YOLOL).
+Yolk is a [domain-specific language](https://en.wikipedia.org/wiki/Domain-specific_language) that transpiles to [Yolol](https://wiki.starbasegame.com/index.php/YOLOL).
 
 Yolk specializes in working with numbers and arrays.
 
@@ -28,10 +28,10 @@ Yolk specializes in working with numbers and arrays.
 
 #### Convenience
 
-YOLOL doesn't support arrays, so each element must be a separate variable.
+Yolol doesn't support arrays, so each element must be a separate variable.
 
 ```
-// YOLOL
+// Yolol
 a_0=1 a_1=2 a_2=4 a_3=8
 ```
 
@@ -42,10 +42,10 @@ Yolk handles array expansion so that you don't have to.
 let a = [1, 2, 4, 8];
 ```
 
-In YOLOL, applying element-wise operations to an array is repetitive and error-prone.
+In Yolol, applying element-wise operations to an array is repetitive and error-prone.
 
 ```
-// YOLOL
+// Yolol
 a_0=1 a_1=2 a_2=4 a_3=8
 b_0=a_0^2 b_1=a_1^2 b_2=a_2^2 b_3=a_3^2
 // Result: b_0 == 1, b_1 == 4, b_2 == 16, b_3 == 64
@@ -72,7 +72,7 @@ let e = 0;
 export f;
 ```
 
-Yolk provides the same operators and precedence as YOLOL.
+Yolk provides the same operators and precedence as Yolol.
 
 ```
 let number = 1 + 2 * 3;
@@ -81,7 +81,7 @@ let number = 1 + 2 * 3;
 
 #### Efficiency
 
-YOLOL chips are slow and have a limited amount of space.
+Yolol chips are slow and have a limited amount of space.
 
 Yolk aggressively optimizes your code to make it faster and smaller.
 
