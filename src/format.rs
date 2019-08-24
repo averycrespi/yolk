@@ -1,7 +1,9 @@
 use crate::ast::YololNode;
 
 const LINE_LIMIT: usize = 70;
-const NO_PREC: u32 = 0;
+
+const IDENT_PREC: u32 = 1000;
+const LIT_PREC: u32 = 1000;
 
 /// Formats Yolol statements as a program.
 ///
@@ -15,7 +17,7 @@ pub fn format_as_program(stmts: &[YololNode]) -> String {
     let mut line = String::new();
     for stmt in stmts.iter() {
         if let YololNode::AssignStmt { ident, expr } = stmt {
-            let formatted = format_expr(&expr, NO_PREC);
+            let (formatted, _) = format_expr(&expr, 0);
             if line.len() + formatted.len() + 1 > LINE_LIMIT {
                 program.push_str(&format!(
                     "{line}\n{ident}={expr}\n",
@@ -36,39 +38,45 @@ pub fn format_as_program(stmts: &[YololNode]) -> String {
     program.trim().to_string()
 }
 
-fn format_expr(expr: &YololNode, parent_prec: u32) -> String {
+fn format_expr(expr: &YololNode, parent_prec: u32) -> (String, u32) {
     match expr {
         YololNode::PrefixExpr { op, expr } => {
             let prec = op.to_precedence();
-            let use_parens = prec < parent_prec;
-            format!(
+            let (expr, child_prec) = format_expr(expr, prec);
+            let add_parens = prec < parent_prec;
+            let add_space = prec <= child_prec;
+            let formatted = format!(
                 "{lparen}{op}{space}{expr}{rparen}",
-                lparen = if use_parens { "(" } else { "" },
+                lparen = if add_parens { "(" } else { "" },
                 op = op.to_string(),
-                //TODO: remove space when not needed
-                space = " ",
-                expr = format_expr(expr, prec),
-                rparen = if use_parens { ")" } else { "" },
-            )
+                space = if add_space { " " } else { "" },
+                expr = expr,
+                rparen = if add_parens { ")" } else { "" },
+            );
+            (formatted, prec)
         }
         YololNode::InfixExpr { lhs, op, rhs } => {
+            let is_alpha = op.to_string().chars().all(char::is_alphabetic);
             let prec = op.to_precedence();
-            let use_parens = prec < parent_prec;
-            format!(
-                "{lparen}{lhs}{lspace}{op}{rspace}{rhs}{rparen}",
-                lparen = if use_parens { "(" } else { "" },
-                lhs = format_expr(lhs, prec),
-                //TODO: remove space when not needed
-                lspace = " ",
+            let (lhs, lhs_prec) = format_expr(lhs, prec);
+            let (rhs, rhs_prec) = format_expr(rhs, prec);
+            let add_parens = prec < parent_prec;
+            let add_lhs_space = (prec <= lhs_prec) && is_alpha;
+            let add_rhs_space = (prec <= rhs_prec) && is_alpha;
+            let formatted = format!(
+                "{lparen}{lhs}{lhs_space}{op}{rhs_space}{rhs}{rparen}",
+                lparen = if add_parens { "(" } else { "" },
+                lhs = lhs,
+                lhs_space = if add_lhs_space { " " } else { "" },
                 op = op.to_string(),
-                //TODO: remove space when not needed
-                rspace = " ",
-                rhs = format_expr(rhs, prec),
-                rparen = if use_parens { ")" } else { "" },
-            )
+                rhs_space = if add_rhs_space { " " } else { "" },
+                rhs = rhs,
+                rparen = if add_parens { ")" } else { "" },
+            );
+            (formatted, prec)
         }
-        YololNode::Ident(s) => s.to_string(),
-        YololNode::Literal(y) => y.to_string(),
+        YololNode::Ident(s) => (s.to_string(), IDENT_PREC),
+        YololNode::Literal(y) => (y.to_string(), LIT_PREC),
         _ => panic!("expected Yolol expression, but got {:?}", expr),
     }
 }
