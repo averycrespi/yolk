@@ -14,7 +14,7 @@ pub enum Value {
 }
 
 impl Value {
-    /// Apply a prefix operation to a Yolk value.
+    /// Applies a prefix operation to a Yolk value.
     pub fn apply_prefix_op(&self, op: &PrefixOp) -> Value {
         match self {
             Value::Number(n) => Value::Number(n.apply_prefix_op(op)),
@@ -22,7 +22,7 @@ impl Value {
         }
     }
 
-    /// Apply an infix operation to two Yolk values.
+    /// Applies an infix operation to two Yolk values.
     pub fn apply_infix_op(&self, op: &InfixOp, other: &Value) -> Result<Value, TranspileError> {
         match (self, other) {
             (Value::Number(lhs), Value::Number(rhs)) => {

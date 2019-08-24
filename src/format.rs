@@ -28,7 +28,7 @@ pub fn format_as_program(stmts: &[YololNode]) -> String {
                 line.push_str(&format!("{ident}={expr} ", ident = ident, expr = formatted));
             }
         } else {
-            panic!("expected Yolol assign statement, but got {:?}", stmt)
+            panic!("expected Yolol assign statement, but got: {:?}", stmt)
         }
     }
     // Add final line and trim whitespace
