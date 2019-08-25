@@ -143,6 +143,19 @@ impl InfixOp {
             InfixOp::And => 20,
         }
     }
+
+    // Returns whether or not an infix operation is commutative.
+    pub fn is_commutative(&self) -> bool {
+        match self {
+            InfixOp::Add
+            | InfixOp::Mul
+            | InfixOp::Equal
+            | InfixOp::NotEqual
+            | InfixOp::Or
+            | InfixOp::And => true,
+            _ => false,
+        }
+    }
 }
 
 impl fmt::Display for InfixOp {
