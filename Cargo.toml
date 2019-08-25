@@ -1,6 +1,6 @@
 [package]
 name = "yolk"
-version = "0.4.1"
+version = "0.4.2"
 authors = ["Avery Crespi <averycrespi@gmail.com>"]
 edition = "2018"
 description = "Numerical computing for YOLOL"
