@@ -1,5 +1,8 @@
 use crate::ast::YololNode;
 
+#[cfg(test)]
+mod tests;
+
 const LINE_LIMIT: usize = 70;
 
 const IDENT_PREC: u32 = 1000;
@@ -60,7 +63,13 @@ fn format_expr(expr: &YololNode, parent_prec: u32) -> (String, u32) {
             let prec = op.to_precedence();
             let (lhs, lhs_prec) = format_expr(lhs, prec);
             let (rhs, rhs_prec) = format_expr(rhs, prec);
-            let add_parens = prec < parent_prec;
+            // If the operation is commutative, we can omit parentheses in the case of matching
+            // precedence. This prevents "a-(b-c)" from being formatted as "a-b-c".
+            let add_parens = if op.is_commutative() {
+                prec < parent_prec
+            } else {
+                prec <= parent_prec
+            };
             let add_lhs_space = (prec <= lhs_prec) && is_alpha;
             let add_rhs_space = (prec <= rhs_prec) && is_alpha;
             let formatted = format!(
