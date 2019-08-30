@@ -35,14 +35,12 @@ impl From<TranspileError> for Error {
 #[derive(Debug, Clone)]
 pub enum ParseError {
     BadSyntax(String),
-    BadYololNumber(String),
 }
 
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             ParseError::BadSyntax(s) => write!(f, "syntax error: {}", s),
-            ParseError::BadYololNumber(s) => write!(f, "failed to parse number: {}", s),
         }
     }
 }
