@@ -19,7 +19,7 @@ fn test_import() -> Result<(), ParseError> {
 
 #[test]
 fn test_let_number() -> Result<(), ParseError> {
-    let cases = vec!["0", "1", "1.0", "-1", "-1.0", "1.2345", "-1.2345"];
+    let cases = vec!["0", "1", "1.0", "-1", "-1.0", "1.234", "-1.234"];
     for case in cases.iter() {
         println!("case: {}", case);
         assert_eq!(

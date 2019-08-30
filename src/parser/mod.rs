@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use num_traits::identities::Zero;
 use pest::iterators::Pair;
 use pest::prec_climber::{Assoc, Operator, PrecClimber};
 use pest::Parser;
@@ -162,10 +163,10 @@ fn parse_expr(expr: Pair<Rule>) -> YolkNode {
             },
         ),
         Rule::ident => YolkNode::Ident(expr.as_str().to_string()),
-        Rule::literal => YolkNode::Literal(
-            YololNumber::from_str(expr.as_str())
-                .unwrap_or_else(|e| panic!("failed to parse YololNumber from string: {}", e)),
-        ),
+        Rule::literal => {
+            //TODO: handle error better
+            YolkNode::Literal(YololNumber::from_str(expr.as_str()).unwrap_or(YololNumber::zero()))
+        }
         Rule::array => {
             let exprs: Vec<YolkNode> = expr.into_inner().map(parse_expr).collect();
             YolkNode::Array(exprs)
