@@ -24,67 +24,23 @@
 
 Yolk is a [domain-specific language](https://en.wikipedia.org/wiki/Domain-specific_language) that transpiles to [Yolol](https://wiki.starbasegame.com/index.php/YOLOL).
 
-Yolk specializes in working with numbers and arrays.
+```
+// Calculate dot products
+
+define dot(V, W) = sum(V * W)
+
+let foo = dot([1, 2], [3, 4])
+
+// Result: foo == 11
+```
+
+Yolk specializes in working with **numbers** and **arrays**. It doesn't support strings, conditionals, or gotos.
 
 ## Why should I use Yolk?
 
-#### Convenience
-
-Yolol doesn't support arrays, so each element must be a separate variable.
-
-```
-// Yolol
-a_0=1 a_1=2 a_2=4 a_3=8
-```
-
-Yolk handles array expansion so that you don't have to.
-
-```
-// Yolk
-let a = [1, 2, 4, 8]
-```
-
-In Yolol, applying element-wise operations to an array is repetitive and error-prone.
-
-```
-// Yolol
-a_0=1 a_1=2 a_2=4 a_3=8
-b_0=a_0^2 b_1=a_1^2 b_2=a_2^2 b_3=a_3^2
-// Result: b_0 == 1, b_1 == 4, b_2 == 16, b_3 == 64
-```
-
-In Yolk, element-wise operations are powerful and concise.
-
-```
-// Yolk
-let a = [1, 2, 4, 8]
-let b = a ^ 2
-// Result: b == [1, 4, 16, 64]
-```
-
-#### Simplicity
-
-Yolk's syntax is simple and beginner-friendly.
-
-```
-// This is a comment!
-import a
-define b(c, d) = c + d
-let e = 0
-```
-
-Yolk provides the same operators and precedence as Yolol.
-
-```
-let number = 1 + 2 * 3
-// Result: number == 7
-```
-
-#### Efficiency
-
-Yolol chips are slow and have a limited amount of space.
-
-Yolk uses [SSA form](https://en.wikipedia.org/wiki/Static_single_assignment_form) to aggressively optimizes your code, making it faster and smaller.
+- **Minimal syntax**: has the same operators and precedence as Yolol
+- **Interoperable design**: easy to integrate with your existing Yolol
+- **Aggressive optimization**: saves space on your Yolol chips
 
 ## How do I get started?
 
@@ -116,7 +72,7 @@ Licensed under either of
 
 at your option.
 
-### Contribution
+## Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
 
