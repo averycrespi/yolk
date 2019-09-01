@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
-use crate::ast::YololNode;
+use crate::ast::{YololExpr, YololStmt};
 
 /// Represents a DAG of dependencies between Yolol variables.
 #[derive(Debug, Clone)]
@@ -15,15 +15,15 @@ impl DepGraph {
     /// # Panics
     ///
     /// Panic if any of the nodes are not statements, or if any of the nodes are malformed.
-    pub fn from_statements(stmts: &[YololNode]) -> DepGraph {
+    pub fn from_statements(stmts: &[YololStmt]) -> DepGraph {
         let mut graph: HashMap<String, HashSet<String>> = HashMap::new();
         for stmt in stmts.iter() {
-            if let YololNode::AssignStmt { ident, expr } = stmt {
-                let mut deps = HashSet::new();
-                DepGraph::find_deps(&mut deps, expr);
-                graph.insert(ident.to_string(), deps);
-            } else {
-                panic!("expected Yolol statement, but got: {:?}", stmt)
+            match stmt {
+                YololStmt::Assign { ident, expr } => {
+                    let mut deps = HashSet::new();
+                    DepGraph::find_deps(&mut deps, expr);
+                    graph.insert(ident.to_string(), deps);
+                }
             }
         }
         DepGraph { graph: graph }
@@ -47,14 +47,14 @@ impl DepGraph {
         found
     }
 
-    fn find_deps(deps: &mut HashSet<String>, expr: &YololNode) {
+    fn find_deps(deps: &mut HashSet<String>, expr: &YololExpr) {
         match expr {
-            YololNode::PrefixExpr { op: _, expr } => DepGraph::find_deps(deps, expr),
-            YololNode::InfixExpr { lhs, op: _, rhs } => {
+            YololExpr::Prefix { op: _, expr } => DepGraph::find_deps(deps, expr),
+            YololExpr::Infix { lhs, op: _, rhs } => {
                 DepGraph::find_deps(deps, lhs);
                 DepGraph::find_deps(deps, rhs);
             }
-            YololNode::Ident(s) => {
+            YololExpr::Ident(s) => {
                 deps.insert(s.to_string());
             }
             _ => (),

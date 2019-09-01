@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::ast::YololNode;
+use crate::ast::{YololExpr, YololStmt};
 use crate::error::TranspileError;
 use crate::function::Function;
 use crate::value::{ArrayExpr, NumberExpr, Value};
@@ -141,7 +141,7 @@ impl Environment {
         &mut self,
         ident: &str,
         value: Value,
-    ) -> Result<Vec<YololNode>, TranspileError> {
+    ) -> Result<Vec<YololStmt>, TranspileError> {
         if self.imports.contains(ident) || self.variables.contains_key(ident) {
             Err(TranspileError::ReassignVariable(ident.to_string()))
         } else if self.keywords.contains(ident) {
@@ -185,7 +185,7 @@ impl Environment {
         } else {
             match self.variables.get(ident) {
                 Some(Value::Number(number)) => match number.as_expr() {
-                    YololNode::Ident(s) => {
+                    YololExpr::Ident(s) => {
                         self.context.push_exported(&s);
                     }
                     _ => panic!("expected identifier, but got: {:?}", number.as_expr()),
@@ -193,7 +193,7 @@ impl Environment {
                 Some(Value::Array(array)) => {
                     for expr in array.as_exprs().iter() {
                         match expr {
-                            YololNode::Ident(s) => {
+                            YololExpr::Ident(s) => {
                                 self.context.push_exported(&s);
                             }
                             _ => panic!("expected identifier, but got: {:?}", expr),

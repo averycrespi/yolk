@@ -1,7 +1,7 @@
 use num_traits::identities::{One, Zero};
 use yolol_number::YololNumber;
 
-use crate::ast::{InfixOp, YolkExpr, YolkStmt, YololNode};
+use crate::ast::{InfixOp, YolkExpr, YolkStmt, YololStmt};
 use crate::environment::{Context, Environment};
 use crate::error::TranspileError;
 use crate::function::Function;
@@ -17,7 +17,7 @@ mod tests;
 /// # Panics
 ///
 /// Panics if any of the nodes are not statements, or if any of the nodes are malformed.
-pub fn transpile(stmts: &[YolkStmt]) -> Result<(Vec<YololNode>, Context), TranspileError> {
+pub fn transpile(stmts: &[YolkStmt]) -> Result<(Vec<YololStmt>, Context), TranspileError> {
     let mut env = Environment::new();
     let mut assigns = Vec::new();
     for stmt in stmts.iter() {

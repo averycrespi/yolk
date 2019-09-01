@@ -45,21 +45,21 @@ pub enum YolkExpr {
     Array(Vec<YolkExpr>),
 }
 
-/// Represents a Yolol AST node.
 #[derive(Debug, Clone, PartialEq)]
-pub enum YololNode {
-    AssignStmt {
-        ident: String,
-        expr: Box<YololNode>,
-    },
-    PrefixExpr {
+pub enum YololStmt {
+    Assign { ident: String, expr: Box<YololExpr> },
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum YololExpr {
+    Prefix {
         op: PrefixOp,
-        expr: Box<YololNode>,
+        expr: Box<YololExpr>,
     },
-    InfixExpr {
-        lhs: Box<YololNode>,
+    Infix {
+        lhs: Box<YololExpr>,
         op: InfixOp,
-        rhs: Box<YololNode>,
+        rhs: Box<YololExpr>,
     },
     Ident(String),
     Literal(YololNumber),

@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use yolol_number::YololNumber;
 
-use crate::ast::{YolkExpr, YolkStmt, YololNode};
+use crate::ast::{YolkExpr, YolkStmt, YololExpr, YololStmt};
 use crate::error::TranspileError;
 use crate::transpiler::transpile;
 
@@ -15,9 +15,9 @@ fn test_let_number() -> Result<(), TranspileError> {
     let (yolol, _) = transpile(&yolk)?;
     assert_eq!(
         yolol,
-        vec![YololNode::AssignStmt {
+        vec![YololStmt::Assign {
             ident: "number".to_string(),
-            expr: Box::new(YololNode::Literal(YololNumber::from_str("0").unwrap()))
+            expr: Box::new(YololExpr::Literal(YololNumber::from_str("0").unwrap()))
         }]
     );
     Ok(())
@@ -36,13 +36,13 @@ fn test_let_array() -> Result<(), TranspileError> {
     assert_eq!(
         yolol,
         vec![
-            YololNode::AssignStmt {
+            YololStmt::Assign{
                 ident: "array_0".to_string(),
-                expr: Box::new(YololNode::Literal(YololNumber::from_str("0").unwrap()))
+                expr: Box::new(YololExpr::Literal(YololNumber::from_str("0").unwrap()))
             },
-            YololNode::AssignStmt {
+            YololStmt::Assign{
                 ident: "array_1".to_string(),
-                expr: Box::new(YololNode::Literal(YololNumber::from_str("1").unwrap()))
+                expr: Box::new(YololExpr::Literal(YololNumber::from_str("1").unwrap()))
             }
         ]
     );
