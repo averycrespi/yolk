@@ -2,21 +2,21 @@ use yolol_number::YololNumber;
 
 use crate::ast::YolkExpr;
 use crate::environment::Environment;
-use crate::error::TranspileError;
+use crate::error::YolkError;
 use crate::function::Function;
 use crate::value::{NumberExpr, Value};
 
 use std::str::FromStr;
 
 #[test]
-fn test_import() -> Result<(), TranspileError> {
+fn test_import() -> Result<(), YolkError> {
     let mut env = Environment::new();
     env.import("number")?;
     Ok(())
 }
 
 #[test]
-fn test_define() -> Result<(), TranspileError> {
+fn test_define() -> Result<(), YolkError> {
     let mut env = Environment::new();
     let function = Function::new(
         "function",
@@ -28,7 +28,7 @@ fn test_define() -> Result<(), TranspileError> {
 }
 
 #[test]
-fn test_let_value() -> Result<(), TranspileError> {
+fn test_let_value() -> Result<(), YolkError> {
     let mut env = Environment::new();
     let value = Value::Number(NumberExpr::from_yolol_number(
         YololNumber::from_str("0").unwrap(),

@@ -2,7 +2,7 @@ use yoloxide::environment::{ContextMap, Environment};
 use yoloxide::execute_line;
 
 use yolk::ast::YololStmt;
-use yolk::error::Error;
+use yolk::error::YolkError;
 use yolk::{format_as_program, optimize, parse, transpile};
 
 use std::fs;
@@ -30,7 +30,7 @@ fn yolol_to_env(yolol: &[YololStmt]) -> Environment {
 }
 
 #[test]
-fn test_correctness() -> Result<(), Error> {
+fn test_correctness() -> Result<(), YolkError> {
     let test_files = find_test_files();
     for file in test_files {
         println!("case: {}", file);
@@ -45,7 +45,7 @@ fn test_correctness() -> Result<(), Error> {
 }
 
 #[test]
-fn test_idempotence() -> Result<(), Error> {
+fn test_idempotence() -> Result<(), YolkError> {
     let test_files = find_test_files();
     for file in test_files {
         println!("case: {}", file);
