@@ -14,8 +14,7 @@ pub fn optimize(stmts: Vec<YololStmt>) -> Vec<YololStmt> {
         //TODO: hash instead of clone
         let before = curr.clone();
         let vars = find_literal_vars(&curr);
-        //TODO: don't clone
-        curr = curr.iter().map(|s| reduce_stmt(s.clone(), &vars)).collect();
+        curr = curr.into_iter().map(|s| reduce_stmt(s, &vars)).collect();
         if before == curr {
             break;
         }
