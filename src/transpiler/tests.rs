@@ -12,7 +12,7 @@ fn test_let_number() -> Result<(), TranspileError> {
         ident: "number".to_string(),
         expr: Box::new(YolkExpr::Literal(YololNumber::from_str("0").unwrap())),
     }];
-    let (yolol, _) = transpile(&yolk)?;
+    let yolol = transpile(&yolk)?;
     assert_eq!(
         yolol,
         vec![YololStmt::Assign {
@@ -32,15 +32,15 @@ fn test_let_array() -> Result<(), TranspileError> {
             YolkExpr::Literal(YololNumber::from_str("1").unwrap()),
         ])),
     }];
-    let (yolol, _) = transpile(&yolk)?;
+    let yolol = transpile(&yolk)?;
     assert_eq!(
         yolol,
         vec![
-            YololStmt::Assign{
+            YololStmt::Assign {
                 ident: "array_0".to_string(),
                 expr: Box::new(YololExpr::Literal(YololNumber::from_str("0").unwrap()))
             },
-            YololStmt::Assign{
+            YololStmt::Assign {
                 ident: "array_1".to_string(),
                 expr: Box::new(YololExpr::Literal(YololNumber::from_str("1").unwrap()))
             }

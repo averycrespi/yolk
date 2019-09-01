@@ -39,17 +39,6 @@ fn test_let_value() -> Result<(), TranspileError> {
 }
 
 #[test]
-fn test_export() -> Result<(), TranspileError> {
-    let mut env = Environment::new();
-    let value = Value::Number(NumberExpr::from_yolol_number(
-        YololNumber::from_str("0").unwrap(),
-    ));
-    env.let_value("number", value)?;
-    env.export("number")?;
-    Ok(())
-}
-
-#[test]
 #[should_panic]
 fn test_get_undefined_variable() {
     let env = Environment::new();
@@ -146,16 +135,4 @@ fn test_assign_same_lowercase() {
     ));
     env.let_value("number", value.clone()).unwrap();
     env.let_value("NUMBER", value.clone()).unwrap();
-}
-
-#[test]
-#[should_panic]
-fn test_export_twice() {
-    let mut env = Environment::new();
-    let value = Value::Number(NumberExpr::from_yolol_number(
-        YololNumber::from_str("0").unwrap(),
-    ));
-    env.let_value("number", value.clone()).unwrap();
-    env.export("number").unwrap();
-    env.export("number").unwrap();
 }

@@ -16,9 +16,6 @@ pub enum YolkStmt {
         ident: String,
         expr: Box<YolkExpr>,
     },
-    Export {
-        ident: String,
-    },
 }
 
 #[derive(Debug, Clone, PartialEq)]

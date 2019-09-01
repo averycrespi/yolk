@@ -9,7 +9,6 @@ pub mod environment;
 pub mod error;
 pub mod format;
 pub mod function;
-pub mod graph;
 pub mod optimizer;
 pub mod parser;
 pub mod transpiler;

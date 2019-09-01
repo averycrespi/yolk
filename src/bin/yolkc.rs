@@ -34,11 +34,11 @@ fn main() {
         if debug {
             eprintln!("{:?}\n", yolk);
         }
-        let (yolol, context) = transpile(&yolk).unwrap_or_else(|e| panic!("{}", e));
+        let yolol = transpile(&yolk).unwrap_or_else(|e| panic!("{}", e));
         if debug {
             eprintln!("{:?}\n", yolol);
         }
-        let optimized = optimize(&yolol, &context);
+        let optimized = optimize(&yolol);
         if debug {
             eprintln!("{:?}\n", optimized);
         }
