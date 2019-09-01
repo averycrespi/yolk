@@ -1,6 +1,6 @@
 use yolol_number::YololNumber;
 
-use crate::ast::YolkNode;
+use crate::ast::YolkExpr;
 use crate::environment::Environment;
 use crate::error::TranspileError;
 use crate::function::Function;
@@ -21,7 +21,7 @@ fn test_define() -> Result<(), TranspileError> {
     let function = Function::new(
         "function",
         &vec!["a".to_string()],
-        &YolkNode::Ident("a".to_string()),
+        &YolkExpr::Ident("a".to_string()),
     )?;
     env.define("function", function)?;
     Ok(())
@@ -96,7 +96,7 @@ fn test_redefine_function() {
     let function = Function::new(
         "function",
         &vec!["a".to_string()],
-        &YolkNode::Ident("a".to_string()),
+        &YolkExpr::Ident("a".to_string()),
     )
     .unwrap();
     env.define("function", function.clone()).unwrap();
@@ -110,7 +110,7 @@ fn test_define_keyword() {
     let function = Function::new(
         "sum",
         &vec!["a".to_string()],
-        &YolkNode::Ident("a".to_string()),
+        &YolkExpr::Ident("a".to_string()),
     )
     .unwrap();
     env.define("sum", function).unwrap();

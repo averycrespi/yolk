@@ -1,7 +1,7 @@
 use num_traits::identities::{One, Zero};
 use yolol_number::YololNumber;
 
-use crate::ast::{InfixOp, YolkNode, YololNode};
+use crate::ast::{InfixOp, YolkExpr, YolkStmt, YololNode};
 use crate::environment::{Context, Environment};
 use crate::error::TranspileError;
 use crate::function::Function;
@@ -17,51 +17,50 @@ mod tests;
 /// # Panics
 ///
 /// Panics if any of the nodes are not statements, or if any of the nodes are malformed.
-pub fn transpile(stmts: &[YolkNode]) -> Result<(Vec<YololNode>, Context), TranspileError> {
+pub fn transpile(stmts: &[YolkStmt]) -> Result<(Vec<YololNode>, Context), TranspileError> {
     let mut env = Environment::new();
     let mut assigns = Vec::new();
     for stmt in stmts.iter() {
         match stmt {
-            YolkNode::ImportStmt { ident } => env.import(&ident)?,
-            YolkNode::DefineStmt {
+            YolkStmt::Import { ident } => env.import(&ident)?,
+            YolkStmt::Define {
                 ident,
                 params,
                 body,
             } => env.define(&ident, Function::new(&ident, params, &*body)?)?,
-            YolkNode::LetStmt { ident, expr } => {
+            YolkStmt::Let { ident, expr } => {
                 assigns.extend(env.let_value(&ident, expr_to_value(&env, &*expr)?)?);
             }
-            YolkNode::ExportStmt { ident } => env.export(&ident)?,
-            _ => panic!("expected Yolk statement, but got: {:?}", stmt),
+            YolkStmt::Export { ident } => env.export(&ident)?,
         }
     }
     Ok((assigns, env.context()))
 }
 
-fn expr_to_value(env: &Environment, expr: &YolkNode) -> Result<Value, TranspileError> {
+fn expr_to_value(env: &Environment, expr: &YolkExpr) -> Result<Value, TranspileError> {
     match expr {
-        YolkNode::PrefixExpr { op, expr } => {
+        YolkExpr::Prefix { op, expr } => {
             let value = expr_to_value(env, &expr)?;
             Ok(value.apply_prefix_op(&op))
         }
-        YolkNode::BuiltinExpr { ident, args } => match ident.as_ref() {
+        YolkExpr::Builtin { ident, args } => match ident.as_ref() {
             "sum" => sum_to_value(env, args),
             "product" => product_to_value(env, args),
             _ => panic!("expected builtin, but got: {:?}", ident),
         },
-        YolkNode::CallExpr { ident, args } => {
+        YolkExpr::Call { ident, args } => {
             let function = env.function(ident)?;
             let expr = function.call(args)?;
             expr_to_value(env, &expr)
         }
-        YolkNode::InfixExpr { lhs, op, rhs } => {
+        YolkExpr::Infix { lhs, op, rhs } => {
             let lhs = expr_to_value(env, &lhs)?;
             let rhs = expr_to_value(env, &rhs)?;
             lhs.apply_infix_op(&op, &rhs)
         }
-        YolkNode::Ident(s) => env.variable(s),
-        YolkNode::Literal(y) => Ok(Value::Number(NumberExpr::from_yolol_number(y.clone()))),
-        YolkNode::Array(exprs) => {
+        YolkExpr::Ident(s) => env.variable(s),
+        YolkExpr::Literal(y) => Ok(Value::Number(NumberExpr::from_yolol_number(y.clone()))),
+        YolkExpr::Array(exprs) => {
             let mut numbers = Vec::new();
             for expr in exprs.iter() {
                 let value = expr_to_value(env, &expr)?;
@@ -72,11 +71,10 @@ fn expr_to_value(env: &Environment, expr: &YolkNode) -> Result<Value, TranspileE
             }
             Ok(Value::Array(ArrayExpr::from_number_exprs(&numbers)))
         }
-        _ => panic!("expected Yolk expression, but got: {:?}", expr),
     }
 }
 
-fn sum_to_value(env: &Environment, args: &[YolkNode]) -> Result<Value, TranspileError> {
+fn sum_to_value(env: &Environment, args: &[YolkExpr]) -> Result<Value, TranspileError> {
     let mut values = Vec::new();
     for arg in args.iter() {
         values.push(expr_to_value(env, arg)?);
@@ -88,7 +86,7 @@ fn sum_to_value(env: &Environment, args: &[YolkNode]) -> Result<Value, Transpile
     ))
 }
 
-fn product_to_value(env: &Environment, args: &[YolkNode]) -> Result<Value, TranspileError> {
+fn product_to_value(env: &Environment, args: &[YolkExpr]) -> Result<Value, TranspileError> {
     let mut values = Vec::new();
     for arg in args.iter() {
         values.push(expr_to_value(env, arg)?);

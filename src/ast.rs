@@ -2,44 +2,47 @@ use std::fmt;
 
 use yolol_number::YololNumber;
 
-/// Represents a Yolk AST node.
 #[derive(Debug, Clone, PartialEq)]
-pub enum YolkNode {
-    ImportStmt {
+pub enum YolkStmt {
+    Import {
         ident: String,
     },
-    DefineStmt {
+    Define {
         ident: String,
         params: Vec<String>,
-        body: Box<YolkNode>,
+        body: Box<YolkExpr>,
     },
-    LetStmt {
+    Let {
         ident: String,
-        expr: Box<YolkNode>,
+        expr: Box<YolkExpr>,
     },
-    ExportStmt {
+    Export {
         ident: String,
     },
-    PrefixExpr {
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum YolkExpr {
+    Prefix {
         op: PrefixOp,
-        expr: Box<YolkNode>,
+        expr: Box<YolkExpr>,
     },
-    BuiltinExpr {
+    Builtin {
         ident: String,
-        args: Vec<YolkNode>,
+        args: Vec<YolkExpr>,
     },
-    CallExpr {
+    Call {
         ident: String,
-        args: Vec<YolkNode>,
+        args: Vec<YolkExpr>,
     },
-    InfixExpr {
-        lhs: Box<YolkNode>,
+    Infix {
+        lhs: Box<YolkExpr>,
         op: InfixOp,
-        rhs: Box<YolkNode>,
+        rhs: Box<YolkExpr>,
     },
     Ident(String),
     Literal(YololNumber),
-    Array(Vec<YolkNode>),
+    Array(Vec<YolkExpr>),
 }
 
 /// Represents a Yolol AST node.
