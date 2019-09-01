@@ -10,21 +10,25 @@ use crate::ast::{InfixOp, PrefixOp, YololExpr, YololStmt};
 /// This function is idempotent.
 pub fn optimize(stmts: Vec<YololStmt>) -> Vec<YololStmt> {
     let mut curr = stmts;
+    // This loop will always terminate because of the following invariants:
+    // 1) A unique global optimum exists for every set of statements.
+    // 2) The reduce_stmt function will never move away from the optimum.
+    // Once reduce_stmt becomes idempotent, the optimum has been found.
     loop {
         //TODO: hash instead of clone
-        let before = curr.clone();
+        let prev = curr.clone();
         let vars = find_literal_vars(&curr);
         curr = curr.into_iter().map(|s| reduce_stmt(s, &vars)).collect();
-        if before == curr {
+        if prev == curr {
             break;
         }
     }
     curr
 }
 
-/// Find variables that have literal values.
+/// Finds variables that have literal values.
 ///
-/// These literals are used for constant propagation.
+/// These literal values are used for constant propagation.
 fn find_literal_vars(stmts: &[YololStmt]) -> HashMap<String, YololExpr> {
     let mut state = HashMap::new();
     for stmt in stmts.iter() {
@@ -39,7 +43,9 @@ fn find_literal_vars(stmts: &[YololStmt]) -> HashMap<String, YololExpr> {
     state
 }
 
-/// Reduce expressions in a Yolol statement.
+/// Reduces a Yolol statement.
+///
+/// This function will become idempotent after an optimum has been found.
 fn reduce_stmt(stmt: YololStmt, vars: &HashMap<String, YololExpr>) -> YololStmt {
     match stmt {
         YololStmt::Assign { ident, expr } => YololStmt::Assign {
@@ -49,7 +55,9 @@ fn reduce_stmt(stmt: YololStmt, vars: &HashMap<String, YololExpr>) -> YololStmt 
     }
 }
 
-/// Reduce expressions in a Yolol expression.
+/// Reduces a Yolol expression.
+///
+/// This function will become idempotent after an optimum has been found.
 fn reduce_expr(expr: YololExpr, vars: &HashMap<String, YololExpr>) -> YololExpr {
     match expr {
         YololExpr::Prefix { op, expr } => match (op, &*expr) {
@@ -119,7 +127,7 @@ fn reduce_expr(expr: YololExpr, vars: &HashMap<String, YololExpr>) -> YololExpr 
                 rhs: Box::new(reduce_expr(*rhs, vars)),
             },
         },
-        // Propagate literals
+        // Propagate literal variables
         YololExpr::Ident(s) => match vars.get(&s) {
             Some(YololExpr::Literal(y)) => YololExpr::Literal(*y),
             _ => YololExpr::Ident(s),
