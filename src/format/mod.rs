@@ -1,4 +1,4 @@
-use crate::ast::YololNode;
+use crate::ast::{YololExpr, YololStmt};
 
 #[cfg(test)]
 mod tests;
@@ -15,25 +15,25 @@ const LIT_PREC: u32 = 1000;
 /// # Panics
 ///
 /// Panics if any of the nodes are not statements, or if any of the nodes are malformed.
-pub fn format_as_program(stmts: &[YololNode]) -> String {
+pub fn format_as_program(stmts: &[YololStmt]) -> String {
     let mut program = String::new();
     let mut line = String::new();
     for stmt in stmts.iter() {
-        if let YololNode::AssignStmt { ident, expr } = stmt {
-            let (formatted, _) = format_expr(&expr, 0);
-            if line.len() + formatted.len() + 1 > LINE_LIMIT {
-                program.push_str(&format!(
-                    "{line}\n{ident}={expr}\n",
-                    line = line,
-                    ident = ident,
-                    expr = formatted
-                ));
-                line.clear();
-            } else {
-                line.push_str(&format!("{ident}={expr} ", ident = ident, expr = formatted));
+        match stmt {
+            YololStmt::Assign { ident, expr } => {
+                let (formatted, _) = format_expr(&expr, 0);
+                if line.len() + formatted.len() + 1 > LINE_LIMIT {
+                    program.push_str(&format!(
+                        "{line}\n{ident}={expr}\n",
+                        line = line,
+                        ident = ident,
+                        expr = formatted
+                    ));
+                    line.clear();
+                } else {
+                    line.push_str(&format!("{ident}={expr} ", ident = ident, expr = formatted));
+                }
             }
-        } else {
-            panic!("expected Yolol assign statement, but got: {:?}", stmt)
         }
     }
     // Add final line and trim whitespace
@@ -41,9 +41,9 @@ pub fn format_as_program(stmts: &[YololNode]) -> String {
     program.trim().to_string()
 }
 
-fn format_expr(expr: &YololNode, parent_prec: u32) -> (String, u32) {
+fn format_expr(expr: &YololExpr, parent_prec: u32) -> (String, u32) {
     match expr {
-        YololNode::PrefixExpr { op, expr } => {
+        YololExpr::Prefix { op, expr } => {
             let prec = op.to_precedence();
             let (expr, child_prec) = format_expr(expr, prec);
             let add_parens = prec < parent_prec;
@@ -58,7 +58,7 @@ fn format_expr(expr: &YololNode, parent_prec: u32) -> (String, u32) {
             );
             (formatted, prec)
         }
-        YololNode::InfixExpr { lhs, op, rhs } => {
+        YololExpr::Infix { lhs, op, rhs } => {
             let is_alpha = op.to_string().chars().all(char::is_alphabetic);
             let prec = op.to_precedence();
             let (lhs, lhs_prec) = format_expr(lhs, prec);
@@ -84,8 +84,7 @@ fn format_expr(expr: &YololNode, parent_prec: u32) -> (String, u32) {
             );
             (formatted, prec)
         }
-        YololNode::Ident(s) => (s.to_string(), IDENT_PREC),
-        YololNode::Literal(y) => (y.to_string(), LIT_PREC),
-        _ => panic!("expected Yolol expression, but got {:?}", expr),
+        YololExpr::Ident(s) => (s.to_string(), IDENT_PREC),
+        YololExpr::Literal(y) => (y.to_string(), LIT_PREC),
     }
 }

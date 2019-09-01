@@ -1,6 +1,6 @@
 use yolol_number::YololNumber;
 
-use crate::ast::YolkNode;
+use crate::ast::YolkExpr;
 use crate::error::TranspileError;
 use crate::function::Function;
 
@@ -11,12 +11,12 @@ fn test_new() -> Result<(), TranspileError> {
     let function = Function::new(
         "function",
         &vec!["a".to_string(), "b".to_string(), "c".to_string()],
-        &YolkNode::Ident("a".to_string()),
+        &YolkExpr::Ident("a".to_string()),
     )?;
     function.call(&vec![
-        YolkNode::Literal(YololNumber::from_str("0").unwrap()),
-        YolkNode::Literal(YololNumber::from_str("1").unwrap()),
-        YolkNode::Literal(YololNumber::from_str("2").unwrap()),
+        YolkExpr::Literal(YololNumber::from_str("0").unwrap()),
+        YolkExpr::Literal(YololNumber::from_str("1").unwrap()),
+        YolkExpr::Literal(YololNumber::from_str("2").unwrap()),
     ])?;
     Ok(())
 }
@@ -27,7 +27,7 @@ fn test_duplicate_params() {
     Function::new(
         "function",
         &vec!["a".to_string(), "a".to_string()],
-        &YolkNode::Ident("a".to_string()),
+        &YolkExpr::Ident("a".to_string()),
     )
     .unwrap();
 }
@@ -38,9 +38,9 @@ fn test_recursive_call() {
     Function::new(
         "function",
         &vec!["a".to_string()],
-        &YolkNode::CallExpr {
+        &YolkExpr::Call {
             ident: "function".to_string(),
-            args: vec![YolkNode::Ident("a".to_string())],
+            args: vec![YolkExpr::Ident("a".to_string())],
         },
     )
     .unwrap();
@@ -52,7 +52,7 @@ fn test_undefined_local() {
     Function::new(
         "function",
         &vec!["a".to_string()],
-        &YolkNode::Ident("b".to_string()),
+        &YolkExpr::Ident("b".to_string()),
     )
     .unwrap();
 }
@@ -63,13 +63,13 @@ fn test_wrong_number_of_args() {
     let function = Function::new(
         "function",
         &vec!["a".to_string()],
-        &YolkNode::Ident("a".to_string()),
+        &YolkExpr::Ident("a".to_string()),
     )
     .unwrap();
     function
         .call(&vec![
-            YolkNode::Literal(YololNumber::from_str("0").unwrap()),
-            YolkNode::Literal(YololNumber::from_str("1").unwrap()),
+            YolkExpr::Literal(YololNumber::from_str("0").unwrap()),
+            YolkExpr::Literal(YololNumber::from_str("1").unwrap()),
         ])
         .unwrap();
 }

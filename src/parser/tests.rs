@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use yolol_number::YololNumber;
 
-use crate::ast::YolkNode;
+use crate::ast::{YolkExpr, YolkStmt};
 use crate::error::ParseError;
 use crate::parser::parse;
 
@@ -10,7 +10,7 @@ use crate::parser::parse;
 fn test_import() -> Result<(), ParseError> {
     assert_eq!(
         parse("import number")?,
-        vec![YolkNode::ImportStmt {
+        vec![YolkStmt::Import {
             ident: "number".to_string()
         }]
     );
@@ -24,9 +24,9 @@ fn test_let_number() -> Result<(), ParseError> {
         println!("case: {}", case);
         assert_eq!(
             parse(&format!("let number = {}", case))?,
-            vec![YolkNode::LetStmt {
+            vec![YolkStmt::Let {
                 ident: "number".to_string(),
-                expr: Box::new(YolkNode::Literal(YololNumber::from_str(case).unwrap()))
+                expr: Box::new(YolkExpr::Literal(YololNumber::from_str(case).unwrap()))
             }]
         );
     }
@@ -37,11 +37,11 @@ fn test_let_number() -> Result<(), ParseError> {
 fn test_let_array() -> Result<(), ParseError> {
     assert_eq!(
         parse("let array = [0, number]")?,
-        vec![YolkNode::LetStmt {
+        vec![YolkStmt::Let {
             ident: "array".to_string(),
-            expr: Box::new(YolkNode::Array(vec![
-                YolkNode::Literal(YololNumber::from_str("0").unwrap()),
-                YolkNode::Ident("number".to_string())
+            expr: Box::new(YolkExpr::Array(vec![
+                YolkExpr::Literal(YololNumber::from_str("0").unwrap()),
+                YolkExpr::Ident("number".to_string())
             ]))
         }]
     );
@@ -76,10 +76,10 @@ fn test_let_call() -> Result<(), ParseError> {
 fn test_define() -> Result<(), ParseError> {
     assert_eq!(
         parse("define identity(A) = A")?,
-        vec![YolkNode::DefineStmt {
+        vec![YolkStmt::Define {
             ident: "identity".to_string(),
             params: vec!["A".to_string()],
-            body: Box::new(YolkNode::Ident("A".to_string()))
+            body: Box::new(YolkExpr::Ident("A".to_string()))
         }]
     );
     Ok(())

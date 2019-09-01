@@ -1,7 +1,7 @@
 use yoloxide::environment::{ContextMap, Environment};
 use yoloxide::execute_line;
 
-use yolk::ast::YololNode;
+use yolk::ast::YololStmt;
 use yolk::error::Error;
 use yolk::{format_as_program, optimize, parse, transpile};
 
@@ -23,7 +23,7 @@ fn find_test_files() -> Vec<String> {
     files
 }
 
-fn yolol_to_env(yolol: &[YololNode]) -> Environment {
+fn yolol_to_env(yolol: &[YololStmt]) -> Environment {
     let mut env = Environment::new("");
     execute_line(&mut env, format_as_program(&yolol));
     env

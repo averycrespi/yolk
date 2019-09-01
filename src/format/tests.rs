@@ -1,14 +1,14 @@
 use num_traits::identities::{One, Zero};
 use yolol_number::YololNumber;
 
-use crate::ast::{InfixOp, PrefixOp, YololNode};
+use crate::ast::{InfixOp, PrefixOp, YololExpr, YololStmt};
 use crate::format::format_as_program;
 
 #[test]
 fn test_assign_a() {
-    let stmts = vec![YololNode::AssignStmt {
+    let stmts = vec![YololStmt::Assign {
         ident: "a".to_string(),
-        expr: Box::new(YololNode::Literal(YololNumber::zero())),
+        expr: Box::new(YololExpr::Literal(YololNumber::zero())),
     }];
     let program = format_as_program(&stmts);
     assert_eq!(program, "a=0".to_string())
@@ -16,9 +16,9 @@ fn test_assign_a() {
 
 #[test]
 fn test_assign_variable() {
-    let stmts = vec![YololNode::AssignStmt {
+    let stmts = vec![YololStmt::Assign {
         ident: "a".to_string(),
-        expr: Box::new(YololNode::Ident("b".to_string())),
+        expr: Box::new(YololExpr::Ident("b".to_string())),
     }];
     let program = format_as_program(&stmts);
     assert_eq!(program, "a=b".to_string())
@@ -26,11 +26,11 @@ fn test_assign_variable() {
 
 #[test]
 fn test_assign_prefix() {
-    let stmts = vec![YololNode::AssignStmt {
+    let stmts = vec![YololStmt::Assign {
         ident: "a".to_string(),
-        expr: Box::new(YololNode::PrefixExpr {
+        expr: Box::new(YololExpr::Prefix {
             op: PrefixOp::Not,
-            expr: Box::new(YololNode::Literal(YololNumber::zero())),
+            expr: Box::new(YololExpr::Literal(YololNumber::zero())),
         }),
     }];
     let program = format_as_program(&stmts);
@@ -39,12 +39,12 @@ fn test_assign_prefix() {
 
 #[test]
 fn test_assign_infix() {
-    let stmts = vec![YololNode::AssignStmt {
+    let stmts = vec![YololStmt::Assign {
         ident: "a".to_string(),
-        expr: Box::new(YololNode::InfixExpr {
-            lhs: Box::new(YololNode::Literal(YololNumber::zero())),
+        expr: Box::new(YololExpr::Infix {
+            lhs: Box::new(YololExpr::Literal(YololNumber::zero())),
             op: InfixOp::Add,
-            rhs: Box::new(YololNode::Literal(YololNumber::one())),
+            rhs: Box::new(YololExpr::Literal(YololNumber::one())),
         }),
     }];
     let program = format_as_program(&stmts);
@@ -53,15 +53,15 @@ fn test_assign_infix() {
 
 #[test]
 fn test_assign_mul_then_add() {
-    let stmts = vec![YololNode::AssignStmt {
+    let stmts = vec![YololStmt::Assign {
         ident: "a".to_string(),
-        expr: Box::new(YololNode::InfixExpr {
-            lhs: Box::new(YololNode::Literal(YololNumber::zero())),
+        expr: Box::new(YololExpr::Infix {
+            lhs: Box::new(YololExpr::Literal(YololNumber::zero())),
             op: InfixOp::Add,
-            rhs: Box::new(YololNode::InfixExpr {
-                lhs: Box::new(YololNode::Literal(YololNumber::zero())),
+            rhs: Box::new(YololExpr::Infix {
+                lhs: Box::new(YololExpr::Literal(YololNumber::zero())),
                 op: InfixOp::Mul,
-                rhs: Box::new(YololNode::Literal(YololNumber::one())),
+                rhs: Box::new(YololExpr::Literal(YololNumber::one())),
             }),
         }),
     }];
@@ -71,15 +71,15 @@ fn test_assign_mul_then_add() {
 
 #[test]
 fn test_assign_add_then_mul() {
-    let stmts = vec![YololNode::AssignStmt {
+    let stmts = vec![YololStmt::Assign {
         ident: "a".to_string(),
-        expr: Box::new(YololNode::InfixExpr {
-            lhs: Box::new(YololNode::Literal(YololNumber::zero())),
+        expr: Box::new(YololExpr::Infix {
+            lhs: Box::new(YololExpr::Literal(YololNumber::zero())),
             op: InfixOp::Mul,
-            rhs: Box::new(YololNode::InfixExpr {
-                lhs: Box::new(YololNode::Literal(YololNumber::zero())),
+            rhs: Box::new(YololExpr::Infix {
+                lhs: Box::new(YololExpr::Literal(YololNumber::zero())),
                 op: InfixOp::Add,
-                rhs: Box::new(YololNode::Literal(YololNumber::one())),
+                rhs: Box::new(YololExpr::Literal(YololNumber::one())),
             }),
         }),
     }];
@@ -89,15 +89,15 @@ fn test_assign_add_then_mul() {
 
 #[test]
 fn test_assign_sub_then_sub() {
-    let stmts = vec![YololNode::AssignStmt {
+    let stmts = vec![YololStmt::Assign {
         ident: "a".to_string(),
-        expr: Box::new(YololNode::InfixExpr {
-            lhs: Box::new(YololNode::Ident("b".to_string())),
+        expr: Box::new(YololExpr::Infix {
+            lhs: Box::new(YololExpr::Ident("b".to_string())),
             op: InfixOp::Sub,
-            rhs: Box::new(YololNode::InfixExpr {
-                lhs: Box::new(YololNode::Ident("c".to_string())),
+            rhs: Box::new(YololExpr::Infix {
+                lhs: Box::new(YololExpr::Ident("c".to_string())),
                 op: InfixOp::Sub,
-                rhs: Box::new(YololNode::Ident("d".to_string())),
+                rhs: Box::new(YololExpr::Ident("d".to_string())),
             }),
         }),
     }];
