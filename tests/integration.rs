@@ -37,7 +37,7 @@ fn test_correctness() -> Result<(), Error> {
         let source = fs::read_to_string(file).unwrap();
         let yolk = parse(&source)?;
         let yolol = transpile(&yolk)?;
-        let optimized = optimize(&yolol);
+        let optimized = optimize(yolol);
         let env = yolol_to_env(&optimized);
         assert_eq!(env.get_val("n").to_string(), env.get_val("e").to_string());
     }
@@ -52,8 +52,8 @@ fn test_idempotence() -> Result<(), Error> {
         let source = fs::read_to_string(file).unwrap();
         let yolk = parse(&source)?;
         let yolol = transpile(&yolk)?;
-        let once = optimize(&yolol);
-        let twice = optimize(&once);
+        let once = optimize(yolol);
+        let twice = optimize(once.clone());
         assert_eq!(once, twice);
     }
     Ok(())

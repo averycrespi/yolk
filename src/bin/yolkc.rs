@@ -38,7 +38,7 @@ fn main() {
         if debug {
             eprintln!("{:?}\n", yolol);
         }
-        let optimized = optimize(&yolol);
+        let optimized = optimize(yolol);
         if debug {
             eprintln!("{:?}\n", optimized);
         }
