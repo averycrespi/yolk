@@ -156,3 +156,9 @@ fn test_missing_bracket() {
 fn test_missing_paren() {
     parse("let number = function(0").unwrap();
 }
+
+#[test]
+#[should_panic]
+fn test_missing_whitespace() {
+    parse("letnumber=0").unwrap();
+}
