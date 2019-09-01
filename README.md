@@ -34,6 +34,8 @@ let foo = dot([1, 2], [3, 4])
 // Result: foo == 11
 ```
 
+Yolk specializes in working with **numbers** and **arrays**. It doesn't support strings, conditionals, or gotos.
+
 ## Why should I use Yolk?
 
 - **Minimal syntax**: has the same operators and precedence as Yolol
