@@ -47,7 +47,6 @@ pub fn parse(source: &str) -> Result<Vec<YolkStmt>, ParseError> {
             Rule::import_stmt => ast.push(parse_import_stmt(pair)),
             Rule::define_stmt => ast.push(parse_define_stmt(pair)),
             Rule::let_stmt => ast.push(parse_let_stmt(pair)),
-            Rule::export_stmt => ast.push(parse_export_stmt(pair)),
             Rule::comment => (),
             Rule::EOI => (),
             _ => panic!("expected rule statement, but got: {:?}", pair),
@@ -86,14 +85,6 @@ fn parse_let_stmt(stmt: Pair<Rule>) -> YolkStmt {
     YolkStmt::Let {
         ident: ident.as_str().to_string(),
         expr: Box::new(parse_expr(expr)),
-    }
-}
-
-fn parse_export_stmt(stmt: Pair<Rule>) -> YolkStmt {
-    let mut pairs = stmt.into_inner();
-    let ident = pairs.next().expect("failed to unwrap ident from pair");
-    YolkStmt::Export {
-        ident: ident.as_str().to_string(),
     }
 }
 

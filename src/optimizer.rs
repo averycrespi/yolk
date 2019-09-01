@@ -1,11 +1,9 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use num_traits::identities::{One, Zero};
 use yolol_number::prelude::*;
 
 use crate::ast::{InfixOp, PrefixOp, YololExpr, YololStmt};
-use crate::environment::Context;
-use crate::graph::DepGraph;
 
 /// Optimizes Yolol assign statements.
 ///
@@ -14,14 +12,14 @@ use crate::graph::DepGraph;
 /// # Panics
 ///
 /// Panics if any of the statements are malformed.
-pub fn optimize(stmts: &[YololStmt], context: &Context) -> Vec<YololStmt> {
+pub fn optimize(stmts: &[YololStmt]) -> Vec<YololStmt> {
     let mut curr = stmts.to_vec();
     let mut next = reduce_constants(&curr);
     while curr != next {
         curr = next;
         next = reduce_constants(&curr);
     }
-    eliminate_dead_code(&next, &context.exported())
+    next
 }
 
 fn reduce_constants(stmts: &[YololStmt]) -> Vec<YololStmt> {
@@ -131,20 +129,4 @@ fn reduce_expr(vars: &HashMap<String, YololExpr>, expr: &YololExpr) -> YololExpr
         },
         YololExpr::Literal(_) => expr.clone(),
     }
-}
-
-fn eliminate_dead_code(stmts: &[YololStmt], exported: &HashSet<String>) -> Vec<YololStmt> {
-    let graph = DepGraph::from_statements(stmts);
-    let exported = graph.search_from(exported);
-    let mut living = Vec::new();
-    for stmt in stmts.iter() {
-        match stmt {
-            YololStmt::Assign { ident, expr: _ } => {
-                if exported.contains(ident) {
-                    living.push(stmt.clone());
-                }
-            }
-        }
-    }
-    living
 }

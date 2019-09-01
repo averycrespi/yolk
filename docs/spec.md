@@ -47,8 +47,6 @@ Variables may be assigned to with a `let` statement (e.g. `let foo = 0`). Variab
 
 Variables may be imported from Yolol to Yolk with an `import` statement (e.g. `import foo`). Importing a Yolol string will cause [undefined behaviour](#undefined-behaviour). Yolol data fields must not be imported. Variables must not be imported twice.
 
-Variables may be exported from Yolk to Yolol with an `export` statement (e.g. `export foo`). Exported arrays will be split into one Yolol variable per element. Variables must not be exported twice. The names of exported variables must have unique lower-case representations (e.g. cannot export both `foo` and `FOO`).
-
 ## Unary Operators
 
 Unary operators perform operations on a single number or array (e.g. `sin(0)`). The operand must be surrounded by parentheses.
@@ -150,7 +148,6 @@ The following keywords are reserved, and may not be used as variable or function
 - `import`
 - `define`
 - `let`
-- `export`
 - `not`
 - `abs`
 - `sqrt`

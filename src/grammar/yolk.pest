@@ -4,11 +4,10 @@ program         = _{ SOI ~ (stmt? ~ comment? ~ NEWLINE)* ~ stmt? ~ comment? ~ EO
 
 comment         = @{ "//" ~ (LETTER | MARK | NUMBER | PUNCTUATION | SYMBOL | SPACE_SEPARATOR)* }
 
-stmt            = _{ import_stmt | define_stmt | let_stmt | export_stmt }
+stmt            = _{ import_stmt | define_stmt | let_stmt }
 import_stmt     = { "import" ~ ident }
 define_stmt     = { "define" ~ ident ~ params ~ "=" ~ expr }
 let_stmt        = { "let" ~ ident ~ "=" ~ expr }
-export_stmt     = { "export" ~ ident }
 
 expr            = _{ infix_expr | base_expr }
 infix_expr      = { base_expr ~ (infix_op ~ base_expr)+ }

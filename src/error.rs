@@ -62,10 +62,6 @@ pub enum TranspileError {
     AssignToKeyword(String),
     ReassignVariable(String),
 
-    // Export errors
-    ExportTwice(String),
-    ExportUndefined(String),
-
     // Access errors
     GetUndefinedFunction(String),
     GetUndefinedLocal(String),
@@ -107,10 +103,6 @@ impl fmt::Display for TranspileError {
             }
             TranspileError::ReassignVariable(variable) => {
                 write!(f, "cannot reassign variable: {}", variable)
-            }
-            TranspileError::ExportTwice(variable) => write!(f, "duplicate export: {}", variable),
-            TranspileError::ExportUndefined(variable) => {
-                write!(f, "cannot export undefined variable: {}", variable)
             }
             TranspileError::GetUndefinedFunction(function) => {
                 write!(f, "undefined function: {}", function)

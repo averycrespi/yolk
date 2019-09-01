@@ -71,7 +71,6 @@ Yolk's syntax is simple and beginner-friendly.
 import a
 define b(c, d) = c + d
 let e = 0
-export f
 ```
 
 Yolk provides the same operators and precedence as Yolol.

@@ -36,8 +36,8 @@ fn test_correctness() -> Result<(), Error> {
         println!("case: {}", file);
         let source = fs::read_to_string(file).unwrap();
         let yolk = parse(&source)?;
-        let (yolol, context) = transpile(&yolk)?;
-        let optimized = optimize(&yolol, &context);
+        let yolol = transpile(&yolk)?;
+        let optimized = optimize(&yolol);
         let env = yolol_to_env(&optimized);
         assert_eq!(env.get_val("n").to_string(), env.get_val("e").to_string());
     }
@@ -51,9 +51,9 @@ fn test_idempotence() -> Result<(), Error> {
         println!("case: {}", file);
         let source = fs::read_to_string(file).unwrap();
         let yolk = parse(&source)?;
-        let (yolol, context) = transpile(&yolk)?;
-        let once = optimize(&yolol, &context);
-        let twice = optimize(&once, &context);
+        let yolol = transpile(&yolk)?;
+        let once = optimize(&yolol);
+        let twice = optimize(&once);
         assert_eq!(once, twice);
     }
     Ok(())

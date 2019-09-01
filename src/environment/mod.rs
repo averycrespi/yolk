@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::ast::{YololExpr, YololStmt};
+use crate::ast::YololStmt;
 use crate::error::TranspileError;
 use crate::function::Function;
 use crate::value::{ArrayExpr, NumberExpr, Value};
@@ -8,43 +8,15 @@ use crate::value::{ArrayExpr, NumberExpr, Value};
 #[cfg(test)]
 mod tests;
 
-/// Represents contextual information about a Yolk program.
-///
-/// Contexts are created by the transpiler and given to the optimizer.
-#[derive(Debug, Clone)]
-pub struct Context {
-    exported: HashSet<String>,
-}
-
-impl Context {
-    fn new() -> Context {
-        Context {
-            exported: HashSet::new(),
-        }
-    }
-
-    fn push_exported(&mut self, ident: &str) {
-        self.exported.insert(ident.to_string());
-    }
-
-    /// Returns a set of exported Yolol identifiers.
-    pub fn exported(&self) -> HashSet<String> {
-        self.exported.clone()
-    }
-}
-
 /// Represents a Yolk program environment.
 #[derive(Debug, Clone)]
 pub struct Environment {
-    context: Context,
     // Stores the identifiers of imported variables
     imports: HashSet<String>,
     // Maps variable identifiers to values
     variables: HashMap<String, Value>,
     // Maps function identifiers to functions
     functions: HashMap<String, Function>,
-    // Stores the identifiers of exported variables
-    exports: HashSet<String>,
     // Stores the identifiers of reserved keywords
     keywords: HashSet<String>,
 }
@@ -53,16 +25,13 @@ impl Environment {
     /// Creates an empty environment.
     pub fn new() -> Environment {
         Environment {
-            context: Context::new(),
             imports: HashSet::new(),
             variables: HashMap::new(),
             functions: HashMap::new(),
-            exports: HashSet::new(),
             keywords: [
                 "import".to_string(),
                 "define".to_string(),
                 "let".to_string(),
-                "export".to_string(),
                 "not".to_string(),
                 "abs".to_string(),
                 "sqrt".to_string(),
@@ -81,11 +50,6 @@ impl Environment {
             .cloned()
             .collect(),
         }
-    }
-
-    /// Gets the context of an environment.
-    pub fn context(&self) -> Context {
-        self.context.clone()
     }
 
     /// Gets the value of a variable from an environment.
@@ -173,37 +137,6 @@ impl Environment {
                     Ok(assign_stmts)
                 }
             }
-        }
-    }
-
-    /// Exports a variable from an environment.
-    ///
-    /// Tracks which variable identifiers must not be eliminated.
-    pub fn export(&mut self, ident: &str) -> Result<(), TranspileError> {
-        if self.exports.contains(ident) {
-            Err(TranspileError::ExportTwice(ident.to_string()))
-        } else {
-            match self.variables.get(ident) {
-                Some(Value::Number(number)) => match number.as_expr() {
-                    YololExpr::Ident(s) => {
-                        self.context.push_exported(&s);
-                    }
-                    _ => panic!("expected identifier, but got: {:?}", number.as_expr()),
-                },
-                Some(Value::Array(array)) => {
-                    for expr in array.as_exprs().iter() {
-                        match expr {
-                            YololExpr::Ident(s) => {
-                                self.context.push_exported(&s);
-                            }
-                            _ => panic!("expected identifier, but got: {:?}", expr),
-                        }
-                    }
-                }
-                None => return Err(TranspileError::ExportUndefined(ident.to_string())),
-            }
-            self.exports.insert(ident.to_string());
-            Ok(())
         }
     }
 }
