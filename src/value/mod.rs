@@ -1,7 +1,7 @@
 use yolol_number::YololNumber;
 
-use crate::ast::{InfixOp, PrefixOp, YololNode};
-use crate::error::TranspileError;
+use crate::ast::{InfixOp, PrefixOp, YololExpr, YololStmt};
+use crate::error::YolkError;
 
 #[cfg(test)]
 mod tests;
@@ -23,7 +23,7 @@ impl Value {
     }
 
     /// Applies an infix operation to two Yolk values.
-    pub fn apply_infix_op(&self, op: &InfixOp, other: &Value) -> Result<Value, TranspileError> {
+    pub fn apply_infix_op(&self, op: &InfixOp, other: &Value) -> Result<Value, YolkError> {
         match (self, other) {
             (Value::Number(lhs), Value::Number(rhs)) => {
                 Ok(Value::Number(lhs.apply_infix_op(op, &rhs)))
@@ -44,7 +44,7 @@ impl Value {
             }
             (Value::Array(lhs), Value::Array(rhs)) => {
                 if lhs.numbers.len() != rhs.numbers.len() {
-                    Err(TranspileError::MismatchedArrays)
+                    Err(YolkError::MismatchedArrays)
                 } else {
                     Ok(Value::Array(lhs.apply_infix_op(op, &rhs)))
                 }
@@ -72,32 +72,32 @@ impl Value {
 /// Represents a Yolk number expression.
 #[derive(Debug, Clone, PartialEq)]
 pub struct NumberExpr {
-    expr: YololNode,
+    expr: YololExpr,
 }
 
 impl NumberExpr {
     /// Creates a Yolk number expression from an identifier.
     pub fn from_ident(ident: &str) -> NumberExpr {
         NumberExpr {
-            expr: YololNode::Ident(ident.to_string()),
+            expr: YololExpr::Ident(ident.to_string()),
         }
     }
 
     // Creates a Yolk number expression from a Yolol number.
     pub fn from_yolol_number(num: YololNumber) -> NumberExpr {
         NumberExpr {
-            expr: YololNode::Literal(num),
+            expr: YololExpr::Literal(num),
         }
     }
 
     /// Returns a Yolk number expression as a Yolol expression.
-    pub fn as_expr(&self) -> YololNode {
+    pub fn as_expr(&self) -> YololExpr {
         self.expr.clone()
     }
 
     // Converts a Yolk number expression to a Yolol assign statement.
-    pub fn to_assign_stmt(&self, ident: &str) -> YololNode {
-        YololNode::AssignStmt {
+    pub fn to_assign_stmt(&self, ident: &str) -> YololStmt {
+        YololStmt::Assign {
             ident: ident.to_string(),
             expr: Box::new(self.as_expr()),
         }
@@ -105,7 +105,7 @@ impl NumberExpr {
 
     fn apply_prefix_op(&self, op: &PrefixOp) -> NumberExpr {
         NumberExpr {
-            expr: YololNode::PrefixExpr {
+            expr: YololExpr::Prefix {
                 op: *op,
                 expr: Box::new(self.as_expr()),
             },
@@ -114,7 +114,7 @@ impl NumberExpr {
 
     fn apply_infix_op(&self, op: &InfixOp, other: &NumberExpr) -> NumberExpr {
         NumberExpr {
-            expr: YololNode::InfixExpr {
+            expr: YololExpr::Infix {
                 lhs: Box::new(self.as_expr()),
                 op: *op,
                 rhs: Box::new(other.as_expr()),
@@ -147,15 +147,15 @@ impl ArrayExpr {
     }
 
     // Returns a Yolk array expression as a vector of Yolol expressions.
-    pub fn as_exprs(&self) -> Vec<YololNode> {
+    pub fn as_exprs(&self) -> Vec<YololExpr> {
         self.numbers.iter().map(|n| n.as_expr()).collect()
     }
 
     // Converts a Yolk array expression to Yolol assign statements.
-    pub fn to_assign_stmts(&self, ident: &str) -> Vec<YololNode> {
+    pub fn to_assign_stmts(&self, ident: &str) -> Vec<YololStmt> {
         let mut assign_stmts = Vec::new();
         for (elem_index, number) in self.numbers.iter().enumerate() {
-            assign_stmts.push(YololNode::AssignStmt {
+            assign_stmts.push(YololStmt::Assign {
                 ident: format!("{}_{}", ident, elem_index),
                 expr: Box::new(number.as_expr()),
             });

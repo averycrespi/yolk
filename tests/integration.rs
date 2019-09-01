@@ -1,8 +1,8 @@
 use yoloxide::environment::{ContextMap, Environment};
 use yoloxide::execute_line;
 
-use yolk::ast::YololNode;
-use yolk::error::Error;
+use yolk::ast::YololStmt;
+use yolk::error::YolkError;
 use yolk::{format_as_program, optimize, parse, transpile};
 
 use std::fs;
@@ -23,21 +23,21 @@ fn find_test_files() -> Vec<String> {
     files
 }
 
-fn yolol_to_env(yolol: &[YololNode]) -> Environment {
+fn yolol_to_env(yolol: &[YololStmt]) -> Environment {
     let mut env = Environment::new("");
     execute_line(&mut env, format_as_program(&yolol));
     env
 }
 
 #[test]
-fn test_correctness() -> Result<(), Error> {
+fn test_correctness() -> Result<(), YolkError> {
     let test_files = find_test_files();
     for file in test_files {
         println!("case: {}", file);
         let source = fs::read_to_string(file).unwrap();
         let yolk = parse(&source)?;
-        let (yolol, context) = transpile(&yolk)?;
-        let optimized = optimize(&yolol, &context);
+        let yolol = transpile(&yolk)?;
+        let optimized = optimize(yolol);
         let env = yolol_to_env(&optimized);
         assert_eq!(env.get_val("n").to_string(), env.get_val("e").to_string());
     }
@@ -45,15 +45,15 @@ fn test_correctness() -> Result<(), Error> {
 }
 
 #[test]
-fn test_idempotence() -> Result<(), Error> {
+fn test_idempotence() -> Result<(), YolkError> {
     let test_files = find_test_files();
     for file in test_files {
         println!("case: {}", file);
         let source = fs::read_to_string(file).unwrap();
         let yolk = parse(&source)?;
-        let (yolol, context) = transpile(&yolk)?;
-        let once = optimize(&yolol, &context);
-        let twice = optimize(&once, &context);
+        let yolol = transpile(&yolk)?;
+        let once = optimize(yolol);
+        let twice = optimize(once.clone());
         assert_eq!(once, twice);
     }
     Ok(())

@@ -4,11 +4,10 @@ program         = _{ SOI ~ (stmt? ~ comment? ~ NEWLINE)* ~ stmt? ~ comment? ~ EO
 
 comment         = @{ "//" ~ (LETTER | MARK | NUMBER | PUNCTUATION | SYMBOL | SPACE_SEPARATOR)* }
 
-stmt            = _{ import_stmt | define_stmt | let_stmt | export_stmt }
-import_stmt     = { "import" ~ ident }
-define_stmt     = { "define" ~ ident ~ params ~ "=" ~ expr }
-let_stmt        = { "let" ~ ident ~ "=" ~ expr }
-export_stmt     = { "export" ~ ident }
+stmt            = _{ import_stmt | define_stmt | let_stmt }
+import_stmt     = { "import " ~ ident }
+define_stmt     = { "define " ~ ident ~ params ~ "=" ~ expr }
+let_stmt        = { "let " ~ ident ~ "=" ~ expr }
 
 expr            = _{ infix_expr | base_expr }
 infix_expr      = { base_expr ~ (infix_op ~ base_expr)+ }
@@ -59,7 +58,6 @@ logical_or      = { "or" }
 params          = { "(" ~ ident ~ ("," ~ ident)* ~ ")" }
 args            = { "(" ~ expr ~ ("," ~ expr)* ~ ")" }
 
-//TODO: handle literal range check in parser
 ident           = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHA | "_")* }
-literal         = @{ "-"? ~ ASCII_DIGIT{1, 15} ~ ("." ~ ASCII_DIGIT{1,4})? }
+literal         = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT{1,3})? }
 array           = { "[" ~ expr ~ ("," ~ expr)* ~ "]" }

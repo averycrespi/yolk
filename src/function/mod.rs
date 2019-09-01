@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
-use crate::ast::YolkNode;
-use crate::error::TranspileError;
+use crate::ast::YolkExpr;
+use crate::error::YolkError;
 
 #[cfg(test)]
 mod tests;
@@ -11,16 +11,12 @@ mod tests;
 pub struct Function {
     ident: String,
     params: Vec<String>,
-    body: YolkNode,
+    body: YolkExpr,
 }
 
 impl Function {
     /// Creates a new Yolk function.
-    pub fn new(
-        ident: &str,
-        params: &[String],
-        body: &YolkNode,
-    ) -> Result<Function, TranspileError> {
+    pub fn new(ident: &str, params: &[String], body: &YolkExpr) -> Result<Function, YolkError> {
         if params.len() < 1 {
             panic!("function has no parameters");
         }
@@ -34,38 +30,42 @@ impl Function {
         Ok(function)
     }
 
-    fn check_for_duplicate_params(&self) -> Result<(), TranspileError> {
+    fn check_for_duplicate_params(&self) -> Result<(), YolkError> {
         let mut uniq = HashSet::new();
         if self.params.iter().all(move |x| uniq.insert(x)) {
             Ok(())
         } else {
-            Err(TranspileError::DuplicateParams)
+            Err(YolkError::DuplicateParams {
+                func: self.ident.to_string(),
+            })
         }
     }
 
-    fn check_body_node(&self, node: &YolkNode) -> Result<(), TranspileError> {
+    fn check_body_node(&self, node: &YolkExpr) -> Result<(), YolkError> {
         match node {
-            YolkNode::PrefixExpr { op: _, expr } => self.check_body_node(expr)?,
-            YolkNode::BuiltinExpr { ident, args } | YolkNode::CallExpr { ident, args } => {
+            YolkExpr::Prefix { op: _, expr } => self.check_body_node(expr)?,
+            YolkExpr::Builtin { ident, args } | YolkExpr::Call { ident, args } => {
                 for arg in args.iter() {
                     self.check_body_node(arg)?;
                 }
                 // Check for recursive calls
                 if self.ident == ident.to_string() {
-                    return Err(TranspileError::RecursiveCall);
+                    return Err(YolkError::RecursiveCall {
+                        func: self.ident.to_string(),
+                    });
                 }
             }
-            YolkNode::InfixExpr { lhs, op: _, rhs } => {
+            YolkExpr::Infix { lhs, op: _, rhs } => {
                 self.check_body_node(lhs)?;
                 self.check_body_node(rhs)?;
             }
-            YolkNode::Ident(s) => {
+            YolkExpr::Ident(s) => {
                 // Check for undefined local variables
                 if !self.params.contains(s) {
-                    return Err(TranspileError::GetUndefinedLocal(s.to_string()));
+                    return Err(YolkError::UndefinedVariable { var: s.to_string() });
                 }
             }
-            YolkNode::Array(exprs) => {
+            YolkExpr::Array(exprs) => {
                 for expr in exprs.iter() {
                     self.check_body_node(expr)?;
                 }
@@ -76,21 +76,23 @@ impl Function {
     }
 
     /// Calls a function with arguments.
-    pub fn call(&self, args: &[YolkNode]) -> Result<YolkNode, TranspileError> {
+    pub fn call(&self, args: &[YolkExpr]) -> Result<YolkExpr, YolkError> {
         if self.params.len() != args.len() {
-            Err(TranspileError::WrongNumberOfArgs(self.ident.to_string()))
+            Err(YolkError::WrongNumberOfArgs {
+                func: self.ident.to_string(),
+            })
         } else {
             Ok(self.replace_params_with_args(args, &self.body))
         }
     }
 
-    fn replace_params_with_args(&self, args: &[YolkNode], node: &YolkNode) -> YolkNode {
+    fn replace_params_with_args(&self, args: &[YolkExpr], node: &YolkExpr) -> YolkExpr {
         match node {
-            YolkNode::PrefixExpr { op, expr } => YolkNode::PrefixExpr {
+            YolkExpr::Prefix { op, expr } => YolkExpr::Prefix {
                 op: *op,
                 expr: Box::new(self.replace_params_with_args(args, expr)),
             },
-            YolkNode::BuiltinExpr {
+            YolkExpr::Builtin {
                 ident,
                 args: call_args,
             } => {
@@ -98,12 +100,12 @@ impl Function {
                 for arg in call_args.iter() {
                     replaced_args.push(self.replace_params_with_args(args, arg));
                 }
-                YolkNode::BuiltinExpr {
+                YolkExpr::Builtin {
                     ident: ident.to_string(),
                     args: replaced_args,
                 }
             }
-            YolkNode::CallExpr {
+            YolkExpr::Call {
                 ident,
                 args: call_args,
             } => {
@@ -111,18 +113,18 @@ impl Function {
                 for arg in call_args.iter() {
                     replaced_args.push(self.replace_params_with_args(args, arg));
                 }
-                YolkNode::CallExpr {
+                YolkExpr::Call {
                     ident: ident.to_string(),
                     args: replaced_args,
                 }
             }
-            YolkNode::InfixExpr { lhs, op, rhs } => YolkNode::InfixExpr {
+            YolkExpr::Infix { lhs, op, rhs } => YolkExpr::Infix {
                 lhs: Box::new(self.replace_params_with_args(args, lhs)),
                 op: *op,
                 rhs: Box::new(self.replace_params_with_args(args, rhs)),
             },
             // Replace local variables with their respective arguments
-            YolkNode::Ident(s) => {
+            YolkExpr::Ident(s) => {
                 let index = self
                     .params
                     .iter()
@@ -130,12 +132,12 @@ impl Function {
                     .expect("failed to get index of param");
                 args[index].clone()
             }
-            YolkNode::Array(exprs) => {
+            YolkExpr::Array(exprs) => {
                 let mut replaced_exprs = Vec::new();
                 for expr in exprs.iter() {
                     replaced_exprs.push(self.replace_params_with_args(args, expr));
                 }
-                YolkNode::Array(replaced_exprs)
+                YolkExpr::Array(replaced_exprs)
             }
             _ => node.clone(),
         }

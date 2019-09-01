@@ -1,5 +1,2 @@
 let n = (0 > 0 == 0) + (0 < 0 == 0)
-export n
-
 let e = 2
-export e

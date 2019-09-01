@@ -2,15 +2,15 @@ use std::str::FromStr;
 
 use yolol_number::YololNumber;
 
-use crate::ast::YolkNode;
-use crate::error::ParseError;
+use crate::ast::{YolkExpr, YolkStmt};
+use crate::error::YolkError;
 use crate::parser::parse;
 
 #[test]
-fn test_import() -> Result<(), ParseError> {
+fn test_import() -> Result<(), YolkError> {
     assert_eq!(
         parse("import number")?,
-        vec![YolkNode::ImportStmt {
+        vec![YolkStmt::Import {
             ident: "number".to_string()
         }]
     );
@@ -18,15 +18,15 @@ fn test_import() -> Result<(), ParseError> {
 }
 
 #[test]
-fn test_let_number() -> Result<(), ParseError> {
-    let cases = vec!["0", "1", "1.0", "-1", "-1.0", "1.2345", "-1.2345"];
+fn test_let_number() -> Result<(), YolkError> {
+    let cases = vec!["0", "1", "1.0", "-1", "-1.0", "1.234", "-1.234"];
     for case in cases.iter() {
         println!("case: {}", case);
         assert_eq!(
             parse(&format!("let number = {}", case))?,
-            vec![YolkNode::LetStmt {
+            vec![YolkStmt::Let {
                 ident: "number".to_string(),
-                expr: Box::new(YolkNode::Literal(YololNumber::from_str(case).unwrap()))
+                expr: Box::new(YolkExpr::Literal(YololNumber::from_str(case).unwrap()))
             }]
         );
     }
@@ -34,14 +34,14 @@ fn test_let_number() -> Result<(), ParseError> {
 }
 
 #[test]
-fn test_let_array() -> Result<(), ParseError> {
+fn test_let_array() -> Result<(), YolkError> {
     assert_eq!(
         parse("let array = [0, number]")?,
-        vec![YolkNode::LetStmt {
+        vec![YolkStmt::Let {
             ident: "array".to_string(),
-            expr: Box::new(YolkNode::Array(vec![
-                YolkNode::Literal(YololNumber::from_str("0").unwrap()),
-                YolkNode::Ident("number".to_string())
+            expr: Box::new(YolkExpr::Array(vec![
+                YolkExpr::Literal(YololNumber::from_str("0").unwrap()),
+                YolkExpr::Ident("number".to_string())
             ]))
         }]
     );
@@ -49,56 +49,56 @@ fn test_let_array() -> Result<(), ParseError> {
 }
 
 #[test]
-fn test_let_prefix() -> Result<(), ParseError> {
+fn test_let_prefix() -> Result<(), YolkError> {
     parse("let number = not (abs (sqrt (sin (cos (tan (asin (acos (atan (0)))))))))")?;
     Ok(())
 }
 
 #[test]
-fn test_let_infix() -> Result<(), ParseError> {
+fn test_let_infix() -> Result<(), YolkError> {
     parse("let number = 1 + 2 - 3 * 4 / 5 % 6 ^ 7 < 8 <= 9 > 10 >= 11 == 12 != 13 and 14 or 15")?;
     Ok(())
 }
 
 #[test]
-fn test_let_builtin() -> Result<(), ParseError> {
+fn test_let_builtin() -> Result<(), YolkError> {
     parse("let number = sum([0, 1], 2) + product([0, 1], 2)")?;
     Ok(())
 }
 
 #[test]
-fn test_let_call() -> Result<(), ParseError> {
+fn test_let_call() -> Result<(), YolkError> {
     parse("let number = function(0) + function([0, 1]) + function(number)")?;
     Ok(())
 }
 
 #[test]
-fn test_define() -> Result<(), ParseError> {
+fn test_define() -> Result<(), YolkError> {
     assert_eq!(
         parse("define identity(A) = A")?,
-        vec![YolkNode::DefineStmt {
+        vec![YolkStmt::Define {
             ident: "identity".to_string(),
             params: vec!["A".to_string()],
-            body: Box::new(YolkNode::Ident("A".to_string()))
+            body: Box::new(YolkExpr::Ident("A".to_string()))
         }]
     );
     Ok(())
 }
 
 #[test]
-fn test_comment() -> Result<(), ParseError> {
+fn test_comment() -> Result<(), YolkError> {
     parse("// This is a comment")?;
     Ok(())
 }
 
 #[test]
-fn test_inline_comment() -> Result<(), ParseError> {
+fn test_inline_comment() -> Result<(), YolkError> {
     parse("import number // This is a comment")?;
     Ok(())
 }
 
 #[test]
-fn test_extra_newlines() -> Result<(), ParseError> {
+fn test_extra_newlines() -> Result<(), YolkError> {
     assert_eq!(parse("let number = (0)")?, parse("let number = (\n0\n)")?,);
     Ok(())
 }
@@ -155,4 +155,10 @@ fn test_missing_bracket() {
 #[should_panic]
 fn test_missing_paren() {
     parse("let number = function(0").unwrap();
+}
+
+#[test]
+#[should_panic]
+fn test_missing_whitespace() {
+    parse("letnumber=0").unwrap();
 }

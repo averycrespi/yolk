@@ -1,137 +1,137 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use num_traits::identities::{One, Zero};
-use num_traits::sign::Signed;
-use yolol_number::YololNumber;
+use yolol_number::prelude::*;
 
-use crate::ast::{InfixOp, PrefixOp, YololNode};
-use crate::environment::Context;
-use crate::graph::DepGraph;
+use crate::ast::{InfixOp, PrefixOp, YololExpr, YololStmt};
 
-/// Optimizes Yolol assign statements.
+/// Optimizes Yolol statements.
 ///
-/// Optimization is idempotent when given the same context.
-///
-/// # Panics
-///
-/// Panics if any of the statements are malformed.
-pub fn optimize(stmts: &[YololNode], context: &Context) -> Vec<YololNode> {
-    let mut curr = stmts.to_vec();
-    let mut next = reduce_constants(&curr);
-    while curr != next {
-        curr = next;
-        next = reduce_constants(&curr);
-    }
-    eliminate_dead_code(&next, &context.exported())
-}
-
-fn reduce_constants(stmts: &[YololNode]) -> Vec<YololNode> {
-    let mut reduced = Vec::new();
-    let mut variables: HashMap<String, YololNode> = HashMap::new();
-    for stmt in stmts.iter() {
-        if let YololNode::AssignStmt { ident, expr } = stmt {
-            variables.insert(ident.to_string(), *expr.clone());
-            reduced.push(reduce_node(&variables, stmt));
-        } else {
-            panic!("expected Yolol statement, but got: {:?}", stmt);
+/// This function is idempotent.
+pub fn optimize(stmts: Vec<YololStmt>) -> Vec<YololStmt> {
+    let mut curr = stmts;
+    // This loop will always terminate because of the following invariants:
+    // 1) A unique global optimum exists for every set of statements.
+    // 2) The reduce_stmt function will never move away from the optimum.
+    // Once reduce_stmt becomes idempotent, the optimum has been found.
+    loop {
+        //TODO: hash instead of clone
+        let prev = curr.clone();
+        let vars = find_literal_vars(&curr);
+        curr = curr.into_iter().map(|s| reduce_stmt(s, &vars)).collect();
+        if prev == curr {
+            break;
         }
     }
-    reduced
+    curr
 }
 
-fn reduce_node(vars: &HashMap<String, YololNode>, node: &YololNode) -> YololNode {
-    let zero = YololNumber::zero();
-    let one = YololNumber::one();
-    match node {
-        YololNode::AssignStmt { ident, expr } => YololNode::AssignStmt {
-            ident: ident.to_string(),
-            expr: Box::new(reduce_node(vars, expr)),
-        },
-        YololNode::PrefixExpr { op, expr } => match (op, *expr.clone()) {
-            // Fold literals
-            (op, YololNode::Literal(y)) => match op {
-                PrefixOp::Neg => YololNode::Literal(-y),
-                PrefixOp::Not => YololNode::Literal(!y),
-                PrefixOp::Abs => YololNode::Literal(y.abs()),
-                PrefixOp::Sqrt if y >= zero => YololNode::Literal(y.sqrt()),
-                PrefixOp::Sin => YololNode::Literal(y.sin()),
-                PrefixOp::Cos => YololNode::Literal(y.cos()),
-                PrefixOp::Tan if y.cos() != zero => YololNode::Literal(y.tan()),
-                PrefixOp::Asin if y.abs() <= one => YololNode::Literal(y.asin()),
-                PrefixOp::Acos if y.abs() <= one => YololNode::Literal(y.acos()),
-                PrefixOp::Atan => YololNode::Literal(y.atan()),
-                _ => node.clone(),
-            },
-            _ => YololNode::PrefixExpr {
-                op: *op,
-                expr: Box::new(reduce_node(vars, expr)),
-            },
-        },
-        YololNode::InfixExpr { lhs, op, rhs } => match (*lhs.clone(), op, *rhs.clone()) {
-            // Fold `0 + n` and `n + 0` to `n`
-            (YololNode::Literal(y), InfixOp::Add, _) if y == zero => *rhs.clone(),
-            (_, InfixOp::Add, YololNode::Literal(y)) if y == zero => *lhs.clone(),
-            // Fold `n - 0` to `n`
-            (_, InfixOp::Sub, YololNode::Literal(y)) if y == zero => *lhs.clone(),
-            // Fold `0 * n` and `n * 0` to `0`
-            (YololNode::Literal(y), InfixOp::Mul, _) if y == zero => *lhs.clone(),
-            (_, InfixOp::Mul, YololNode::Literal(y)) if y == zero => *rhs.clone(),
-            // Fold `1 * n` and `n * 1` to `n`
-            (YololNode::Literal(y), InfixOp::Mul, _) if y == one => *rhs.clone(),
-            (_, InfixOp::Mul, YololNode::Literal(y)) if y == one => *lhs.clone(),
-            // Fold `n / 1` to `n`
-            (_, InfixOp::Div, YololNode::Literal(y)) if y == one => *lhs.clone(),
-            // Fold `1 ^ n` to `1`
-            (YololNode::Literal(y), InfixOp::Exp, _) if y == one => *lhs.clone(),
-            // Fold `n ^ 1` to `n`
-            (_, InfixOp::Exp, YololNode::Literal(y)) if y == one => *lhs.clone(),
-            // Fold literals
-            (YololNode::Literal(y), op, YololNode::Literal(z)) => match op {
-                InfixOp::Add => YololNode::Literal(y + z),
-                InfixOp::Sub => YololNode::Literal(y - z),
-                InfixOp::Mul => YololNode::Literal(y * z),
-                InfixOp::Div if !z.is_zero() => YololNode::Literal(y / z),
-                InfixOp::Mod if !z.is_zero() => YololNode::Literal(y % z),
-                InfixOp::Exp if !(y.is_zero() && z.is_zero()) => YololNode::Literal(y.pow(z)),
-                InfixOp::LessThan => YololNode::Literal(YololNumber::from(y < z)),
-                InfixOp::LessEqual => YololNode::Literal(YololNumber::from(y <= z)),
-                InfixOp::GreaterThan => YololNode::Literal(YololNumber::from(y > z)),
-                InfixOp::GreaterEqual => YololNode::Literal(YololNumber::from(y >= z)),
-                InfixOp::Equal => YololNode::Literal(YololNumber::from(y == z)),
-                InfixOp::NotEqual => YololNode::Literal(YololNumber::from(y != z)),
-                InfixOp::And => YololNode::Literal(YololNumber::from((y != zero) && (z != zero))),
-                InfixOp::Or => YololNode::Literal(YololNumber::from((y != zero) || (z != zero))),
-                _ => node.clone(),
-            },
-            _ => YololNode::InfixExpr {
-                lhs: Box::new(reduce_node(vars, lhs)),
-                op: *op,
-                rhs: Box::new(reduce_node(vars, rhs)),
-            },
-        },
-        // Propagate literals
-        YololNode::Ident(s) => match vars.get(s) {
-            Some(YololNode::Literal(y)) => YololNode::Literal(y.clone()),
-            Some(node) => reduce_node(vars, node),
-            // Ignore imported variable
-            None => node.clone(),
-        },
-        YololNode::Literal(_) => node.clone(),
-    }
-}
-
-fn eliminate_dead_code(stmts: &[YololNode], exported: &HashSet<String>) -> Vec<YololNode> {
-    let graph = DepGraph::from_statements(stmts);
-    let exported = graph.search_from(exported);
-    let mut living = Vec::new();
+/// Finds variables that have literal values.
+///
+/// These literal values are used for constant propagation.
+fn find_literal_vars(stmts: &[YololStmt]) -> HashMap<String, YololExpr> {
+    let mut state = HashMap::new();
     for stmt in stmts.iter() {
-        if let YololNode::AssignStmt { ident, expr: _ } = stmt {
-            if exported.contains(ident) {
-                living.push(stmt.clone());
+        match stmt {
+            YololStmt::Assign { ident, expr } => {
+                if let YololExpr::Literal(y) = **expr {
+                    state.insert(ident.to_string(), YololExpr::Literal(y));
+                }
             }
-        } else {
-            panic!("expected Yolol statement, but got: {:?}", stmt)
         }
     }
-    living
+    state
+}
+
+/// Reduces a Yolol statement.
+///
+/// This function will become idempotent after an optimum has been found.
+fn reduce_stmt(stmt: YololStmt, vars: &HashMap<String, YololExpr>) -> YololStmt {
+    match stmt {
+        YololStmt::Assign { ident, expr } => YololStmt::Assign {
+            ident: ident.to_string(),
+            expr: Box::new(reduce_expr(*expr, vars)),
+        },
+    }
+}
+
+/// Reduces a Yolol expression.
+///
+/// This function will become idempotent after an optimum has been found.
+fn reduce_expr(expr: YololExpr, vars: &HashMap<String, YololExpr>) -> YololExpr {
+    match expr {
+        YololExpr::Prefix { op, expr } => match (op, &*expr) {
+            // Apply prefix operations literals
+            (op, YololExpr::Literal(y)) => match op {
+                PrefixOp::Neg => YololExpr::Literal(-*y),
+                PrefixOp::Not => YololExpr::Literal(!*y),
+                PrefixOp::Abs => YololExpr::Literal(y.abs()),
+                PrefixOp::Sqrt if y >= &YololNumber::zero() => YololExpr::Literal(y.sqrt()),
+                PrefixOp::Sin => YololExpr::Literal(y.sin()),
+                PrefixOp::Cos => YololExpr::Literal(y.cos()),
+                PrefixOp::Tan if !y.cos().is_zero() => YololExpr::Literal(y.tan()),
+                PrefixOp::Asin if y.abs() <= YololNumber::one() => YololExpr::Literal(y.asin()),
+                PrefixOp::Acos if y.abs() <= YololNumber::one() => YololExpr::Literal(y.acos()),
+                PrefixOp::Atan => YololExpr::Literal(y.atan()),
+                _ => YololExpr::Prefix { op: op, expr: expr },
+            },
+            _ => YololExpr::Prefix {
+                op: op,
+                expr: Box::new(reduce_expr(*expr, vars)),
+            },
+        },
+        YololExpr::Infix { lhs, op, rhs } => match (&*lhs, op, &*rhs) {
+            // Reduce identity operations
+            (YololExpr::Literal(y), InfixOp::Add, _) if y.is_zero() => *rhs,
+            (_, InfixOp::Add, YololExpr::Literal(y)) if y.is_zero() => *lhs,
+            (_, InfixOp::Sub, YololExpr::Literal(y)) if y.is_zero() => *lhs,
+            (_, InfixOp::Mul, YololExpr::Literal(y)) | (YololExpr::Literal(y), InfixOp::Mul, _)
+                if y.is_zero() =>
+            {
+                YololExpr::Literal(YololNumber::zero())
+            }
+            (_, InfixOp::Mul, YololExpr::Literal(y)) if y.is_one() => *lhs,
+            (YololExpr::Literal(y), InfixOp::Mul, _) if y.is_one() => *rhs,
+
+            (_, InfixOp::Div, YololExpr::Literal(y)) if y.is_one() => *lhs,
+            (YololExpr::Literal(y), InfixOp::Exp, _) if y.is_one() => {
+                YololExpr::Literal(YololNumber::one())
+            }
+            (_, InfixOp::Exp, YololExpr::Literal(y)) if y.is_one() => *rhs,
+            // Apply infix operations to literals
+            (YololExpr::Literal(y), op, YololExpr::Literal(z)) => match op {
+                InfixOp::Add => YololExpr::Literal(y.yolol_add(*z)),
+                InfixOp::Sub => YololExpr::Literal(y.yolol_sub(*z)),
+                InfixOp::Mul => YololExpr::Literal(y.yolol_mul(*z)),
+                // Unwrap cannot panic because z cannot be zero
+                InfixOp::Div if !z.is_zero() => YololExpr::Literal(y.yolol_div(*z).unwrap()),
+                InfixOp::Mod if !z.is_zero() => YololExpr::Literal(y.yolol_mod(*z)),
+                InfixOp::Exp if !y.is_zero() || !z.is_zero() => YololExpr::Literal(y.pow(*z)),
+                InfixOp::LessThan => YololExpr::Literal((y < z).into()),
+                InfixOp::LessEqual => YololExpr::Literal((y <= z).into()),
+                InfixOp::GreaterThan => YololExpr::Literal((y > z).into()),
+                InfixOp::GreaterEqual => YololExpr::Literal((y >= z).into()),
+                InfixOp::Equal => YololExpr::Literal((y == z).into()),
+                InfixOp::NotEqual => YololExpr::Literal((y != z).into()),
+                InfixOp::And => YololExpr::Literal((!y.is_zero() && !z.is_zero()).into()),
+                InfixOp::Or => YololExpr::Literal((!y.is_zero() || !z.is_zero()).into()),
+                _ => YololExpr::Infix {
+                    lhs: Box::new(*lhs),
+                    op: op,
+                    rhs: Box::new(*rhs),
+                },
+            },
+            _ => YololExpr::Infix {
+                lhs: Box::new(reduce_expr(*lhs, vars)),
+                op: op,
+                rhs: Box::new(reduce_expr(*rhs, vars)),
+            },
+        },
+        // Propagate literal variables
+        YololExpr::Ident(s) => match vars.get(&s) {
+            Some(YololExpr::Literal(y)) => YololExpr::Literal(*y),
+            _ => YololExpr::Ident(s),
+        },
+        YololExpr::Literal(y) => YololExpr::Literal(y),
+    }
 }

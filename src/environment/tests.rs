@@ -1,51 +1,40 @@
 use yolol_number::YololNumber;
 
-use crate::ast::YolkNode;
+use crate::ast::YolkExpr;
 use crate::environment::Environment;
-use crate::error::TranspileError;
+use crate::error::YolkError;
 use crate::function::Function;
 use crate::value::{NumberExpr, Value};
 
 use std::str::FromStr;
 
 #[test]
-fn test_import() -> Result<(), TranspileError> {
+fn test_import() -> Result<(), YolkError> {
     let mut env = Environment::new();
     env.import("number")?;
     Ok(())
 }
 
 #[test]
-fn test_define() -> Result<(), TranspileError> {
+fn test_define() -> Result<(), YolkError> {
     let mut env = Environment::new();
     let function = Function::new(
         "function",
         &vec!["a".to_string()],
-        &YolkNode::Ident("a".to_string()),
+        &YolkExpr::Ident("a".to_string()),
     )?;
     env.define("function", function)?;
     Ok(())
 }
 
 #[test]
-fn test_let_value() -> Result<(), TranspileError> {
+fn test_let_value() -> Result<(), YolkError> {
     let mut env = Environment::new();
     let value = Value::Number(NumberExpr::from_yolol_number(
         YololNumber::from_str("0").unwrap(),
     ));
     env.let_value("number", value)?;
     env.variable("number")?;
-    Ok(())
-}
-
-#[test]
-fn test_export() -> Result<(), TranspileError> {
-    let mut env = Environment::new();
-    let value = Value::Number(NumberExpr::from_yolol_number(
-        YololNumber::from_str("0").unwrap(),
-    ));
-    env.let_value("number", value)?;
-    env.export("number")?;
     Ok(())
 }
 
@@ -96,7 +85,7 @@ fn test_redefine_function() {
     let function = Function::new(
         "function",
         &vec!["a".to_string()],
-        &YolkNode::Ident("a".to_string()),
+        &YolkExpr::Ident("a".to_string()),
     )
     .unwrap();
     env.define("function", function.clone()).unwrap();
@@ -110,7 +99,7 @@ fn test_define_keyword() {
     let function = Function::new(
         "sum",
         &vec!["a".to_string()],
-        &YolkNode::Ident("a".to_string()),
+        &YolkExpr::Ident("a".to_string()),
     )
     .unwrap();
     env.define("sum", function).unwrap();
@@ -146,16 +135,4 @@ fn test_assign_same_lowercase() {
     ));
     env.let_value("number", value.clone()).unwrap();
     env.let_value("NUMBER", value.clone()).unwrap();
-}
-
-#[test]
-#[should_panic]
-fn test_export_twice() {
-    let mut env = Environment::new();
-    let value = Value::Number(NumberExpr::from_yolol_number(
-        YololNumber::from_str("0").unwrap(),
-    ));
-    env.let_value("number", value.clone()).unwrap();
-    env.export("number").unwrap();
-    env.export("number").unwrap();
 }

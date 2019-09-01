@@ -1,4 +1,6 @@
 #[macro_use]
+extern crate failure;
+#[macro_use]
 extern crate lazy_static;
 extern crate pest;
 #[macro_use]
@@ -9,7 +11,6 @@ pub mod environment;
 pub mod error;
 pub mod format;
 pub mod function;
-pub mod graph;
 pub mod optimizer;
 pub mod parser;
 pub mod transpiler;
