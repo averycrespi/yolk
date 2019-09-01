@@ -1,16 +1,16 @@
 use crate::ast::InfixOp;
-use crate::error::TranspileError;
+use crate::error::YolkError;
 use crate::value::{ArrayExpr, NumberExpr, Value};
 
 #[test]
-fn test_apply_infix_op_number_number() -> Result<(), TranspileError> {
+fn test_apply_infix_op_number_number() -> Result<(), YolkError> {
     let number = Value::Number(NumberExpr::from_ident("a"));
     number.apply_infix_op(&InfixOp::Add, &number)?;
     Ok(())
 }
 
 #[test]
-fn test_apply_infix_op_number_array() -> Result<(), TranspileError> {
+fn test_apply_infix_op_number_array() -> Result<(), YolkError> {
     let number = Value::Number(NumberExpr::from_ident("a"));
     let array = Value::Array(ArrayExpr::from_number_exprs(&vec![
         NumberExpr::from_ident("b"),
@@ -22,7 +22,7 @@ fn test_apply_infix_op_number_array() -> Result<(), TranspileError> {
 }
 
 #[test]
-fn test_apply_infix_op_array_array() -> Result<(), TranspileError> {
+fn test_apply_infix_op_array_array() -> Result<(), YolkError> {
     let array = Value::Array(ArrayExpr::from_number_exprs(&vec![
         NumberExpr::from_ident("a"),
         NumberExpr::from_ident("c"),

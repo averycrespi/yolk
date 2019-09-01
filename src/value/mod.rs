@@ -1,7 +1,7 @@
 use yolol_number::YololNumber;
 
 use crate::ast::{InfixOp, PrefixOp, YololExpr, YololStmt};
-use crate::error::TranspileError;
+use crate::error::YolkError;
 
 #[cfg(test)]
 mod tests;
@@ -23,7 +23,7 @@ impl Value {
     }
 
     /// Applies an infix operation to two Yolk values.
-    pub fn apply_infix_op(&self, op: &InfixOp, other: &Value) -> Result<Value, TranspileError> {
+    pub fn apply_infix_op(&self, op: &InfixOp, other: &Value) -> Result<Value, YolkError> {
         match (self, other) {
             (Value::Number(lhs), Value::Number(rhs)) => {
                 Ok(Value::Number(lhs.apply_infix_op(op, &rhs)))
@@ -44,7 +44,7 @@ impl Value {
             }
             (Value::Array(lhs), Value::Array(rhs)) => {
                 if lhs.numbers.len() != rhs.numbers.len() {
-                    Err(TranspileError::MismatchedArrays)
+                    Err(YolkError::MismatchedArrays)
                 } else {
                     Ok(Value::Array(lhs.apply_infix_op(op, &rhs)))
                 }

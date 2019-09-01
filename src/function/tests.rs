@@ -1,13 +1,13 @@
 use yolol_number::YololNumber;
 
 use crate::ast::YolkExpr;
-use crate::error::TranspileError;
+use crate::error::YolkError;
 use crate::function::Function;
 
 use std::str::FromStr;
 
 #[test]
-fn test_new() -> Result<(), TranspileError> {
+fn test_new() -> Result<(), YolkError> {
     let function = Function::new(
         "function",
         &vec!["a".to_string(), "b".to_string(), "c".to_string()],

@@ -3,11 +3,11 @@ use std::str::FromStr;
 use yolol_number::YololNumber;
 
 use crate::ast::{YolkExpr, YolkStmt, YololExpr, YololStmt};
-use crate::error::TranspileError;
+use crate::error::YolkError;
 use crate::transpiler::transpile;
 
 #[test]
-fn test_let_number() -> Result<(), TranspileError> {
+fn test_let_number() -> Result<(), YolkError> {
     let yolk = vec![YolkStmt::Let {
         ident: "number".to_string(),
         expr: Box::new(YolkExpr::Literal(YololNumber::from_str("0").unwrap())),
@@ -24,7 +24,7 @@ fn test_let_number() -> Result<(), TranspileError> {
 }
 
 #[test]
-fn test_let_array() -> Result<(), TranspileError> {
+fn test_let_array() -> Result<(), YolkError> {
     let yolk = vec![YolkStmt::Let {
         ident: "array".to_string(),
         expr: Box::new(YolkExpr::Array(vec![

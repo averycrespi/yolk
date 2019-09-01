@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use crate::ast::YolkExpr;
-use crate::error::TranspileError;
+use crate::error::YolkError;
 
 #[cfg(test)]
 mod tests;
@@ -16,11 +16,7 @@ pub struct Function {
 
 impl Function {
     /// Creates a new Yolk function.
-    pub fn new(
-        ident: &str,
-        params: &[String],
-        body: &YolkExpr,
-    ) -> Result<Function, TranspileError> {
+    pub fn new(ident: &str, params: &[String], body: &YolkExpr) -> Result<Function, YolkError> {
         if params.len() < 1 {
             panic!("function has no parameters");
         }
@@ -34,16 +30,18 @@ impl Function {
         Ok(function)
     }
 
-    fn check_for_duplicate_params(&self) -> Result<(), TranspileError> {
+    fn check_for_duplicate_params(&self) -> Result<(), YolkError> {
         let mut uniq = HashSet::new();
         if self.params.iter().all(move |x| uniq.insert(x)) {
             Ok(())
         } else {
-            Err(TranspileError::DuplicateParams)
+            Err(YolkError::DuplicateParams {
+                func: self.ident.to_string(),
+            })
         }
     }
 
-    fn check_body_node(&self, node: &YolkExpr) -> Result<(), TranspileError> {
+    fn check_body_node(&self, node: &YolkExpr) -> Result<(), YolkError> {
         match node {
             YolkExpr::Prefix { op: _, expr } => self.check_body_node(expr)?,
             YolkExpr::Builtin { ident, args } | YolkExpr::Call { ident, args } => {
@@ -52,7 +50,9 @@ impl Function {
                 }
                 // Check for recursive calls
                 if self.ident == ident.to_string() {
-                    return Err(TranspileError::RecursiveCall);
+                    return Err(YolkError::RecursiveCall {
+                        func: self.ident.to_string(),
+                    });
                 }
             }
             YolkExpr::Infix { lhs, op: _, rhs } => {
@@ -62,7 +62,7 @@ impl Function {
             YolkExpr::Ident(s) => {
                 // Check for undefined local variables
                 if !self.params.contains(s) {
-                    return Err(TranspileError::GetUndefinedLocal(s.to_string()));
+                    return Err(YolkError::UndefinedVariable { var: s.to_string() });
                 }
             }
             YolkExpr::Array(exprs) => {
@@ -76,9 +76,11 @@ impl Function {
     }
 
     /// Calls a function with arguments.
-    pub fn call(&self, args: &[YolkExpr]) -> Result<YolkExpr, TranspileError> {
+    pub fn call(&self, args: &[YolkExpr]) -> Result<YolkExpr, YolkError> {
         if self.params.len() != args.len() {
-            Err(TranspileError::WrongNumberOfArgs(self.ident.to_string()))
+            Err(YolkError::WrongNumberOfArgs {
+                func: self.ident.to_string(),
+            })
         } else {
             Ok(self.replace_params_with_args(args, &self.body))
         }

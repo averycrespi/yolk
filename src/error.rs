@@ -1,125 +1,42 @@
-use std::error;
-use std::fmt;
+#[derive(Debug, Fail)]
+pub enum YolkError {
+    #[fail(display = "invalid syntax: {}", msg)]
+    InvalidSyntax { msg: String },
 
-/// Represents a general error.
-#[derive(Debug, Clone)]
-pub enum Error {
-    ParseError(ParseError),
-    TranspileError(TranspileError),
-}
+    #[fail(display = "cannot import existing variable: {}", var)]
+    ImportExisting { var: String },
+    #[fail(display = "cannot import keyword: {}", var)]
+    ImportKeyword { var: String },
 
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Error::ParseError(e) => write!(f, "{}", e),
-            Error::TranspileError(e) => write!(f, "{}", e),
-        }
-    }
-}
+    #[fail(display = "cannot define existing function: {}", func)]
+    DefineExisting { func: String },
+    #[fail(display = "cannot define keyword: {}", func)]
+    DefineKeyword { func: String },
 
-impl error::Error for Error {}
+    #[fail(display = "cannot assign to existing variable: {}", var)]
+    AssignExisting { var: String },
+    #[fail(display = "cannot assign to keyword: {}", var)]
+    AssignKeyword { var: String },
+    //TODO: improve message
+    #[fail(display = "name conflict with variable: {}", var)]
+    AssignConflict { var: String },
 
-impl From<ParseError> for Error {
-    fn from(error: ParseError) -> Self {
-        Error::ParseError(error)
-    }
-}
+    #[fail(display = "undefined function: {}", func)]
+    UndefinedFunction { func: String },
+    #[fail(display = "undefined variable {}", var)]
+    UndefinedVariable { var: String },
 
-impl From<TranspileError> for Error {
-    fn from(error: TranspileError) -> Self {
-        Error::TranspileError(error)
-    }
-}
+    #[fail(display = "duplicate parameters in function: {}", func)]
+    DuplicateParams { func: String },
+    #[fail(display = "recursive call in function: {}", func)]
+    RecursiveCall { func: String },
+    #[fail(display = "wrong number of arguments provided for function: {}", func)]
+    WrongNumberOfArgs { func: String },
 
-/// Represents an error during parsing.
-#[derive(Debug, Clone)]
-pub enum ParseError {
-    BadSyntax(String),
-}
-
-impl fmt::Display for ParseError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            ParseError::BadSyntax(s) => write!(f, "syntax error: {}", s),
-        }
-    }
-}
-
-/// Represents an error during transpilation.
-#[derive(Debug, Clone)]
-pub enum TranspileError {
-    // Import errors
-    ImportExisting(String),
-    ImportKeyword(String),
-    ImportTwice(String),
-
-    // Define errors
-    DefineKeyword(String),
-    RedefineFunction(String),
-
-    // Assign errors
-    AssignSameLowercase(String),
-    AssignToKeyword(String),
-    ReassignVariable(String),
-
-    // Access errors
-    GetUndefinedFunction(String),
-    GetUndefinedLocal(String),
-    GetUndefinedVariable(String),
-
-    // Function errors
-    DuplicateParams,
-    RecursiveCall,
-    WrongNumberOfArgs(String),
-
-    // Type errors
+    //TODO: improve message
+    #[fail(display = "mismatched array lengths")]
     MismatchedArrays,
+    //TODO: improve message
+    #[fail(display = "cannot nest arrays")]
     NestedArrays,
-}
-
-impl fmt::Display for TranspileError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            TranspileError::ImportExisting(variable) => {
-                write!(f, "cannot import existing variable: {}", variable)
-            }
-            TranspileError::ImportKeyword(keyword) => {
-                write!(f, "cannot import reserved keyword: {}", keyword)
-            }
-            TranspileError::ImportTwice(variable) => write!(f, "duplicate import: {}", variable),
-            TranspileError::DefineKeyword(keyword) => {
-                write!(f, "cannot define reserved keyword: {}", keyword)
-            }
-            TranspileError::RedefineFunction(function) => {
-                write!(f, "cannot redefine function: {}", function)
-            }
-            TranspileError::AssignSameLowercase(variable) => write!(
-                f,
-                "multiple variable must not have the same lowercase representation: {}",
-                variable
-            ),
-            TranspileError::AssignToKeyword(keyword) => {
-                write!(f, "cannot assign to keyword: {}", keyword)
-            }
-            TranspileError::ReassignVariable(variable) => {
-                write!(f, "cannot reassign variable: {}", variable)
-            }
-            TranspileError::GetUndefinedFunction(function) => {
-                write!(f, "undefined function: {}", function)
-            }
-            TranspileError::GetUndefinedLocal(local) => {
-                write!(f, "undefined local variable: {}", local)
-            }
-            TranspileError::GetUndefinedVariable(variable) => {
-                write!(f, "undefined variable: {}", variable)
-            }
-            TranspileError::DuplicateParams => write!(f, "duplicate function parameters"),
-            TranspileError::RecursiveCall => write!(f, "cannot define function recursively"),
-            TranspileError::WrongNumberOfArgs(function) => {
-                write!(f, "wrong number of args for function: {}", function)
-            }
-            TranspileError::MismatchedArrays => write!(f, "cannot operate on mismatched arrays"),
-            TranspileError::NestedArrays => write!(f, "cannot create nested arrays"),
-        }
-    }
 }
