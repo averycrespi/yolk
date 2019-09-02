@@ -5,7 +5,7 @@ use crate::ast::{InfixOp, PrefixOp, YololExpr, YololStmt};
 use crate::format::format_as_program;
 
 #[test]
-fn test_assign_a() {
+fn test_assign_ident() {
     let stmts = vec![YololStmt::Assign {
         ident: "a".to_string(),
         expr: Box::new(YololExpr::Literal(YololNumber::zero())),
@@ -103,4 +103,40 @@ fn test_assign_sub_then_sub() {
     }];
     let program = format_as_program(&stmts);
     assert_eq!(program, "a=b-(c-d)".to_string())
+}
+
+#[test]
+fn test_assign_add_then_add() {
+    let stmts = vec![YololStmt::Assign {
+        ident: "a".to_string(),
+        expr: Box::new(YololExpr::Infix {
+            lhs: Box::new(YololExpr::Ident("b".to_string())),
+            op: InfixOp::Add,
+            rhs: Box::new(YololExpr::Infix {
+                lhs: Box::new(YololExpr::Ident("b".to_string())),
+                op: InfixOp::Add,
+                rhs: Box::new(YololExpr::Ident("b".to_string())),
+            }),
+        }),
+    }];
+    let program = format_as_program(&stmts);
+    assert_eq!(program, "a=b+b+b");
+}
+
+#[test]
+fn test_assign_and_then_and() {
+    let stmts = vec![YololStmt::Assign {
+        ident: "a".to_string(),
+        expr: Box::new(YololExpr::Infix {
+            lhs: Box::new(YololExpr::Ident("b".to_string())),
+            op: InfixOp::And,
+            rhs: Box::new(YololExpr::Infix {
+                lhs: Box::new(YololExpr::Ident("b".to_string())),
+                op: InfixOp::And,
+                rhs: Box::new(YololExpr::Ident("b".to_string())),
+            }),
+        }),
+    }];
+    let program = format_as_program(&stmts);
+    assert_eq!(program, "a=b and(b and b)");
 }
