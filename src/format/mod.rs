@@ -5,9 +5,6 @@ mod tests;
 
 const LINE_LIMIT: usize = 70;
 
-const IDENT_PREC: u32 = 1000;
-const LIT_PREC: u32 = 1000;
-
 /// Formats Yolol statements as a program.
 ///
 /// Lines will be limited to LINE_LIMIT when possible. Whitespace will be minimized.
@@ -41,50 +38,52 @@ pub fn format_as_program(stmts: &[YololStmt]) -> String {
     program.trim().to_string()
 }
 
-fn format_expr(expr: &YololExpr, parent_prec: u32) -> (String, u32) {
+type HasParens = bool;
+
+fn format_expr(expr: &YololExpr, parent_prec: u32) -> (String, HasParens) {
     match expr {
         YololExpr::Prefix { op, expr } => {
             let prec = op.to_precedence();
-            let (expr, child_prec) = format_expr(expr, prec);
-            let add_parens = prec < parent_prec;
-            let add_space = prec <= child_prec;
+            let (expr, child_has_parens) = format_expr(expr, prec);
+            let has_parens = prec < parent_prec;
+            let has_space = !child_has_parens;
             let formatted = format!(
                 "{lparen}{op}{space}{expr}{rparen}",
-                lparen = if add_parens { "(" } else { "" },
+                lparen = if has_parens { "(" } else { "" },
                 op = op.to_string(),
-                space = if add_space { " " } else { "" },
+                space = if has_space { " " } else { "" },
                 expr = expr,
-                rparen = if add_parens { ")" } else { "" },
+                rparen = if has_parens { ")" } else { "" },
             );
-            (formatted, prec)
+            (formatted, has_parens)
         }
         YololExpr::Infix { lhs, op, rhs } => {
             let is_alpha = op.to_string().chars().all(char::is_alphabetic);
             let prec = op.to_precedence();
-            let (lhs, lhs_prec) = format_expr(lhs, prec);
-            let (rhs, rhs_prec) = format_expr(rhs, prec);
-            // If the operation is commutative, we can omit parentheses in the case of matching
-            // precedence. This prevents "a-(b-c)" from being formatted as "a-b-c".
-            let add_parens = if op.is_commutative() {
+            let (lhs, lhs_has_parens) = format_expr(lhs, prec);
+            let (rhs, rhs_has_parens) = format_expr(rhs, prec);
+            // If the operation is associative, we can format a+(b+c) as (a+b)+c,
+            // then omit the parentheses to get a+b+c.
+            let has_parens = if op.is_associative() {
                 prec < parent_prec
             } else {
                 prec <= parent_prec
             };
-            let add_lhs_space = (prec <= lhs_prec) && is_alpha;
-            let add_rhs_space = (prec <= rhs_prec) && is_alpha;
+            let has_lhs_space = !lhs_has_parens && is_alpha;
+            let has_rhs_space = !rhs_has_parens && is_alpha;
             let formatted = format!(
                 "{lparen}{lhs}{lhs_space}{op}{rhs_space}{rhs}{rparen}",
-                lparen = if add_parens { "(" } else { "" },
+                lparen = if has_parens { "(" } else { "" },
                 lhs = lhs,
-                lhs_space = if add_lhs_space { " " } else { "" },
+                lhs_space = if has_lhs_space { " " } else { "" },
                 op = op.to_string(),
-                rhs_space = if add_rhs_space { " " } else { "" },
+                rhs_space = if has_rhs_space { " " } else { "" },
                 rhs = rhs,
-                rparen = if add_parens { ")" } else { "" },
+                rparen = if has_parens { ")" } else { "" },
             );
-            (formatted, prec)
+            (formatted, has_parens)
         }
-        YololExpr::Ident(s) => (s.to_string(), IDENT_PREC),
-        YololExpr::Literal(y) => (y.to_string(), LIT_PREC),
+        YololExpr::Ident(s) => (s.to_string(), false),
+        YololExpr::Literal(y) => (y.to_string(), false),
     }
 }
