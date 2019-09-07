@@ -1,16 +1,19 @@
-use crate::error::YolkError;
-use crate::parser::parse;
+use num_traits::identities::Zero;
+use yolol_number::YololNumber;
 
-//TODO: fix tests
-/*
+use crate::ast::{YolkExpr, YolkProgram, YolkStmt};
+use crate::error::YolkError;
+
+use std::str::FromStr;
+
 #[test]
 fn test_import() -> Result<(), YolkError> {
-    assert_eq!(
-        parse("import number")?,
-        vec![YolkStmt::Import {
-            ident: "number".to_string()
-        }]
-    );
+    let parsed: YolkProgram = "import number".parse()?;
+    let expected: YolkProgram = vec![YolkStmt::Import {
+        ident: "number".to_string(),
+    }]
+    .into();
+    assert_eq!(parsed, expected);
     Ok(())
 }
 
@@ -19,147 +22,148 @@ fn test_let_number() -> Result<(), YolkError> {
     let cases = vec!["0", "1", "1.0", "-1", "-1.0", "1.234", "-1.234"];
     for case in cases.iter() {
         println!("case: {}", case);
-        assert_eq!(
-            parse(&format!("let number = {}", case))?,
-            vec![YolkStmt::Let {
-                ident: "number".to_string(),
-                expr: Box::new(YolkExpr::Literal(YololNumber::from_str(case).unwrap()))
-            }]
-        );
+        let parsed: YolkProgram = format!("let number = {}", case).parse()?;
+        let expected: YolkProgram = vec![YolkStmt::Let {
+            ident: "number".to_string(),
+            expr: Box::new(YolkExpr::Literal(YololNumber::from_str(case).unwrap())),
+        }]
+        .into();
+        assert_eq!(parsed, expected);
     }
     Ok(())
 }
 
 #[test]
 fn test_let_array() -> Result<(), YolkError> {
-    assert_eq!(
-        parse("let array = [0, number]")?,
-        vec![YolkStmt::Let {
-            ident: "array".to_string(),
-            expr: Box::new(YolkExpr::Array(vec![
-                YolkExpr::Literal(YololNumber::from_str("0").unwrap()),
-                YolkExpr::Ident("number".to_string())
-            ]))
-        }]
-    );
+    let parsed: YolkProgram = "let array = [0, number]".parse()?;
+    let expected: YolkProgram = vec![YolkStmt::Let {
+        ident: "array".to_string(),
+        expr: Box::new(YolkExpr::Array(vec![
+            YolkExpr::Literal(YololNumber::zero()),
+            YolkExpr::Ident("number".to_string()),
+        ])),
+    }]
+    .into();
+    assert_eq!(parsed, expected);
     Ok(())
 }
-*/
 
 #[test]
 fn test_let_prefix() -> Result<(), YolkError> {
-    parse("let number = not (abs (sqrt (sin (cos (tan (asin (acos (atan (0)))))))))")?;
+    let _: YolkProgram =
+        "let number = not (abs (sqrt (sin (cos (tan (asin (acos (atan (0)))))))))".parse()?;
     Ok(())
 }
 
 #[test]
 fn test_let_infix() -> Result<(), YolkError> {
-    parse("let number = 1 + 2 - 3 * 4 / 5 % 6 ^ 7 < 8 <= 9 > 10 >= 11 == 12 != 13 and 14 or 15")?;
+    let _: YolkProgram =
+        "let number = 1 + 2 - 3 * 4 / 5 % 6 ^ 7 < 8 <= 9 > 10 >= 11 == 12 != 13 and 14 or 15"
+            .parse()?;
     Ok(())
 }
 
 #[test]
 fn test_let_builtin() -> Result<(), YolkError> {
-    parse("let number = sum([0, 1], 2) + product([0, 1], 2)")?;
+    let _: YolkProgram = "let number = sum([0, 1], 2) + product([0, 1], 2)".parse()?;
     Ok(())
 }
 
 #[test]
 fn test_let_call() -> Result<(), YolkError> {
-    parse("let number = function(0) + function([0, 1]) + function(number)")?;
+    let _: YolkProgram = "let number = func(0) + func([0, 1]) + func(number)".parse()?;
     Ok(())
 }
 
-/*
 #[test]
 fn test_define() -> Result<(), YolkError> {
-    assert_eq!(
-        parse("define identity(A) = A")?,
-        vec![YolkStmt::Define {
-            ident: "identity".to_string(),
-            params: vec!["A".to_string()],
-            body: Box::new(YolkExpr::Ident("A".to_string()))
-        }]
-    );
+    let parsed: YolkProgram = "define identity(A) = A".parse()?;
+    let expected: YolkProgram = vec![YolkStmt::Define {
+        ident: "identity".to_string(),
+        params: vec!["A".to_string()],
+        body: Box::new(YolkExpr::Ident("A".to_string())),
+    }]
+    .into();
+    assert_eq!(parsed, expected);
     Ok(())
 }
-*/
 
 #[test]
 fn test_comment() -> Result<(), YolkError> {
-    parse("// This is a comment")?;
+    let _: YolkProgram = "// This is a comment".parse()?;
     Ok(())
 }
 
 #[test]
 fn test_inline_comment() -> Result<(), YolkError> {
-    parse("import number // This is a comment")?;
+    let _: YolkProgram = "import number // This is a comment".parse()?;
     Ok(())
 }
 
 #[test]
 fn test_extra_newlines() -> Result<(), YolkError> {
-    assert_eq!(parse("let number = (0)")?, parse("let number = (\n0\n)")?,);
+    let normal: YolkProgram = "let number = (0)".parse()?;
+    let extra: YolkProgram = "let number = (\n0\n)\n".parse()?;
+    assert_eq!(normal, extra);
     Ok(())
 }
 
 #[test]
 #[should_panic]
 fn test_invalid_ident() {
-    parse("let !@#$%^&*() = 0").unwrap();
+    let _: YolkProgram = "let !@#$%^&*() = 0".parse().unwrap();
 }
 
 #[test]
 #[should_panic]
 fn test_too_much_precision() {
-    parse("let number = 1.23456").unwrap();
+    let _: YolkProgram = "let number = 1.2345".parse().unwrap();
 }
 
 #[test]
 #[should_panic]
 fn test_missing_whole() {
-    parse("let number = .0").unwrap();
+    let _: YolkProgram = "let number = .2345".parse().unwrap();
 }
 
 #[test]
 #[should_panic]
 fn test_missing_fraction() {
-    parse("let number = 1.").unwrap();
+    let _: YolkProgram = "let number = 1.".parse().unwrap();
 }
 
 #[test]
 #[should_panic]
 fn test_missing_comma() {
-    parse("let array = [0 1]").unwrap();
+    let _: YolkProgram = "let array = [0 1]".parse().unwrap();
 }
 
 #[test]
 #[should_panic]
 fn test_leading_comma() {
-    parse("let array = [, 0, 1]").unwrap();
+    let _: YolkProgram = "let array = [, 0 1]".parse().unwrap();
 }
 
 #[test]
 #[should_panic]
 fn test_trailing_comma() {
-    parse("let array = [0, 1, ]").unwrap();
+    let _: YolkProgram = "let array = [0 1,]".parse().unwrap();
 }
 
 #[test]
 #[should_panic]
 fn test_missing_bracket() {
-    parse("let array = [0, 1, 2").unwrap();
+    let _: YolkProgram = "let array = [0 1".parse().unwrap();
 }
 
 #[test]
 #[should_panic]
 fn test_missing_paren() {
-    parse("let number = function(0").unwrap();
+    let _: YolkProgram = "let number = func(0".parse().unwrap();
 }
 
 #[test]
 #[should_panic]
 fn test_missing_whitespace() {
-    parse("letnumber=0").unwrap();
+    let _: YolkProgram = "letnumber=0".parse().unwrap();
 }
-
