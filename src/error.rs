@@ -1,3 +1,4 @@
+/// Represents a general error.
 #[derive(Debug, Fail)]
 pub enum YolkError {
     #[fail(display = "invalid syntax: {}", msg)]

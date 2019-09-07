@@ -109,8 +109,6 @@ impl Environment {
     }
 
     /// Assigns a value to a variable in an environment.
-    ///
-    /// Returns the associated Yolol assign statements.
     pub fn let_value(&mut self, ident: &str, value: Value) -> Result<Vec<YololStmt>, YolkError> {
         if self.imports.contains(ident) || self.variables.contains_key(ident) {
             Err(YolkError::AssignExisting {

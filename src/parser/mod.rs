@@ -37,6 +37,11 @@ fn build_prec_climber() -> PrecClimber<Rule> {
 #[grammar = "grammar/yolk.pest"]
 pub struct YolkParser;
 
+/// Parses a Yolk program from a string.
+///
+/// # Panics
+///
+/// Panics if the AST is malformed.
 pub fn parse(source: &str) -> Result<YolkProgram, YolkError> {
     let mut stmts = vec![];
     let pairs = YolkParser::parse(Rule::program, source)

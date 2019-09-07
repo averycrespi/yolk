@@ -12,12 +12,14 @@ use crate::transpiler::transpile;
 #[cfg(test)]
 mod tests;
 
+/// Represents a Yolk program.
 #[derive(Debug, Clone, PartialEq)]
 pub struct YolkProgram {
     stmts: Vec<YolkStmt>,
 }
 
 impl From<Vec<YolkStmt>> for YolkProgram {
+    /// Converts Yolk statements to a program.
     fn from(stmts: Vec<YolkStmt>) -> Self {
         YolkProgram { stmts: stmts }
     }
@@ -26,6 +28,7 @@ impl From<Vec<YolkStmt>> for YolkProgram {
 impl FromStr for YolkProgram {
     type Err = YolkError;
 
+    /// Parses a Yolk program from a string.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         parse(s)
     }
@@ -35,11 +38,13 @@ impl IntoIterator for YolkProgram {
     type Item = YolkStmt;
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
+    /// Iterates over the statements in a Yolk program.
     fn into_iter(self) -> Self::IntoIter {
         self.stmts.into_iter()
     }
 }
 
+/// Represents a Yolk statement.
 #[derive(Debug, Clone, PartialEq)]
 pub enum YolkStmt {
     Import {
@@ -56,6 +61,7 @@ pub enum YolkStmt {
     },
 }
 
+/// Represents a Yolk expression.
 #[derive(Debug, Clone, PartialEq)]
 pub enum YolkExpr {
     Prefix {
@@ -80,18 +86,21 @@ pub enum YolkExpr {
     Array(Vec<YolkExpr>),
 }
 
+/// Represents a Yolol program.
 #[derive(Debug, Clone, PartialEq)]
 pub struct YololProgram {
     stmts: Vec<YololStmt>,
 }
 
 impl YololProgram {
+    /// Optimizes a Yolol program
     pub fn optimize(self) -> Self {
         optimize(self)
     }
 }
 
 impl From<Vec<YololStmt>> for YololProgram {
+    /// Converts Yolol statements to a program.
     fn from(stmts: Vec<YololStmt>) -> Self {
         YololProgram { stmts: stmts }
     }
@@ -100,12 +109,14 @@ impl From<Vec<YololStmt>> for YololProgram {
 impl TryFrom<YolkProgram> for YololProgram {
     type Error = YolkError;
 
+    /// Converts a Yolk program into a Yolol program.
     fn try_from(program: YolkProgram) -> Result<Self, Self::Error> {
         transpile(program)
     }
 }
 
 impl fmt::Display for YololProgram {
+    /// Formats a Yolol program as a string.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut buffer = String::new();
         let mut line = String::new();
@@ -133,17 +144,20 @@ impl IntoIterator for YololProgram {
     type Item = YololStmt;
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
+    /// Iterates over the statement in a Yolol program.
     fn into_iter(self) -> Self::IntoIter {
         self.stmts.into_iter()
     }
 }
 
+/// Represents a Yolol statement.
 #[derive(Debug, Clone, PartialEq)]
 pub enum YololStmt {
     Assign { ident: String, expr: Box<YololExpr> },
 }
 
 impl fmt::Display for YololStmt {
+    /// Formats a Yolol statement as a string.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::Assign { ident, expr } => write!(f, "{}={}", ident, expr.to_string()),
@@ -151,6 +165,7 @@ impl fmt::Display for YololStmt {
     }
 }
 
+/// Represents a Yolol expression.
 #[derive(Debug, Clone, PartialEq)]
 pub enum YololExpr {
     Prefix {
@@ -167,6 +182,7 @@ pub enum YololExpr {
 }
 
 impl fmt::Display for YololExpr {
+    /// Formats a Yolol expression as a string.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let (s, _) = self.format(0);
         write!(f, "{}", s)
@@ -229,6 +245,7 @@ impl YololExpr {
     }
 }
 
+/// Represents a prefix operation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PrefixOp {
     Neg,
@@ -253,6 +270,7 @@ impl PrefixOp {
 }
 
 impl fmt::Display for PrefixOp {
+    /// Formats a prefix operation as a string.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::Neg => write!(f, "-"),
@@ -269,6 +287,7 @@ impl fmt::Display for PrefixOp {
     }
 }
 
+/// Represents an infix operation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum InfixOp {
     Add,
@@ -300,6 +319,7 @@ impl InfixOp {
         }
     }
 
+    /// Returns whether or not an infix operation is associative.
     pub fn is_associative(&self) -> bool {
         match self {
             Self::Add | Self::Mul => true,
@@ -309,6 +329,7 @@ impl InfixOp {
 }
 
 impl fmt::Display for InfixOp {
+    /// Formats an infix operation as a string.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::Add => write!(f, "+"),

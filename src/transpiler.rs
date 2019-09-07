@@ -7,6 +7,11 @@ use crate::error::YolkError;
 use crate::function::Function;
 use crate::value::{ArrayExpr, NumberExpr, Value};
 
+/// Transpiles a Yolk program to a Yolol program
+///
+/// # Panics
+///
+/// Panics if the Yolk program is malformed.
 pub fn transpile(program: YolkProgram) -> Result<YololProgram, YolkError> {
     let mut env = Environment::new();
     let mut assigns = Vec::new();
