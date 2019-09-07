@@ -9,6 +9,9 @@ use crate::optimizer::optimize;
 use crate::parser::parse;
 use crate::transpiler::transpile;
 
+#[cfg(test)]
+mod tests;
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct YolkProgram {
     stmts: Vec<YolkStmt>,

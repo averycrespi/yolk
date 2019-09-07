@@ -7,9 +7,6 @@ use crate::error::YolkError;
 use crate::function::Function;
 use crate::value::{ArrayExpr, NumberExpr, Value};
 
-#[cfg(test)]
-mod tests;
-
 pub fn transpile(program: YolkProgram) -> Result<YololProgram, YolkError> {
     let mut env = Environment::new();
     let mut assigns = Vec::new();
