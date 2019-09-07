@@ -23,7 +23,7 @@ pub fn optimize(program: YololProgram) -> YololProgram {
             break;
         }
     }
-    YololProgram::from_stmts(curr)
+    curr.into()
 }
 
 /// Finds variables that have literal values.

@@ -1,10 +1,10 @@
 use yoloxide::environment::{ContextMap, Environment};
 use yoloxide::execute_line;
 
-use yolk::ast::YololProgram;
 use yolk::error::YolkError;
-use yolk::{optimize, parse, transpile};
+use yolk::{YolkProgram, YololProgram};
 
+use std::convert::TryInto;
 use std::fs;
 use std::path::PathBuf;
 
@@ -35,9 +35,9 @@ fn test_correctness() -> Result<(), YolkError> {
     for file in test_files {
         println!("case: {}", file);
         let source = fs::read_to_string(file).unwrap();
-        let yolk = parse(&source)?;
-        let yolol = transpile(yolk)?;
-        let optimized = optimize(yolol);
+        let yolk: YolkProgram = source.parse()?;
+        let yolol: YololProgram = yolk.try_into()?;
+        let optimized = yolol.optimize();
         let env = yolol_to_env(optimized);
         assert_eq!(env.get_val("n").to_string(), env.get_val("e").to_string());
     }
@@ -50,10 +50,10 @@ fn test_idempotence() -> Result<(), YolkError> {
     for file in test_files {
         println!("case: {}", file);
         let source = fs::read_to_string(file).unwrap();
-        let yolk = parse(&source)?;
-        let yolol = transpile(yolk)?;
-        let once = optimize(yolol);
-        let twice = optimize(once.clone());
+        let yolk: YolkProgram = source.parse()?;
+        let yolol: YololProgram = yolk.try_into()?;
+        let once = yolol.optimize();
+        let twice = once.clone().optimize();
         assert_eq!(once, twice);
     }
     Ok(())

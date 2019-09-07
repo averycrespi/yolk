@@ -1,15 +1,30 @@
+use std::convert::TryFrom;
 use std::fmt;
+use std::str::FromStr;
 
 use yolol_number::YololNumber;
+
+use crate::error::YolkError;
+use crate::optimizer::optimize;
+use crate::parser::parse;
+use crate::transpiler::transpile;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct YolkProgram {
     stmts: Vec<YolkStmt>,
 }
 
-impl YolkProgram {
-    pub fn from_stmts(stmts: Vec<YolkStmt>) -> Self {
+impl From<Vec<YolkStmt>> for YolkProgram {
+    fn from(stmts: Vec<YolkStmt>) -> Self {
         YolkProgram { stmts: stmts }
+    }
+}
+
+impl FromStr for YolkProgram {
+    type Err = YolkError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        parse(s)
     }
 }
 
@@ -68,8 +83,22 @@ pub struct YololProgram {
 }
 
 impl YololProgram {
-    pub fn from_stmts(stmts: Vec<YololStmt>) -> Self {
+    pub fn optimize(self) -> Self {
+        optimize(self)
+    }
+}
+
+impl From<Vec<YololStmt>> for YololProgram {
+    fn from(stmts: Vec<YololStmt>) -> Self {
         YololProgram { stmts: stmts }
+    }
+}
+
+impl TryFrom<YolkProgram> for YololProgram {
+    type Error = YolkError;
+
+    fn try_from(program: YolkProgram) -> Result<Self, Self::Error> {
+        transpile(program)
     }
 }
 

@@ -51,7 +51,7 @@ pub fn parse(source: &str) -> Result<YolkProgram, YolkError> {
             _ => panic!("expected rule statement, but got: {:?}", pair),
         }
     }
-    Ok(YolkProgram::from_stmts(stmts))
+    Ok(stmts.into())
 }
 
 fn parse_import_stmt(stmt: Pair<Rule>) -> YolkStmt {

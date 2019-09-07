@@ -3,8 +3,9 @@ extern crate clap;
 
 use clap::{App, Arg};
 
-use yolk::{optimize, parse, transpile};
+use yolk::{YolkProgram, YololProgram};
 
+use std::convert::TryInto;
 use std::fs;
 
 fn main() {
@@ -30,15 +31,15 @@ fn main() {
 
     if let Some(infile) = matches.value_of("infile") {
         let source = fs::read_to_string(infile).expect("cannot read from file");
-        let yolk = parse(&source).unwrap_or_else(|e| panic!("{}", e));
+        let yolk: YolkProgram = source.parse().unwrap_or_else(|e| panic!("{}", e));
         if debug {
             eprintln!("{:?}\n", yolk);
         }
-        let yolol = transpile(yolk).unwrap_or_else(|e| panic!("{}", e));
+        let yolol: YololProgram = yolk.try_into().unwrap_or_else(|e| panic!("{}", e));
         if debug {
             eprintln!("{:?}\n", yolol);
         }
-        let optimized = optimize(yolol);
+        let optimized = yolol.optimize();
         if debug {
             eprintln!("{:?}\n", optimized);
         }

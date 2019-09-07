@@ -26,7 +26,7 @@ pub fn transpile(program: YolkProgram) -> Result<YololProgram, YolkError> {
             }
         }
     }
-    Ok(YololProgram::from_stmts(assigns))
+    Ok(assigns.into())
 }
 
 fn expr_to_value(env: &Environment, expr: &YolkExpr) -> Result<Value, YolkError> {
