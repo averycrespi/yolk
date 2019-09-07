@@ -3,6 +3,26 @@ use std::fmt;
 use yolol_number::YololNumber;
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct YolkProgram {
+    stmts: Vec<YolkStmt>,
+}
+
+impl YolkProgram {
+    pub fn from_stmts(stmts: Vec<YolkStmt>) -> Self {
+        YolkProgram { stmts: stmts }
+    }
+}
+
+impl IntoIterator for YolkProgram {
+    type Item = YolkStmt;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.stmts.into_iter()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum YolkStmt {
     Import {
         ident: String,
@@ -40,6 +60,50 @@ pub enum YolkExpr {
     Ident(String),
     Literal(YololNumber),
     Array(Vec<YolkExpr>),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct YololProgram {
+    stmts: Vec<YololStmt>,
+}
+
+impl YololProgram {
+    pub fn from_stmts(stmts: Vec<YololStmt>) -> Self {
+        YololProgram { stmts: stmts }
+    }
+}
+
+impl fmt::Display for YololProgram {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut buffer = String::new();
+        let mut line = String::new();
+        // Iterate directly over stmts to avoid taking ownership
+        for stmt in self.stmts.iter() {
+            match stmt {
+                YololStmt::Assign { ident, expr } => {
+                    let stmt = format!(" {}={}", ident, expr.to_string());
+                    if line.len() + stmt.len() >= 70 {
+                        buffer.push_str(&format!("{}\n", line.trim()));
+                        line.clear();
+                    }
+                    line.push_str(&stmt);
+                }
+            }
+        }
+        if line.len() > 0 {
+            buffer.push_str(&format!("{}\n", line.trim()));
+        }
+        write!(f, "{}", buffer.trim().to_string())
+    }
+}
+
+impl IntoIterator for YololProgram {
+    type Item = YololStmt;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.stmts.into_iter()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]

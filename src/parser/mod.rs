@@ -6,7 +6,7 @@ use pest::prec_climber::{Assoc, Operator, PrecClimber};
 use pest::Parser;
 use yolol_number::YololNumber;
 
-use crate::ast::{InfixOp, PrefixOp, YolkExpr, YolkStmt};
+use crate::ast::{InfixOp, PrefixOp, YolkExpr, YolkProgram, YolkStmt};
 use crate::error::YolkError;
 
 #[cfg(test)]
@@ -37,22 +37,21 @@ fn build_prec_climber() -> PrecClimber<Rule> {
 #[grammar = "grammar/yolk.pest"]
 pub struct YolkParser;
 
-/// Parses Yolk statements from source text.
-pub fn parse(source: &str) -> Result<Vec<YolkStmt>, YolkError> {
-    let mut ast = vec![];
+pub fn parse(source: &str) -> Result<YolkProgram, YolkError> {
+    let mut stmts = vec![];
     let pairs = YolkParser::parse(Rule::program, source)
         .map_err(|e| YolkError::InvalidSyntax { msg: e.to_string() })?;
     for pair in pairs {
         match pair.as_rule() {
-            Rule::import_stmt => ast.push(parse_import_stmt(pair)),
-            Rule::define_stmt => ast.push(parse_define_stmt(pair)),
-            Rule::let_stmt => ast.push(parse_let_stmt(pair)),
+            Rule::import_stmt => stmts.push(parse_import_stmt(pair)),
+            Rule::define_stmt => stmts.push(parse_define_stmt(pair)),
+            Rule::let_stmt => stmts.push(parse_let_stmt(pair)),
             Rule::comment => (),
             Rule::EOI => (),
             _ => panic!("expected rule statement, but got: {:?}", pair),
         }
     }
-    Ok(ast)
+    Ok(YolkProgram::from_stmts(stmts))
 }
 
 fn parse_import_stmt(stmt: Pair<Rule>) -> YolkStmt {

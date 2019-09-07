@@ -3,7 +3,7 @@ extern crate clap;
 
 use clap::{App, Arg};
 
-use yolk::{format_as_program, optimize, parse, transpile};
+use yolk::{optimize, parse, transpile};
 
 use std::fs;
 
@@ -34,7 +34,7 @@ fn main() {
         if debug {
             eprintln!("{:?}\n", yolk);
         }
-        let yolol = transpile(&yolk).unwrap_or_else(|e| panic!("{}", e));
+        let yolol = transpile(yolk).unwrap_or_else(|e| panic!("{}", e));
         if debug {
             eprintln!("{:?}\n", yolol);
         }
@@ -42,6 +42,6 @@ fn main() {
         if debug {
             eprintln!("{:?}\n", optimized);
         }
-        println!("{}", format_as_program(&optimized));
+        println!("{}", optimized.to_string());
     }
 }

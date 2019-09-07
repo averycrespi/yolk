@@ -1,9 +1,9 @@
 use yoloxide::environment::{ContextMap, Environment};
 use yoloxide::execute_line;
 
-use yolk::ast::YololStmt;
+use yolk::ast::YololProgram;
 use yolk::error::YolkError;
-use yolk::{format_as_program, optimize, parse, transpile};
+use yolk::{optimize, parse, transpile};
 
 use std::fs;
 use std::path::PathBuf;
@@ -23,9 +23,9 @@ fn find_test_files() -> Vec<String> {
     files
 }
 
-fn yolol_to_env(yolol: &[YololStmt]) -> Environment {
+fn yolol_to_env(program: YololProgram) -> Environment {
     let mut env = Environment::new("");
-    execute_line(&mut env, format_as_program(&yolol));
+    execute_line(&mut env, program.to_string());
     env
 }
 
@@ -36,9 +36,9 @@ fn test_correctness() -> Result<(), YolkError> {
         println!("case: {}", file);
         let source = fs::read_to_string(file).unwrap();
         let yolk = parse(&source)?;
-        let yolol = transpile(&yolk)?;
+        let yolol = transpile(yolk)?;
         let optimized = optimize(yolol);
-        let env = yolol_to_env(&optimized);
+        let env = yolol_to_env(optimized);
         assert_eq!(env.get_val("n").to_string(), env.get_val("e").to_string());
     }
     Ok(())
@@ -51,7 +51,7 @@ fn test_idempotence() -> Result<(), YolkError> {
         println!("case: {}", file);
         let source = fs::read_to_string(file).unwrap();
         let yolk = parse(&source)?;
-        let yolol = transpile(&yolk)?;
+        let yolol = transpile(yolk)?;
         let once = optimize(yolol);
         let twice = optimize(once.clone());
         assert_eq!(once, twice);
