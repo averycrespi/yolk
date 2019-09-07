@@ -1,7 +1,7 @@
 use num_traits::identities::{One, Zero};
 use yolol_number::YololNumber;
 
-use crate::ast::{InfixOp, YolkExpr, YolkStmt, YololStmt};
+use crate::ast::{InfixOp, YolkExpr, YolkProgram, YolkStmt, YololProgram};
 use crate::environment::Environment;
 use crate::error::YolkError;
 use crate::function::Function;
@@ -10,30 +10,23 @@ use crate::value::{ArrayExpr, NumberExpr, Value};
 #[cfg(test)]
 mod tests;
 
-/// Transpiles Yolk statements to Yolol statements.
-///
-/// Returns Yolol statements.
-///
-/// # Panics
-///
-/// Panics if any of the nodes are not statements, or if any of the nodes are malformed.
-pub fn transpile(stmts: &[YolkStmt]) -> Result<Vec<YololStmt>, YolkError> {
+pub fn transpile(program: YolkProgram) -> Result<YololProgram, YolkError> {
     let mut env = Environment::new();
     let mut assigns = Vec::new();
-    for stmt in stmts.iter() {
+    for stmt in program.into_iter() {
         match stmt {
             YolkStmt::Import { ident } => env.import(&ident)?,
             YolkStmt::Define {
                 ident,
                 params,
                 body,
-            } => env.define(&ident, Function::new(&ident, params, &*body)?)?,
+            } => env.define(&ident, Function::new(&ident, &params, &*body)?)?,
             YolkStmt::Let { ident, expr } => {
                 assigns.extend(env.let_value(&ident, expr_to_value(&env, &*expr)?)?);
             }
         }
     }
-    Ok(assigns)
+    Ok(YololProgram::from_stmts(assigns))
 }
 
 fn expr_to_value(env: &Environment, expr: &YolkExpr) -> Result<Value, YolkError> {
