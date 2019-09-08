@@ -2,11 +2,8 @@ use std::collections::{HashMap, HashSet};
 
 use crate::ast::YololStmt;
 use crate::error::YolkError;
-use crate::function::Function;
-use crate::value::{ArrayExpr, NumberExpr, Value};
-
-#[cfg(test)]
-mod tests;
+use crate::transpiler::function::Function;
+use crate::transpiler::value::{Value, Vector};
 
 /// Represents a Yolk program environment.
 #[derive(Debug, Clone)]
@@ -15,6 +12,9 @@ pub struct Environment {
     imports: HashSet<String>,
     // Maps variable identifiers to values
     variables: HashMap<String, Value>,
+    // Stores the lowercase identifiers of variables
+    // Used for detecting identifier conflicts
+    lowercase: HashSet<String>,
     // Maps function identifiers to functions
     functions: HashMap<String, Function>,
     // Stores the identifiers of reserved keywords
@@ -27,6 +27,7 @@ impl Environment {
         Environment {
             imports: HashSet::new(),
             variables: HashMap::new(),
+            lowercase: HashSet::new(),
             functions: HashMap::new(),
             keywords: [
                 "import".to_string(),
@@ -84,10 +85,9 @@ impl Environment {
             })
         } else {
             self.imports.insert(ident.to_string());
-            self.variables.insert(
-                ident.to_string(),
-                Value::Number(NumberExpr::from_ident(ident)),
-            );
+            self.variables
+                .insert(ident.to_string(), Value::Scalar(ident.parse()?));
+            self.lowercase.insert(ident.to_string().to_lowercase());
             Ok(())
         }
     }
@@ -118,33 +118,27 @@ impl Environment {
             Err(YolkError::AssignKeyword {
                 var: ident.to_string(),
             })
-        } else if self
-            .variables
-            .iter()
-            .map(|(s, _)| s.to_lowercase())
-            .collect::<Vec<String>>()
-            .contains(&ident.to_lowercase())
-        {
+        } else if self.lowercase.contains(&ident.to_lowercase()) {
             Err(YolkError::AssignConflict {
                 var: ident.to_string(),
             })
         } else {
             match value {
-                Value::Number(number) => {
-                    let assign_stmt = number.to_assign_stmt(&ident);
-                    self.variables.insert(
-                        ident.to_string(),
-                        Value::Number(NumberExpr::from_ident(&ident)),
-                    );
-                    Ok(vec![assign_stmt])
+                Value::Scalar(s) => {
+                    let stmt = s.to_assign_stmt(&ident);
+                    self.variables
+                        .insert(ident.to_string(), Value::Scalar(ident.parse()?));
+                    self.lowercase.insert(ident.to_string().to_lowercase());
+                    Ok(vec![stmt])
                 }
-                Value::Array(array) => {
-                    let assign_stmts = array.to_assign_stmts(&ident);
+                Value::Vector(v) => {
+                    let stmts = v.to_assign_stmts(&ident);
                     self.variables.insert(
                         ident.to_string(),
-                        Value::Array(ArrayExpr::from_ident(&ident, assign_stmts.len())),
+                        Value::Vector(Vector::from_expanded_ident(&ident, stmts.len())),
                     );
-                    Ok(assign_stmts)
+                    self.lowercase.insert(ident.to_string().to_lowercase());
+                    Ok(stmts)
                 }
             }
         }
