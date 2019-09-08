@@ -68,8 +68,8 @@ pub enum YolkExpr {
         op: PrefixOp,
         expr: Box<YolkExpr>,
     },
-    Builtin {
-        ident: String,
+    Fold {
+        op: InfixOp,
         args: Vec<YolkExpr>,
     },
     Call {
