@@ -3,96 +3,102 @@ use yolol_number::YololNumber;
 use crate::ast::{InfixOp, PrefixOp, YololExpr, YololStmt};
 use crate::error::YolkError;
 
-/// Represents a Yolk value.
+use std::str::FromStr;
+
+/// Represents a value.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
-    Number(NumberExpr),
-    Array(ArrayExpr),
+    Scalar(Scalar),
+    Vector(Vector),
 }
 
 impl Value {
-    /// Applies a prefix operation to a Yolk value.
+    /// Applies a prefix operation to a value.
     pub fn apply_prefix_op(&self, op: &PrefixOp) -> Value {
         match self {
-            Value::Number(n) => Value::Number(n.apply_prefix_op(op)),
-            Value::Array(a) => Value::Array(a.apply_prefix_op(op)),
+            Value::Scalar(s) => Value::Scalar(s.apply_prefix_op(op)),
+            Value::Vector(v) => Value::Vector(v.apply_prefix_op(op)),
         }
     }
 
-    /// Applies an infix operation to two Yolk values.
+    /// Applies an infix operation to two values.
+    ///
+    /// If one value is a scalar and the other is a vector, the scalar will be
+    /// repeated to produce another vector of the same length.
+    ///
+    /// If both values are vectors, they must have the same length.
     pub fn apply_infix_op(&self, op: &InfixOp, other: &Value) -> Result<Value, YolkError> {
         match (self, other) {
-            (Value::Number(lhs), Value::Number(rhs)) => {
-                Ok(Value::Number(lhs.apply_infix_op(op, &rhs)))
+            (Value::Scalar(lhs), Value::Scalar(rhs)) => {
+                Ok(Value::Scalar(lhs.apply_infix_op(op, &rhs)))
             }
-            (Value::Array(lhs), Value::Number(rhs)) => {
-                // Expand the right-hand side into an array of identical numbers
-                let rhs = ArrayExpr {
-                    numbers: vec![rhs.clone(); lhs.numbers.len()],
+            (Value::Vector(lhs), Value::Scalar(rhs)) => {
+                let rhs = Vector {
+                    scalars: vec![rhs.clone(); lhs.scalars.len()],
                 };
-                Ok(Value::Array(lhs.apply_infix_op(op, &rhs)))
+                Ok(Value::Vector(lhs.apply_infix_op(op, &rhs)))
             }
-            (Value::Number(lhs), Value::Array(rhs)) => {
-                // Expand the left-hand side into an array of identical numbers
-                let lhs = ArrayExpr {
-                    numbers: vec![lhs.clone(); rhs.numbers.len()],
+            (Value::Scalar(lhs), Value::Vector(rhs)) => {
+                let lhs = Vector {
+                    scalars: vec![lhs.clone(); rhs.scalars.len()],
                 };
-                Ok(Value::Array(lhs.apply_infix_op(op, rhs)))
+                Ok(Value::Vector(lhs.apply_infix_op(op, rhs)))
             }
-            (Value::Array(lhs), Value::Array(rhs)) => {
-                if lhs.numbers.len() != rhs.numbers.len() {
+            (Value::Vector(lhs), Value::Vector(rhs)) => {
+                if lhs.scalars.len() != rhs.scalars.len() {
                     Err(YolkError::MismatchedArrays)
                 } else {
-                    Ok(Value::Array(lhs.apply_infix_op(op, &rhs)))
+                    Ok(Value::Vector(lhs.apply_infix_op(op, &rhs)))
                 }
             }
         }
     }
 
-    // Reduces Yolk values to a single Yolk number expression.
-    pub fn reduce(values: &[Value], op: &InfixOp, start: &NumberExpr) -> Value {
+    /// Left-folds values to a single value.
+    pub fn left_fold(values: &[Value], op: &InfixOp, start: &Scalar) -> Value {
         let mut result = start.clone();
         for value in values.iter() {
             match value {
-                Value::Number(number) => result = result.apply_infix_op(op, number),
-                Value::Array(array) => {
-                    for number in array.numbers.iter() {
-                        result = result.apply_infix_op(op, number);
+                Value::Scalar(s) => result = result.apply_infix_op(op, s),
+                Value::Vector(v) => {
+                    for s in v.scalars.iter() {
+                        result = result.apply_infix_op(op, s);
                     }
                 }
             }
         }
-        Value::Number(result)
+        Value::Scalar(result)
     }
 }
 
-/// Represents a Yolk number expression.
+/// Represents a scalar value.
 #[derive(Debug, Clone, PartialEq)]
-pub struct NumberExpr {
+pub struct Scalar {
     expr: YololExpr,
 }
 
-impl NumberExpr {
-    /// Creates a Yolk number expression from an identifier.
-    pub fn from_ident(ident: &str) -> NumberExpr {
-        NumberExpr {
-            expr: YololExpr::Ident(ident.to_string()),
+impl FromStr for Scalar {
+    type Err = YolkError;
+
+    /// Parses a scalar from a string.
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Scalar {
+            expr: YololExpr::Ident(s.to_string()),
+        })
+    }
+}
+
+impl From<YololNumber> for Scalar {
+    /// Converts a Yolol number to a scalar.
+    fn from(y: YololNumber) -> Self {
+        Scalar {
+            expr: YololExpr::Literal(y),
         }
     }
+}
 
-    // Creates a Yolk number expression from a Yolol number.
-    pub fn from_yolol_number(num: YololNumber) -> NumberExpr {
-        NumberExpr {
-            expr: YololExpr::Literal(num),
-        }
-    }
-
-    /// Returns a Yolk number expression as a Yolol expression.
-    pub fn as_expr(&self) -> YololExpr {
-        self.expr.clone()
-    }
-
-    // Converts a Yolk number expression to a Yolol assign statement.
+impl Scalar {
+    /// Converts a scalar to a Yolol assign statement.
     pub fn to_assign_stmt(&self, ident: &str) -> YololStmt {
         YololStmt::Assign {
             ident: ident.to_string(),
@@ -100,8 +106,14 @@ impl NumberExpr {
         }
     }
 
-    fn apply_prefix_op(&self, op: &PrefixOp) -> NumberExpr {
-        NumberExpr {
+    /// Returns a scalar as a Yolol expression.
+    fn as_expr(&self) -> YololExpr {
+        self.expr.clone()
+    }
+
+    /// Applies a prefix operation to a scalar.
+    fn apply_prefix_op(&self, op: &PrefixOp) -> Self {
+        Scalar {
             expr: YololExpr::Prefix {
                 op: *op,
                 expr: Box::new(self.as_expr()),
@@ -109,8 +121,9 @@ impl NumberExpr {
         }
     }
 
-    fn apply_infix_op(&self, op: &InfixOp, other: &NumberExpr) -> NumberExpr {
-        NumberExpr {
+    /// Applies an infix operation to two scalars.
+    fn apply_infix_op(&self, op: &InfixOp, other: &Scalar) -> Self {
+        Scalar {
             expr: YololExpr::Infix {
                 lhs: Box::new(self.as_expr()),
                 op: *op,
@@ -120,53 +133,57 @@ impl NumberExpr {
     }
 }
 
-/// Represents an array of Yolk number expression.
+/// Represents a vector of scalars.
 #[derive(Debug, Clone, PartialEq)]
-pub struct ArrayExpr {
-    numbers: Vec<NumberExpr>,
+pub struct Vector {
+    scalars: Vec<Scalar>,
 }
 
-impl ArrayExpr {
-    // Creates a Yolk array expression from an identifier.
-    pub fn from_ident(ident: &str, size: usize) -> ArrayExpr {
-        let mut numbers = Vec::new();
+impl From<Vec<Scalar>> for Vector {
+    /// Converts scalars to a vector.
+    fn from(scalars: Vec<Scalar>) -> Self {
+        Vector { scalars: scalars }
+    }
+}
+
+impl Vector {
+    /// Creates a vector from an expanded identifier.
+    pub fn from_expanded_ident(ident: &str, size: usize) -> Self {
+        let mut scalars = Vec::new();
         for i in 0..size {
-            numbers.push(NumberExpr::from_ident(&format!("{}_{}", ident, i)));
+            // Parsing can never fail here
+            let s: Scalar = format!("{}_{}", ident, i).parse().unwrap();
+            scalars.push(s);
         }
-        ArrayExpr { numbers: numbers }
+        Vector { scalars: scalars }
     }
 
-    // Creates a Yolk array expression from Yolk number expressions.
-    pub fn from_number_exprs(numbers: &[NumberExpr]) -> ArrayExpr {
-        ArrayExpr {
-            numbers: numbers.to_vec(),
-        }
-    }
-
-    // Converts a Yolk array expression to Yolol assign statements.
+    /// Converts a vector to Yolol assign statements using a given identifier.
     pub fn to_assign_stmts(&self, ident: &str) -> Vec<YololStmt> {
-        let mut assign_stmts = Vec::new();
-        for (elem_index, number) in self.numbers.iter().enumerate() {
-            assign_stmts.push(YololStmt::Assign {
+        let mut stmts = Vec::new();
+        for (elem_index, scalar) in self.scalars.iter().enumerate() {
+            stmts.push(YololStmt::Assign {
                 ident: format!("{}_{}", ident, elem_index),
-                expr: Box::new(number.as_expr()),
+                expr: Box::new(scalar.as_expr()),
             });
         }
-        assign_stmts
+        stmts
     }
 
-    fn apply_prefix_op(&self, op: &PrefixOp) -> ArrayExpr {
-        ArrayExpr {
-            numbers: self.numbers.iter().map(|n| n.apply_prefix_op(op)).collect(),
+    /// Applies a prefix operation to a vector.
+    fn apply_prefix_op(&self, op: &PrefixOp) -> Self {
+        Vector {
+            scalars: self.scalars.iter().map(|s| s.apply_prefix_op(op)).collect(),
         }
     }
 
-    fn apply_infix_op(&self, op: &InfixOp, other: &ArrayExpr) -> ArrayExpr {
-        ArrayExpr {
-            numbers: self
-                .numbers
+    /// Applies an infix operation to two vectors.
+    fn apply_infix_op(&self, op: &InfixOp, other: &Vector) -> Self {
+        Vector {
+            scalars: self
+                .scalars
                 .iter()
-                .zip(other.numbers.iter())
+                .zip(other.scalars.iter())
                 .map(|(m, n)| m.apply_infix_op(op, n))
                 .collect(),
         }

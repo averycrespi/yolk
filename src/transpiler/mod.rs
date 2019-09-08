@@ -13,7 +13,7 @@ mod value;
 
 use environment::Environment;
 use function::Function;
-use value::{ArrayExpr, NumberExpr, Value};
+use value::Value;
 
 /// Transpiles a Yolk program to a Yolol program
 ///
@@ -61,17 +61,17 @@ fn expr_to_value(env: &Environment, expr: &YolkExpr) -> Result<Value, YolkError>
             lhs.apply_infix_op(&op, &rhs)
         }
         YolkExpr::Ident(s) => env.variable(s),
-        YolkExpr::Literal(y) => Ok(Value::Number(NumberExpr::from_yolol_number(y.clone()))),
+        YolkExpr::Literal(y) => Ok(Value::Scalar(y.clone().into())),
         YolkExpr::Array(exprs) => {
-            let mut numbers = Vec::new();
+            let mut scalars = Vec::new();
             for expr in exprs.iter() {
                 let value = expr_to_value(env, &expr)?;
                 match value {
-                    Value::Number(n) => numbers.push(n),
-                    Value::Array(_) => return Err(YolkError::NestedArrays),
+                    Value::Scalar(s) => scalars.push(s),
+                    Value::Vector(_) => return Err(YolkError::NestedArrays),
                 }
             }
-            Ok(Value::Array(ArrayExpr::from_number_exprs(&numbers)))
+            Ok(Value::Vector(scalars.into()))
         }
     }
 }
@@ -81,10 +81,10 @@ fn sum_to_value(env: &Environment, args: &[YolkExpr]) -> Result<Value, YolkError
     for arg in args.iter() {
         values.push(expr_to_value(env, arg)?);
     }
-    Ok(Value::reduce(
+    Ok(Value::left_fold(
         &values,
         &InfixOp::Add,
-        &NumberExpr::from_yolol_number(YololNumber::zero()),
+        &YololNumber::zero().into(),
     ))
 }
 
@@ -93,9 +93,9 @@ fn product_to_value(env: &Environment, args: &[YolkExpr]) -> Result<Value, YolkE
     for arg in args.iter() {
         values.push(expr_to_value(env, arg)?);
     }
-    Ok(Value::reduce(
+    Ok(Value::left_fold(
         &values,
         &InfixOp::Mul,
-        &NumberExpr::from_yolol_number(YololNumber::one()),
+        &YololNumber::one().into(),
     ))
 }
