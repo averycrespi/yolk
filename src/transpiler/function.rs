@@ -3,9 +3,6 @@ use std::collections::HashSet;
 use crate::ast::YolkExpr;
 use crate::error::YolkError;
 
-#[cfg(test)]
-mod tests;
-
 /// Represents a Yolk function.
 #[derive(Debug, Clone)]
 pub struct Function {

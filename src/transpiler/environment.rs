@@ -2,11 +2,8 @@ use std::collections::{HashMap, HashSet};
 
 use crate::ast::YololStmt;
 use crate::error::YolkError;
-use crate::function::Function;
-use crate::value::{ArrayExpr, NumberExpr, Value};
-
-#[cfg(test)]
-mod tests;
+use crate::transpiler::function::Function;
+use crate::transpiler::value::{ArrayExpr, NumberExpr, Value};
 
 /// Represents a Yolk program environment.
 #[derive(Debug, Clone)]

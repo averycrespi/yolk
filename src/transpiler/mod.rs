@@ -2,10 +2,18 @@ use num_traits::identities::{One, Zero};
 use yolol_number::YololNumber;
 
 use crate::ast::{InfixOp, YolkExpr, YolkProgram, YolkStmt, YololProgram};
-use crate::environment::Environment;
 use crate::error::YolkError;
-use crate::function::Function;
-use crate::value::{ArrayExpr, NumberExpr, Value};
+
+#[cfg(test)]
+mod tests;
+
+mod environment;
+mod function;
+mod value;
+
+use environment::Environment;
+use function::Function;
+use value::{ArrayExpr, NumberExpr, Value};
 
 /// Transpiles a Yolk program to a Yolol program
 ///

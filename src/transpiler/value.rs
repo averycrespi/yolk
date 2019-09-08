@@ -3,9 +3,6 @@ use yolol_number::YololNumber;
 use crate::ast::{InfixOp, PrefixOp, YololExpr, YololStmt};
 use crate::error::YolkError;
 
-#[cfg(test)]
-mod tests;
-
 /// Represents a Yolk value.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
@@ -144,11 +141,6 @@ impl ArrayExpr {
         ArrayExpr {
             numbers: numbers.to_vec(),
         }
-    }
-
-    // Returns a Yolk array expression as a vector of Yolol expressions.
-    pub fn as_exprs(&self) -> Vec<YololExpr> {
-        self.numbers.iter().map(|n| n.as_expr()).collect()
     }
 
     // Converts a Yolk array expression to Yolol assign statements.
