@@ -1,3 +1,24 @@
+//! Numerical computing for Yolol
+//!
+//! Yolk is a domain-specific language that transpiles to Yolol.
+//!
+//! # Quick Start
+//!
+//! ```
+//! use yolk::{YolkProgram, YololProgram};
+//! use std::convert::TryInto;
+//!
+//! // Parse a Yolk program from a string
+//! let yolk: YolkProgram = "let foo = 1".parse().unwrap();
+//!
+//! // Transpile a Yolk program to Yolol, then optimize
+//! let yolol: YololProgram = yolk.try_into().unwrap();
+//! let optimized = yolol.optimize();
+//!
+//! // Print a Yolol program as a chip
+//! println!("{}", optimized.to_string());
+//! ```
+
 #[macro_use]
 extern crate failure;
 #[macro_use]
@@ -7,16 +28,10 @@ extern crate pest;
 extern crate pest_derive;
 
 pub mod ast;
-pub mod environment;
 pub mod error;
-pub mod format;
-pub mod function;
 pub mod optimizer;
 pub mod parser;
 pub mod transpiler;
-pub mod value;
 
-pub use format::format_as_program;
-pub use optimizer::optimize;
-pub use parser::parse;
-pub use transpiler::transpile;
+pub use ast::{YolkProgram, YololProgram};
+pub use error::YolkError;

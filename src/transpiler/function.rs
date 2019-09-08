@@ -1,10 +1,9 @@
+//TODO: refactor
+
 use std::collections::HashSet;
 
 use crate::ast::YolkExpr;
 use crate::error::YolkError;
-
-#[cfg(test)]
-mod tests;
 
 /// Represents a Yolk function.
 #[derive(Debug, Clone)]
@@ -44,7 +43,12 @@ impl Function {
     fn check_body_node(&self, node: &YolkExpr) -> Result<(), YolkError> {
         match node {
             YolkExpr::Prefix { op: _, expr } => self.check_body_node(expr)?,
-            YolkExpr::Builtin { ident, args } | YolkExpr::Call { ident, args } => {
+            YolkExpr::Fold { op: _, args } => {
+                for arg in args.iter() {
+                    self.check_body_node(arg)?;
+                }
+            }
+            YolkExpr::Call { ident, args } => {
                 for arg in args.iter() {
                     self.check_body_node(arg)?;
                 }
@@ -92,16 +96,16 @@ impl Function {
                 op: *op,
                 expr: Box::new(self.replace_params_with_args(args, expr)),
             },
-            YolkExpr::Builtin {
-                ident,
+            YolkExpr::Fold {
+                op,
                 args: call_args,
             } => {
                 let mut replaced_args = Vec::new();
                 for arg in call_args.iter() {
                     replaced_args.push(self.replace_params_with_args(args, arg));
                 }
-                YolkExpr::Builtin {
-                    ident: ident.to_string(),
+                YolkExpr::Fold {
+                    op: *op,
                     args: replaced_args,
                 }
             }

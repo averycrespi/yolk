@@ -1,39 +1,42 @@
 use num_traits::identities::{One, Zero};
 use yolol_number::YololNumber;
 
-use crate::ast::{InfixOp, YolkExpr, YolkStmt, YololStmt};
-use crate::environment::Environment;
+use crate::ast::{InfixOp, YolkExpr, YolkProgram, YolkStmt, YololProgram};
 use crate::error::YolkError;
-use crate::function::Function;
-use crate::value::{ArrayExpr, NumberExpr, Value};
 
 #[cfg(test)]
 mod tests;
 
-/// Transpiles Yolk statements to Yolol statements.
-///
-/// Returns Yolol statements.
+mod environment;
+mod function;
+mod value;
+
+use environment::Environment;
+use function::Function;
+use value::Value;
+
+/// Transpiles a Yolk program to a Yolol program
 ///
 /// # Panics
 ///
-/// Panics if any of the nodes are not statements, or if any of the nodes are malformed.
-pub fn transpile(stmts: &[YolkStmt]) -> Result<Vec<YololStmt>, YolkError> {
+/// Panics if the Yolk program is malformed.
+pub fn transpile(program: YolkProgram) -> Result<YololProgram, YolkError> {
     let mut env = Environment::new();
     let mut assigns = Vec::new();
-    for stmt in stmts.iter() {
+    for stmt in program.into_iter() {
         match stmt {
             YolkStmt::Import { ident } => env.import(&ident)?,
             YolkStmt::Define {
                 ident,
                 params,
                 body,
-            } => env.define(&ident, Function::new(&ident, params, &*body)?)?,
+            } => env.define(&ident, Function::new(&ident, &params, &*body)?)?,
             YolkStmt::Let { ident, expr } => {
                 assigns.extend(env.let_value(&ident, expr_to_value(&env, &*expr)?)?);
             }
         }
     }
-    Ok(assigns)
+    Ok(assigns.into())
 }
 
 fn expr_to_value(env: &Environment, expr: &YolkExpr) -> Result<Value, YolkError> {
@@ -42,10 +45,10 @@ fn expr_to_value(env: &Environment, expr: &YolkExpr) -> Result<Value, YolkError>
             let value = expr_to_value(env, &expr)?;
             Ok(value.apply_prefix_op(&op))
         }
-        YolkExpr::Builtin { ident, args } => match ident.as_ref() {
-            "sum" => sum_to_value(env, args),
-            "product" => product_to_value(env, args),
-            _ => panic!("expected builtin, but got: {:?}", ident),
+        YolkExpr::Fold { op, args } => match op {
+            InfixOp::Add => sum_to_value(env, args),
+            InfixOp::Mul => product_to_value(env, args),
+            _ => panic!("expected fold, but got: {:?}", op),
         },
         YolkExpr::Call { ident, args } => {
             let function = env.function(ident)?;
@@ -58,17 +61,17 @@ fn expr_to_value(env: &Environment, expr: &YolkExpr) -> Result<Value, YolkError>
             lhs.apply_infix_op(&op, &rhs)
         }
         YolkExpr::Ident(s) => env.variable(s),
-        YolkExpr::Literal(y) => Ok(Value::Number(NumberExpr::from_yolol_number(y.clone()))),
+        YolkExpr::Literal(y) => Ok(Value::Scalar(y.clone().into())),
         YolkExpr::Array(exprs) => {
-            let mut numbers = Vec::new();
+            let mut scalars = Vec::new();
             for expr in exprs.iter() {
                 let value = expr_to_value(env, &expr)?;
                 match value {
-                    Value::Number(n) => numbers.push(n),
-                    Value::Array(_) => return Err(YolkError::NestedArrays),
+                    Value::Scalar(s) => scalars.push(s),
+                    Value::Vector(_) => return Err(YolkError::NestedArrays),
                 }
             }
-            Ok(Value::Array(ArrayExpr::from_number_exprs(&numbers)))
+            Ok(Value::Vector(scalars.into()))
         }
     }
 }
@@ -78,10 +81,10 @@ fn sum_to_value(env: &Environment, args: &[YolkExpr]) -> Result<Value, YolkError
     for arg in args.iter() {
         values.push(expr_to_value(env, arg)?);
     }
-    Ok(Value::reduce(
+    Ok(Value::left_fold(
         &values,
         &InfixOp::Add,
-        &NumberExpr::from_yolol_number(YololNumber::zero()),
+        &YololNumber::zero().into(),
     ))
 }
 
@@ -90,9 +93,9 @@ fn product_to_value(env: &Environment, args: &[YolkExpr]) -> Result<Value, YolkE
     for arg in args.iter() {
         values.push(expr_to_value(env, arg)?);
     }
-    Ok(Value::reduce(
+    Ok(Value::left_fold(
         &values,
         &InfixOp::Mul,
-        &NumberExpr::from_yolol_number(YololNumber::one()),
+        &YololNumber::one().into(),
     ))
 }

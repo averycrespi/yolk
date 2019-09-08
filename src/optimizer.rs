@@ -3,13 +3,13 @@ use std::collections::HashMap;
 use num_traits::identities::{One, Zero};
 use yolol_number::prelude::*;
 
-use crate::ast::{InfixOp, PrefixOp, YololExpr, YololStmt};
+use crate::ast::{InfixOp, PrefixOp, YololExpr, YololProgram, YololStmt};
 
-/// Optimizes Yolol statements.
+/// Optimizes a Yolol program.
 ///
 /// This function is idempotent.
-pub fn optimize(stmts: Vec<YololStmt>) -> Vec<YololStmt> {
-    let mut curr = stmts;
+pub fn optimize(program: YololProgram) -> YololProgram {
+    let mut curr: Vec<YololStmt> = program.into_iter().collect();
     // This loop will always terminate because of the following invariants:
     // 1) A unique global optimum exists for every set of statements.
     // 2) The reduce_stmt function will never move away from the optimum.
@@ -23,7 +23,7 @@ pub fn optimize(stmts: Vec<YololStmt>) -> Vec<YololStmt> {
             break;
         }
     }
-    curr
+    curr.into()
 }
 
 /// Finds variables that have literal values.
