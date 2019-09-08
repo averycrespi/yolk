@@ -11,13 +11,13 @@ let_stmt        = { "let " ~ ident ~ "=" ~ expr }
 
 expr            = _{ infix_expr | base_expr }
 infix_expr      = { base_expr ~ (infix_op ~ base_expr)+ }
-base_expr       = _{ prefix_expr | builtin_expr | call_expr | ident | literal | array | wrapped_expr }
+base_expr       = _{ prefix_expr | fold_expr | call_expr | ident | literal | array | wrapped_expr }
 prefix_expr     = { prefix_op ~ wrapped_expr }
-builtin_expr    = { builtin ~ args }
+fold_expr       = { fold ~ args }
 call_expr       = { ident ~ args }
 wrapped_expr    = _{ "(" ~ NEWLINE* ~ expr ~ NEWLINE* ~ ")" }
 
-builtin         = _{ sum | product }
+fold            = _{ sum | product }
 
 sum             = { "sum" }
 product         = { "product" }

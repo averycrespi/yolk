@@ -64,7 +64,7 @@ fn test_let_infix() -> Result<(), YolkError> {
 }
 
 #[test]
-fn test_let_builtin() -> Result<(), YolkError> {
+fn test_let_fold() -> Result<(), YolkError> {
     let _: YolkProgram = "let number = sum([0, 1], 2) + product([0, 1], 2)".parse()?;
     Ok(())
 }

@@ -45,10 +45,10 @@ fn expr_to_value(env: &Environment, expr: &YolkExpr) -> Result<Value, YolkError>
             let value = expr_to_value(env, &expr)?;
             Ok(value.apply_prefix_op(&op))
         }
-        YolkExpr::Builtin { ident, args } => match ident.as_ref() {
-            "sum" => sum_to_value(env, args),
-            "product" => product_to_value(env, args),
-            _ => panic!("expected builtin, but got: {:?}", ident),
+        YolkExpr::Fold { op, args } => match op {
+            InfixOp::Add => sum_to_value(env, args),
+            InfixOp::Mul => product_to_value(env, args),
+            _ => panic!("expected fold, but got: {:?}", op),
         },
         YolkExpr::Call { ident, args } => {
             let function = env.function(ident)?;

@@ -5,14 +5,18 @@
 //! # Quick Start
 //!
 //! ```
+//! use yolk::{YolkProgram, YololProgram};
+//! use std::convert::TryInto;
+//!
 //! // Parse a Yolk program from a string
 //! let yolk: YolkProgram = "let foo = 1".parse().unwrap();
 //!
 //! // Transpile a Yolk program to Yolol, then optimize
-//! let yolol: YololProgram = yolk.try_into().unwrap().optimize();
+//! let yolol: YololProgram = yolk.try_into().unwrap();
+//! let optimized = yolol.optimize();
 //!
 //! // Print a Yolol program as a chip
-//! println!("{}", yolol.to_string());
+//! println!("{}", optimized.to_string());
 //! ```
 
 #[macro_use]

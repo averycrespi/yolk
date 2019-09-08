@@ -114,12 +114,16 @@ fn parse_expr(expr: Pair<Rule>) -> YolkExpr {
                 expr: Box::new(parse_expr(expr)),
             }
         }
-        Rule::builtin_expr => {
+        Rule::fold_expr => {
             let mut pairs = expr.into_inner();
             let ident = pairs.next().expect("failed to unwrap ident from pair");
             let args = pairs.next().expect("failed to unwrap args from pair");
-            YolkExpr::Builtin {
-                ident: ident.as_str().to_string(),
+            YolkExpr::Fold {
+                op: match ident.as_str() {
+                    "sum" => InfixOp::Add,
+                    "product" => InfixOp::Mul,
+                    _ => panic!("expected fold, but got: {:?}", ident),
+                },
                 args: args.into_inner().map(parse_expr).collect(),
             }
         }
