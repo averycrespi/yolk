@@ -9,7 +9,7 @@
 //! let yolk: YolkProgram = "let foo = 1".parse().unwrap();
 //!
 //! // Transpile a Yolk program to Yolol, then optimize
-//! let yolol: YololProgram = yolk.into().unwrap().optimize();
+//! let yolol: YololProgram = yolk.try_into().unwrap().optimize();
 //!
 //! // Print a Yolol program as a chip
 //! println!("{}", yolol.to_string());
