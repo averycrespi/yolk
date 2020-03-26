@@ -18,8 +18,6 @@
     <a href="#credits">Credits</a>
 </p>
 
-**Warning: Yolk is currently in development. Things may change at any time!**
-
 ## What is Yolk?
 
 Yolk is a [domain-specific language](https://en.wikipedia.org/wiki/Domain-specific_language) that transpiles to [Yolol](https://wiki.starbasegame.com/index.php/YOLOL).
@@ -62,6 +60,8 @@ git clone https://github.com/averycrespi/yolk.git && cd yolk
 # Build and run tests
 make
 ```
+
+You can read more about Yolk development in my [project hightlight blog post](https://averycrespi.com/posts/project-highlight-yolk/).
 
 ## License
 
