@@ -44,7 +44,7 @@ Yolk specializes in working with **numbers** and **arrays**. It doesn't support 
 
 Learn the Yolk syntax by checking out some [examples](tests/corpus) or by reading the [language specification](docs/spec.md).
 
-Try Yolk online with [Yolk Web](https://yolk.averycrespi.com).
+Try Yolk online with [Yolk Web](https://yolk.crespi.dev).
 
 ## Development
 
