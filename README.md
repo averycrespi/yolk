@@ -61,7 +61,7 @@ git clone https://github.com/averycrespi/yolk.git && cd yolk
 make
 ```
 
-You can read more about Yolk development in my [project hightlight blog post](https://averycrespi.com/posts/project-highlight-yolk/).
+You can read more about Yolk development in my [project highlight blog post](https://crespi.dev/posts/project-highlight-yolk/).
 
 ## License
 
